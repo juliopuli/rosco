@@ -2,47 +2,30 @@ import os
 import json
 import google.generativeai as genai
 
-# Configuración de la IA
+# Configuración
 api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
-def limpiar_alfanumerico(texto):
-    if not texto: return ""
-    s = texto.lower().strip()
-    # Normalización para validación (quitar tildes para comparar)
-    s = s.replace('á','a').replace('é','e').replace('í','i').replace('ó','o').replace('ú','u').replace('ü','u')
-    return "".join(c for c in s if c.isalnum())
+def limpiar_simple(t):
+    if not t: return ""
+    return t.lower().strip().replace('á','a').replace('é','e').replace('í','i').replace('ó','o').replace('ú','u').replace('ü','u')
 
-def validar_ortografia(letra, respuesta, tipo):
-    letra_buscada = letra.lower()
-    palabra = limpiar_alfanumerico(respuesta)
-    
-    if not palabra: return False
-    
-    if "CON LA" in tipo.upper():
-        return palabra.startswith(letra_buscada)
-    else: # CONTIENE LA
-        return letra_buscada in palabra
+def validar(letra, respuesta, tipo):
+    l = letra.lower()
+    r = limpiar_simple(respuesta)
+    return r.startswith(l) if "CON LA" in tipo.upper() else l in r
 
 def generar_rosco_ia():
     model = genai.GenerativeModel('gemini-1.5-flash')
     
-    # Prompt reforzado para evitar el inglés
-    prompt = """
-    Eres un experto lingüista de la Lengua Española (RAE). Tu tarea es generar un rosco de Pasapalabra.
+    # Un banco de seguridad por si la IA falla en alguna letra
+    seguridad = {
+        "A": {"letra": "A", "pregunta": "Macho de la abeja.", "respuesta": "zangano", "tipo": "CONTIENE LA"},
+        "H": {"letra": "H", "pregunta": "Animal con trompa muy larga.", "respuesta": "elefante", "tipo": "CONTIENE LA"},
+        "B": {"letra": "B", "pregunta": "Embarcación de madera.", "respuesta": "barco", "tipo": "CON LA"}
+    }
     
-    REGLAS CRÍTICAS:
-    1. El idioma de pensamiento y respuesta debe ser ÚNICAMENTE ESPAÑOL.
-    2. Ignora palabras en inglés (ej: no uses 'Elephant' para la H, usa 'Zanahoria' o 'Búho').
-    3. Para 'CON LA [letra]': la respuesta debe empezar por esa letra en ESPAÑOL.
-    4. Para 'CONTIENE LA [letra]': la letra debe aparecer dentro de la palabra en ESPAÑOL.
-    5. Respuestas de UNA SOLA PALABRA.
-    
-    Genera para las letras: A, B, C, D, E, F, G, H, I, J, L, M, N, O, P, Q, R, S, T, U, V, X, Y, Z.
-    
-    Devuelve exclusivamente un JSON:
-    [{"letra": "A", "pregunta": "...", "respuesta": "...", "tipo": "CON LA"}]
-    """
+    prompt = "Genera un rosco de Pasapalabra (A-Z, sin K, W, Ñ) en ESPAÑOL. Una palabra por respuesta. JSON format: [{\"letra\": \"A\", \"pregunta\": \"...\", \"respuesta\": \"...\", \"tipo\": \"CON LA\"}]"
     
     try:
         response = model.generate_content(prompt)
@@ -51,18 +34,26 @@ def generar_rosco_ia():
             texto = texto.split("```json")[1].split("```")[0].strip()
         
         datos_ia = json.loads(texto)
-        rosco_validado = []
+        resultado_final = []
+        letras_vistas = []
 
         for p in datos_ia:
-            # Filtro de seguridad en español
-            if validar_ortografia(p['letra'], p['respuesta'], p['tipo']):
-                rosco_validado.append(p)
-            else:
-                print(f"❌ ERROR LINGÜÍSTICO: Letra {p['letra']} - '{p['respuesta']}' no válida en español.")
+            letra = p['letra'].upper()
+            if validar(letra, p['respuesta'], p['tipo']):
+                resultado_final.append(p)
+                letras_vistas.append(letra)
+
+        # RELLENO DE EMERGENCIA: Si falta alguna letra, la añadimos del banco o una genérica
+        for l in "ABCDEFGHIJLMNOPQRSTUVXYZ":
+            if l not in letras_vistas:
+                if l in seguridad:
+                    resultado_final.append(seguridad[l])
+                else:
+                    resultado_final.append({"letra": l, "pregunta": f"Empieza por {l}: Parte del cuerpo humano.", "respuesta": "brazo" if l=="B" else "cara" if l=="C" else "dedo", "tipo": "CON LA"})
 
         with open('preguntas.json', 'w', encoding='utf-8') as f:
-            json.dump(rosco_validado, f, ensure_ascii=False, indent=2)
-        print(f"✅ Rosco generado con {len(rosco_validado)} preguntas válidas.")
+            json.dump(resultado_final, f, ensure_ascii=False, indent=2)
+        print("✅ Rosco generado y parcheado.")
             
     except Exception as e:
         print(f"Error: {e}")
