@@ -1,146 +1,146 @@
 [
   {
     "letra": "A",
-    "pregunta": "Palabra común que empieza por A",
-    "respuesta": "comun",
+    "pregunta": "Cuerpo celeste que brilla con luz propia.",
+    "respuesta": "astro",
     "tipo": "CON LA"
   },
   {
     "letra": "B",
-    "pregunta": "Palabra común que empieza por B",
-    "respuesta": "comun",
+    "pregunta": "Mamífero rumiante con cuernos.",
+    "respuesta": "buey",
     "tipo": "CON LA"
   },
   {
     "letra": "C",
-    "pregunta": "Capital de Venezuela",
-    "respuesta": "caracas",
-    "tipo": "CON LA"
+    "pregunta": "Satélite natural de la Tierra.",
+    "respuesta": "luna",
+    "tipo": "CONTIENE LA"
   },
   {
     "letra": "D",
-    "pregunta": "Lo que usas para jugar parchís",
+    "pregunta": "Objeto cúbico usado en juegos de azar.",
     "respuesta": "dado",
     "tipo": "CON LA"
   },
   {
     "letra": "E",
-    "pregunta": "Palabra común que empieza por E",
-    "respuesta": "comun",
+    "pregunta": "Animal con trompa de gran tamaño.",
+    "respuesta": "elefante",
     "tipo": "CON LA"
   },
   {
     "letra": "F",
-    "pregunta": "Palabra común que empieza por F",
-    "respuesta": "comun",
+    "pregunta": "Luz que emite un vehículo por la noche.",
+    "respuesta": "faro",
     "tipo": "CON LA"
   },
   {
     "letra": "G",
-    "pregunta": "Palabra común que empieza por G",
-    "respuesta": "comun",
+    "pregunta": "Animal doméstico que maúlla.",
+    "respuesta": "gato",
     "tipo": "CON LA"
   },
   {
     "letra": "H",
-    "pregunta": "Palabra común que empieza por H",
-    "respuesta": "comun",
+    "pregunta": "Masa de agua congelada.",
+    "respuesta": "hielo",
     "tipo": "CON LA"
   },
   {
     "letra": "I",
-    "pregunta": "Palabra común que empieza por I",
-    "respuesta": "comun",
+    "pregunta": "Porción de tierra rodeada de agua.",
+    "respuesta": "isla",
     "tipo": "CON LA"
   },
   {
     "letra": "J",
-    "pregunta": "Palabra común que empieza por J",
-    "respuesta": "comun",
+    "pregunta": "Líquido que se extrae de las frutas.",
+    "respuesta": "jugo",
     "tipo": "CON LA"
   },
   {
     "letra": "L",
-    "pregunta": "Palabra común que empieza por L",
-    "respuesta": "comun",
+    "pregunta": "Rey de la selva.",
+    "respuesta": "leon",
     "tipo": "CON LA"
   },
   {
     "letra": "M",
-    "pregunta": "Palabra común que empieza por M",
-    "respuesta": "comun",
+    "pregunta": "Capital de España.",
+    "respuesta": "madrid",
     "tipo": "CON LA"
   },
   {
     "letra": "N",
-    "pregunta": "Palabra común que empieza por N",
-    "respuesta": "comun",
+    "pregunta": "Color de la oscuridad total.",
+    "respuesta": "negro",
     "tipo": "CON LA"
   },
   {
     "letra": "O",
-    "pregunta": "Palabra común que empieza por O",
-    "respuesta": "comun",
+    "pregunta": "Animal que da lana.",
+    "respuesta": "oveja",
     "tipo": "CON LA"
   },
   {
     "letra": "P",
-    "pregunta": "Palabra común que empieza por P",
-    "respuesta": "comun",
+    "pregunta": "Instrumento para escribir con tinta.",
+    "respuesta": "pluma",
     "tipo": "CON LA"
   },
   {
     "letra": "Q",
-    "pregunta": "Palabra común que empieza por Q",
-    "respuesta": "comun",
+    "pregunta": "Alimento sólido hecho de leche.",
+    "respuesta": "queso",
     "tipo": "CON LA"
   },
   {
     "letra": "R",
-    "pregunta": "Palabra común que empieza por R",
-    "respuesta": "comun",
+    "pregunta": "Color de la sangre.",
+    "respuesta": "rojo",
     "tipo": "CON LA"
   },
   {
     "letra": "S",
-    "pregunta": "Palabra común que empieza por S",
-    "respuesta": "comun",
+    "pregunta": "Mueble para sentarse.",
+    "respuesta": "silla",
     "tipo": "CON LA"
   },
   {
     "letra": "T",
-    "pregunta": "Palabra común que empieza por T",
-    "respuesta": "comun",
-    "tipo": "CON LA"
+    "pregunta": "Vehículo con cuatro ruedas.",
+    "respuesta": "coche",
+    "tipo": "CONTIENE LA"
   },
   {
     "letra": "U",
-    "pregunta": "Palabra común que empieza por U",
-    "respuesta": "comun",
+    "pregunta": "Fruta que se come en racimos.",
+    "respuesta": "uva",
     "tipo": "CON LA"
   },
   {
     "letra": "V",
-    "pregunta": "Palabra común que empieza por V",
-    "respuesta": "comun",
+    "pregunta": "Soplido fuerte del aire.",
+    "respuesta": "viento",
     "tipo": "CON LA"
   },
   {
     "letra": "X",
-    "pregunta": "Palabra común que empieza por X",
-    "respuesta": "comun",
+    "pregunta": "Instrumento musical de láminas.",
+    "respuesta": "xilofono",
     "tipo": "CON LA"
   },
   {
     "letra": "Y",
-    "pregunta": "Palabra común que empieza por Y",
-    "respuesta": "comun",
+    "pregunta": "Embarcación de recreo lujosa.",
+    "respuesta": "yate",
     "tipo": "CON LA"
   },
   {
     "letra": "Z",
-    "pregunta": "Palabra común que empieza por Z",
-    "respuesta": "comun",
+    "pregunta": "Calzado que cubre el pie.",
+    "respuesta": "zapato",
     "tipo": "CON LA"
   }
 ]
