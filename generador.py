@@ -1,13 +1,14 @@
 import os
 import json
 import google.generativeai as genai
+import time
 
 api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
-def limpiar(t):
-    if not t: return ""
-    return t.lower().strip().replace('á','a').replace('é','e').replace('í','i').replace('ó','o').replace('ú','u').replace('ü','u')
+def limpiar_json(texto):
+    # Elimina posibles etiquetas de markdown y espacios extra
+    return texto.replace("```json", "").replace("```", "").strip()
 
 def generar_rosco_ia():
     model = genai.GenerativeModel('gemini-1.5-flash')
@@ -15,43 +16,43 @@ def generar_rosco_ia():
     rosco_final = []
 
     for l in letras:
-        print(f"Buscando pregunta real para la {l}...")
+        print(f"Generando contenido único para la letra: {l}")
         exito = False
         intentos = 0
         
-        # Aumentamos a 10 intentos para asegurar calidad
-        while intentos < 10 and not exito:
+        while intentos < 5 and not exito:
+            # Prompt ultra-específico para evitar repeticiones
             prompt = f"""
-            Eres un guionista veterano del programa Pasapalabra. 
-            Genera una pregunta de CULTURA GENERAL para la letra '{l}'.
-            REGLA: La respuesta DEBE empezar por la letra '{l}' en ESPAÑOL.
-            EVITA: Definiciones genéricas o infantiles. No digas 'Letra {l}'.
-            Responde SOLO con este formato JSON: 
-            {{"letra": "{l}", "pregunta": "Definición interesante aquí...", "respuesta": "PalabraReal", "tipo": "CON LA"}}
+            Genera una pregunta de Pasapalabra para la letra '{l}'.
+            REQUISITOS:
+            - La respuesta DEBE ser un sustantivo común o propio en ESPAÑOL.
+            - La respuesta DEBE empezar por la letra '{l}'.
+            - Nivel: Cultura general (Geografía, Ciencia, Arte).
+            - NO uses definiciones infantiles ni menciones la letra en la respuesta.
+            
+            Formato JSON estricto: 
+            {{"letra": "{l}", "pregunta": "...", "respuesta": "...", "tipo": "CON LA"}}
             """
             try:
                 response = model.generate_content(prompt)
-                texto = response.text.strip().replace("```json", "").replace("```", "").strip()
-                p = json.loads(texto)
+                data = json.loads(limpiar_json(response.text))
                 
-                # Validamos que la respuesta sea válida y no una sola letra
-                if p['respuesta'].lower().startswith(l.lower()) and len(p['respuesta']) > 2:
-                    rosco_final.append(p)
+                # Validación de seguridad: Que la respuesta sea real y empiece por la letra
+                resp = data['respuesta'].lower().strip()
+                if resp.startswith(l.lower()) and len(resp) > 2:
+                    rosco_final.append(data)
                     exito = True
-                    print(f"  ✅ {l} conseguida: {p['respuesta']}")
+                    print(f"  ✅ Letra {l} lista: {resp}")
                 else:
                     intentos += 1
-            except:
+            except Exception as e:
+                print(f"  ⚠️ Error en {l}, reintentando...")
                 intentos += 1
+                time.sleep(1) # Pausa para no saturar la API
 
-        # Si tras 10 veces falla, usamos un banco de datos manual de CALIDAD, no genérico
-        if not exito:
-            banco_emergencia = {
-                "C": {"letra": "C", "pregunta": "Líquido transparente que bebemos.", "respuesta": "cristalina", "tipo": "CON LA"},
-                "D": {"letra": "D", "pregunta": "Órgano duro dentro de la boca.", "respuesta": "diente", "tipo": "CON LA"},
-                "E": {"letra": "E", "pregunta": "Lugar donde se guardan libros.", "respuesta": "estanteria", "tipo": "CON LA"}
-            }
-            rosco_final.append(banco_emergencia.get(l, {"letra": l, "pregunta": f"Elemento químico o común que empieza por {l}.", "respuesta": "xenon" if l=="X" else "yodo" if l=="Y" else "zinc", "tipo": "CON LA"}))
+    # Si por algún motivo extremo falta una letra, este bloque NO repite la misma pregunta
+    if len(rosco_final) < len(letras):
+        print("Aviso: El rosco está incompleto, pero no se han generado duplicados.")
 
     with open('preguntas.json', 'w', encoding='utf-8') as f:
         json.dump(rosco_final, f, ensure_ascii=False, indent=2)
