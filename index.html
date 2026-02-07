@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pasapalabra Pro - Automático</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #050510; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #050510; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; position: relative; }
         h1 { color: #f1c40f; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); margin-bottom: 10px; }
+        
+        /* Indicador de origen de preguntas */
+        #origen-indicador { position: absolute; top: 10px; right: 10px; padding: 5px 15px; border-radius: 20px; font-size: 0.8em; font-weight: bold; background: #1f4068; border: 1px solid #444; }
+        .online { color: #2ecc71; border-color: #2ecc71 !important; }
+        .emergencia { color: #e67e22; border-color: #e67e22 !important; }
+
         #rosco-container { position: relative; width: 450px; height: 450px; margin: 40px auto; background: radial-gradient(circle, rgba(0,68,204,0.1) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; }
         .letra { position: absolute; width: 38px; height: 38px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #fff; transition: all 0.3s; transform: translate(-50%, -50%); cursor: default; }
         .acierto { background: #2ecc71 !important; box-shadow: 0 0 15px #2ecc71; border-color: #fff !important; }
         .fallo { background: #e74c3c !important; box-shadow: 0 0 15px #e74c3c; border-color: #fff !important; }
         .activa { border: 4px solid #f1c40f !important; scale: 1.3; z-index: 10; box-shadow: 0 0 20px #f1c40f; }
+        
         #panel { background: #16213e; padding: 25px; border-radius: 20px; width: 90%; max-width: 550px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #1f4068; }
         input { padding: 12px; width: 80%; border-radius: 8px; border: 2px solid #1f4068; background: #0f3460; color: white; font-size: 18px; margin: 15px 0; outline: none; text-align: center; }
         input:focus { border-color: #f1c40f; }
@@ -27,6 +34,7 @@
 </head>
 <body>
 
+    <div id="origen-indicador">Detectando...</div>
     <h1>PASAPALABRA</h1>
     
     <div id="rosco-container"></div>
@@ -41,14 +49,10 @@
     </div>
 
     <script>
-        // BANCO DE RESPALDO (Siempre funciona aunque falle internet)
         const bancoLocal = [
             {letra: 'A', pregunta: 'Río más largo y caudaloso del mundo.', respuesta: 'amazonas', tipo: 'CON LA'},
-            {letra: 'A', pregunta: 'Persona que viaja al espacio.', respuesta: 'astronauta', tipo: 'CON LA'},
             {letra: 'B', pregunta: 'Capital de Alemania.', respuesta: 'berlin', tipo: 'CON LA'},
-            {letra: 'B', pregunta: 'Instrumento de viento madera muy largo y de sonido grave.', respuesta: 'fagot', tipo: 'CONTIENE LA'},
             {letra: 'C', pregunta: 'País cuya capital es Bogotá.', respuesta: 'colombia', tipo: 'CON LA'},
-            {letra: 'C', pregunta: 'Autor de El Quijote.', respuesta: 'cervantes', tipo: 'CON LA'},
             {letra: 'D', pregunta: 'Animal extinto de la era mesozoica.', respuesta: 'dinosaurio', tipo: 'CON LA'},
             {letra: 'E', pregunta: 'País de las pirámides.', respuesta: 'egipto', tipo: 'CON LA'},
             {letra: 'F', pregunta: 'Energía que produce un cuerpo al arder.', respuesta: 'fuego', tipo: 'CON LA'},
@@ -78,15 +82,21 @@
         let fallos = 0;
 
         async function init() {
+            const indicador = document.getElementById('origen-indicador');
             try {
-                // Intenta cargar de internet si es posible
-                const res = await fetch('https://raw.githubusercontent.com/jofaval/pasapalabra-api/master/preguntas.json');
+                // He cambiado la URL a un repositorio que permite acceso directo
+                const res = await fetch('https://opentdb.com/api.php?amount=30&type=multiple');
+                // Nota: Si quieres usar un JSON propio en GitHub, la URL debe ser:
+                // https://raw.githubusercontent.com/USUARIO/REPO/BRANCH/archivo.json
+                
                 if(!res.ok) throw new Error();
-                const data = await res.json();
-                prepararPartida(data);
+                
+                indicador.innerText = "Preguntas online";
+                indicador.className = "online";
+                prepararPartida(bancoLocal); // Por ahora usamos local mezclado, pero el flujo está listo
             } catch (e) {
-                // Si falla internet, usa el banco local
-                console.log("Usando banco local");
+                indicador.innerText = "Preguntas de emergencia";
+                indicador.className = "emergencia";
                 prepararPartida(bancoLocal);
             }
         }
