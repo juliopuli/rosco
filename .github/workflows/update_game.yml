@@ -7,26 +7,29 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions: # Forzamos permisos aquí también por seguridad
+    permissions:
       contents: write
     steps:
       - name: Checkout del código
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       
       - name: Configurar Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
           
-      - name: Generar nuevas preguntas
+      - name: Instalar librería de IA
+        run: pip install google-generativeai
+
+      - name: Generar nuevas preguntas con Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} # Aquí saca la llave de la caja fuerte
         run: python generador.py
         
-      - name: Guardar cambios en GitHub
+      - name: Guardar cambios
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add preguntas.json
-          git commit -m "IA: Actualización automática del rosco" || echo "No hay cambios para subir"
+          git commit -m "IA: Rosco generado por Gemini" || echo "Sin cambios"
           git push origin main
