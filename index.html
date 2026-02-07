@@ -2,53 +2,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra IA - Sistema Validado</title>
+    <title>Pasapalabra PRO - Temporada 1</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #050510; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        
-        #origen-indicador { position: absolute; top: 15px; right: 15px; padding: 6px 18px; border-radius: 20px; font-size: 0.85em; font-weight: bold; background: #16213e; border: 1px solid #00f2ff; color: #00f2ff; box-shadow: 0 0 10px #00f2ff; }
-        
-        h1 { color: #f1c40f; text-shadow: 0 0 15px rgba(241, 196, 15, 0.4); margin-top: 40px; }
-
-        #rosco-container { position: relative; width: 450px; height: 450px; margin: 40px auto; }
-        
-        .letra { position: absolute; width: 35px; height: 35px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #fff; transition: 0.3s; transform: translate(-50%, -50%); font-size: 14px; z-index: 5; }
-        
+        body { font-family: 'Segoe UI', sans-serif; background: #050510; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        #timer { font-size: 3em; font-weight: bold; color: #f1c40f; margin-top: 20px; text-shadow: 0 0 20px rgba(241,196,15,0.5); }
+        #rosco-container { position: relative; width: 450px; height: 450px; margin: 20px auto; }
+        .letra { position: absolute; width: 35px; height: 35px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #fff; transform: translate(-50%, -50%); transition: 0.3s; }
         .acierto { background: #2ecc71 !important; box-shadow: 0 0 15px #2ecc71; }
         .fallo { background: #e74c3c !important; box-shadow: 0 0 15px #e74c3c; }
-        .activa { border: 4px solid #f1c40f !important; transform: translate(-50%, -50%) scale(1.3); z-index: 10; box-shadow: 0 0 20px #f1c40f; }
-
-        #panel { background: rgba(22, 33, 62, 0.9); padding: 30px; border-radius: 20px; width: 90%; max-width: 550px; text-align: center; border: 1px solid #1f4068; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        input { padding: 12px; width: 80%; border-radius: 8px; border: 2px solid #1f4068; background: #0a192f; color: white; font-size: 18px; margin: 15px 0; text-align: center; outline: none; }
-        input:focus { border-color: #00f2ff; }
-
-        button { padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; border: none; text-transform: uppercase; transition: 0.2s; }
+        .activa { border: 4px solid #f1c40f !important; scale: 1.3; z-index: 10; box-shadow: 0 0 20px #f1c40f; }
+        #panel { background: #16213e; padding: 30px; border-radius: 20px; width: 90%; max-width: 550px; text-align: center; border: 1px solid #1f4068; }
+        input { padding: 12px; width: 80%; border-radius: 8px; font-size: 18px; margin: 15px 0; text-align: center; }
+        button { padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; border: none; }
         .btn-enviar { background: #2ecc71; color: white; }
-        .btn-enviar:hover { background: #27ae60; }
         .btn-paso { background: #f1c40f; color: #000; }
-        .btn-paso:hover { background: #d4ac0d; }
-
-        #pregunta { font-size: 1.25em; min-height: 100px; display: flex; align-items: center; justify-content: center; margin: 10px 0; line-height: 1.4; color: #ecf0f1; }
-        .stats { margin-bottom: 15px; color: #bdc3c7; font-size: 1.1em; }
-
-        @media (max-width: 500px) {
-            #rosco-container { width: 320px; height: 320px; }
-            .letra { width: 28px; height: 28px; font-size: 12px; }
-        }
+        #pregunta { font-size: 1.2em; min-height: 80px; margin: 20px 0; }
     </style>
 </head>
 <body>
-
-    <div id="origen-indicador">🤖 IA GENERATIVA + RESPALDO</div>
-    <h1>ROSC-O-MATIC PRO</h1>
-    
+    <div id="timer">300</div>
     <div id="rosco-container"></div>
-
     <div id="panel">
-        <div class="stats">Aciertos: <span id="p-aciertos" style="color:#2ecc71">0</span> | Fallos: <span id="p-fallos" style="color:#e74c3c">0</span></div>
-        <div id="pregunta">Cargando preguntas de la red...</div>
+        <div id="pregunta">Cargando rosco...</div>
         <input type="text" id="respuesta" placeholder="Tu respuesta..." autocomplete="off">
         <br>
         <button class="btn-enviar" onclick="validar()">RESPONDER</button>
@@ -56,79 +31,33 @@
     </div>
 
     <script>
-        // BANCO DE EMERGENCIA (Se usa si la IA falla en alguna letra o no hay internet)
-        const respaldo = [
-            {letra: 'A', pregunta: 'Persona que pilota un avión.', respuesta: 'aviador', tipo: 'CON LA'},
-            {letra: 'B', pregunta: 'Embarcación de madera o metal.', respuesta: 'barco', tipo: 'CON LA'},
-            {letra: 'C', pregunta: 'Animal doméstico que caza ratones.', respuesta: 'gato', tipo: 'CONTIENE LA'},
-            {letra: 'D', pregunta: 'Día de la semana después del miércoles.', respuesta: 'jueves', tipo: 'CONTIENE LA'},
-            {letra: 'E', pregunta: 'Animal más grande de la tierra.', respuesta: 'elefante', tipo: 'CON LA'},
-            {letra: 'F', pregunta: 'País de la Torre Eiffel.', respuesta: 'francia', tipo: 'CON LA'},
-            {letra: 'G', pregunta: 'Mamífero de cuello muy largo.', respuesta: 'jirafa', tipo: 'CONTIENE LA'},
-            {letra: 'H', pregunta: 'Líquido esencial para la vida.', respuesta: 'agua', tipo: 'CONTIENE LA'},
-            {letra: 'I', pregunta: 'País con forma de bota.', respuesta: 'italia', tipo: 'CON LA'},
-            {letra: 'J', pregunta: 'Planeta más grande del sistema solar.', respuesta: 'jupiter', tipo: 'CON LA'},
-            {letra: 'L', pregunta: 'Satélite natural de la Tierra.', respuesta: 'luna', tipo: 'CON LA'},
-            {letra: 'M', pregunta: 'Capital de España.', respuesta: 'madrid', tipo: 'CON LA'},
-            {letra: 'N', pregunta: 'Color de la noche.', respuesta: 'negro', tipo: 'CON LA'},
-            {letra: 'O', pregunta: 'Elemento que respiramos.', respuesta: 'oxigeno', tipo: 'CON LA'},
-            {letra: 'P', pregunta: 'Lugar donde guardas el coche.', respuesta: 'parking', tipo: 'CON LA'},
-            {letra: 'Q', pregunta: 'Alimento derivado de la leche.', respuesta: 'queso', tipo: 'CON LA'},
-            {letra: 'R', pregunta: 'Color de la sangre.', respuesta: 'rojo', tipo: 'CON LA'},
-            {letra: 'S', pregunta: 'Aparato para sentarse.', respuesta: 'silla', tipo: 'CON LA'},
-            {letra: 'T', pregunta: 'Animal con caparazón muy lento.', respuesta: 'tortuga', tipo: 'CON LA'},
-            {letra: 'U', pregunta: 'Fruta que se come en racimos.', respuesta: 'uva', tipo: 'CON LA'},
-            {letra: 'V', pregunta: 'Líquido que circula por las venas.', respuesta: 'sangre', tipo: 'CONTIENE LA'},
-            {letra: 'X', pregunta: 'Instrumento musical de láminas.', respuesta: 'xilofono', tipo: 'CON LA'},
-            {letra: 'Y', pregunta: 'Barco de lujo.', respuesta: 'yate', tipo: 'CON LA'},
-            {letra: 'Z', pregunta: 'Calzado que protege el pie.', respuesta: 'zapato', tipo: 'CON LA'}
-        ];
-
         let roscoData = [];
         let currentIndex = 0;
-        let aciertos = 0;
-        let fallos = 0;
+        let timeLeft = 300;
+        let timerId;
 
         async function init() {
-            try {
-                // Intentamos cargar el JSON generado por la IA
-                const res = await fetch('preguntas.json?v=' + Date.now());
-                const dataIA = await res.json();
-                
-                const letrasAbc = "ABCDEFGHIJLMNOPQRSTUVXYZ".split('');
-                
-                // Reconstruimos el rosco letra por letra
-                roscoData = letrasAbc.map(letraActual => {
-                    // 1. Buscamos si la IA nos ha dado esta letra
-                    const preguntaIA = dataIA.find(p => p.letra === letraActual);
-                    
-                    // 2. Si no existe (porque el filtro la borró), usamos el respaldo
-                    if (preguntaIA) {
-                        return { ...preguntaIA, estado: 'pendiente' };
-                    } else {
-                        const backup = respaldo.find(r => r.letra === letraActual);
-                        return { ...backup, estado: 'pendiente' };
-                    }
-                });
-
-            } catch (error) {
-                console.log("Usando respaldo completo por error de carga.");
-                roscoData = respaldo.map(p => ({ ...p, estado: 'pendiente' }));
-            }
-            
+            const res = await fetch('preguntas.json?t=' + Date.now());
+            roscoData = (await res.json()).map(p => ({...p, estado: 'pendiente'}));
             renderRosco();
             updateUI();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerId = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if (timeLeft <= 0) finalizar();
+            }, 1000);
         }
 
         function renderRosco() {
             const container = document.getElementById('rosco-container');
-            container.innerHTML = "";
-            const total = roscoData.length;
             roscoData.forEach((p, i) => {
-                const angle = (i * (360 / total)) - 90;
+                const angle = (i * (360 / roscoData.length)) - 90;
                 const x = 225 + 185 * Math.cos(angle * Math.PI / 180);
                 const y = 225 + 185 * Math.sin(angle * Math.PI / 180);
-                
                 const div = document.createElement('div');
                 div.id = `l-${i}`;
                 div.className = 'letra';
@@ -140,49 +69,32 @@
         }
 
         function updateUI() {
-            // ¿Hemos terminado?
-            const pendientes = roscoData.filter(p => p.estado === 'pendiente');
-            if (pendientes.length === 0) {
+            if (roscoData.every(p => p.estado !== 'pendiente')) {
                 finalizar();
                 return;
             }
-
-            // Buscar la siguiente letra pendiente
             while (roscoData[currentIndex].estado !== 'pendiente') {
                 currentIndex = (currentIndex + 1) % roscoData.length;
             }
-
-            // Resaltar letra actual
             document.querySelectorAll('.letra').forEach(l => l.classList.remove('activa'));
             document.getElementById(`l-${currentIndex}`).classList.add('activa');
-            
             const p = roscoData[currentIndex];
             document.getElementById('pregunta').innerText = `${p.tipo} la ${p.letra}: ${p.pregunta}`;
         }
 
         function validar() {
-            const input = document.getElementById('respuesta');
-            const userRes = input.value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const userRes = document.getElementById('respuesta').value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const correcta = roscoData[currentIndex].respuesta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            
             const el = document.getElementById(`l-${currentIndex}`);
-
+            
             if (userRes === correcta) {
                 roscoData[currentIndex].estado = 'acierto';
                 el.classList.add('acierto');
-                aciertos++;
             } else {
                 roscoData[currentIndex].estado = 'fallo';
                 el.classList.add('fallo');
-                fallos++;
-                // Chivato en consola por si quieres ver la respuesta correcta
-                console.log(`Letra ${roscoData[currentIndex].letra} incorrecta. Era: ${roscoData[currentIndex].respuesta}`);
             }
-
-            document.getElementById('p-aciertos').innerText = aciertos;
-            document.getElementById('p-fallos').innerText = fallos;
-            input.value = "";
-            
+            document.getElementById('respuesta').value = "";
             currentIndex = (currentIndex + 1) % roscoData.length;
             updateUI();
         }
@@ -193,18 +105,12 @@
         }
 
         function finalizar() {
-            document.getElementById('panel').innerHTML = `
-                <h2 style="color:#f1c40f">¡FIN DE LA PARTIDA!</h2>
-                <p style="font-size:1.5em">Has conseguido ${aciertos} aciertos</p>
-                <button class="btn-paso" onclick="location.reload()">VOLVER A JUGAR</button>
-            `;
+            clearInterval(timerId);
+            const aciertos = roscoData.filter(p => p.estado === 'acierto').length;
+            document.getElementById('panel').innerHTML = `<h2>RESULTADO FINAL: ${aciertos} ACIERTOS</h2><button onclick="location.reload()">REINTENTAR</button>`;
         }
 
-        // Permitir pulsar Enter para responder
-        document.getElementById('respuesta').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') validar();
-        });
-
+        document.getElementById('respuesta').addEventListener('keypress', (e) => { if(e.key === 'Enter') validar(); });
         init();
     </script>
 </body>
