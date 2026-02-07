@@ -2,29 +2,31 @@ name: Actualizar Rosco con IA
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *' # Esto lo actualiza solo cada noche a las 00:00
+    - cron: '0 0 * * *'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions: # Forzamos permisos aquí también por seguridad
+      contents: write
     steps:
       - name: Checkout del código
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
-          persist-credentials: true
+          fetch-depth: 0
       
       - name: Configurar Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.10'
           
-      - name: Generar nuevas preguntas aleatorias
+      - name: Generar nuevas preguntas
         run: python generador.py
         
       - name: Guardar cambios en GitHub
         run: |
-          git config --global user.name 'IA-Generator'
-          git config --global user.email 'ia@github.com'
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add preguntas.json
-          git commit -m "IA: Generando rosco nuevo aleatorio" || echo "Sin cambios para subir"
-          git push
+          git commit -m "IA: Actualización automática del rosco" || echo "No hay cambios para subir"
+          git push origin main
