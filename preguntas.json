@@ -1,146 +1,146 @@
 [
   {
     "letra": "A",
-    "pregunta": "Cuerpo celeste que brilla con luz propia.",
-    "respuesta": "astro",
+    "pregunta": "Empieza por A: Objeto o concepto común.",
+    "respuesta": "aasa",
     "tipo": "CON LA"
   },
   {
     "letra": "B",
-    "pregunta": "Mamífero rumiante con cuernos.",
-    "respuesta": "buey",
+    "pregunta": "Empieza por B: Objeto o concepto común.",
+    "respuesta": "basa",
     "tipo": "CON LA"
   },
   {
     "letra": "C",
-    "pregunta": "Satélite natural de la Tierra.",
-    "respuesta": "luna",
+    "pregunta": "Animal doméstico que caza ratones.",
+    "respuesta": "gato",
     "tipo": "CONTIENE LA"
   },
   {
     "letra": "D",
-    "pregunta": "Objeto cúbico usado en juegos de azar.",
-    "respuesta": "dado",
-    "tipo": "CON LA"
+    "pregunta": "Día de la semana que sigue al domingo.",
+    "respuesta": "lunes",
+    "tipo": "CONTIENE LA"
   },
   {
     "letra": "E",
-    "pregunta": "Animal con trompa de gran tamaño.",
-    "respuesta": "elefante",
+    "pregunta": "Empieza por E: Objeto o concepto común.",
+    "respuesta": "easa",
     "tipo": "CON LA"
   },
   {
     "letra": "F",
-    "pregunta": "Luz que emite un vehículo por la noche.",
-    "respuesta": "faro",
+    "pregunta": "Empieza por F: Objeto o concepto común.",
+    "respuesta": "fasa",
     "tipo": "CON LA"
   },
   {
     "letra": "G",
-    "pregunta": "Animal doméstico que maúlla.",
-    "respuesta": "gato",
-    "tipo": "CON LA"
+    "pregunta": "Fruta roja de verano con pepitas negras.",
+    "respuesta": "sandia",
+    "tipo": "CONTIENE LA"
   },
   {
     "letra": "H",
-    "pregunta": "Masa de agua congelada.",
-    "respuesta": "hielo",
+    "pregunta": "Empieza por H: Objeto o concepto común.",
+    "respuesta": "hasa",
     "tipo": "CON LA"
   },
   {
     "letra": "I",
-    "pregunta": "Porción de tierra rodeada de agua.",
-    "respuesta": "isla",
+    "pregunta": "Empieza por I: Objeto o concepto común.",
+    "respuesta": "iasa",
     "tipo": "CON LA"
   },
   {
     "letra": "J",
-    "pregunta": "Líquido que se extrae de las frutas.",
-    "respuesta": "jugo",
+    "pregunta": "Empieza por J: Objeto o concepto común.",
+    "respuesta": "jasa",
     "tipo": "CON LA"
   },
   {
     "letra": "L",
-    "pregunta": "Rey de la selva.",
-    "respuesta": "leon",
+    "pregunta": "Empieza por L: Objeto o concepto común.",
+    "respuesta": "lasa",
     "tipo": "CON LA"
   },
   {
     "letra": "M",
-    "pregunta": "Capital de España.",
-    "respuesta": "madrid",
+    "pregunta": "Empieza por M: Objeto o concepto común.",
+    "respuesta": "masa",
     "tipo": "CON LA"
   },
   {
     "letra": "N",
-    "pregunta": "Color de la oscuridad total.",
-    "respuesta": "negro",
-    "tipo": "CON LA"
+    "pregunta": "Cuerpo celeste que brilla de noche.",
+    "respuesta": "estrella",
+    "tipo": "CONTIENE LA"
   },
   {
     "letra": "O",
-    "pregunta": "Animal que da lana.",
-    "respuesta": "oveja",
+    "pregunta": "Empieza por O: Objeto o concepto común.",
+    "respuesta": "oasa",
     "tipo": "CON LA"
   },
   {
     "letra": "P",
-    "pregunta": "Instrumento para escribir con tinta.",
-    "respuesta": "pluma",
+    "pregunta": "Empieza por P: Objeto o concepto común.",
+    "respuesta": "pasa",
     "tipo": "CON LA"
   },
   {
     "letra": "Q",
-    "pregunta": "Alimento sólido hecho de leche.",
-    "respuesta": "queso",
+    "pregunta": "Empieza por Q: Objeto o concepto común.",
+    "respuesta": "qasa",
     "tipo": "CON LA"
   },
   {
     "letra": "R",
-    "pregunta": "Color de la sangre.",
-    "respuesta": "rojo",
+    "pregunta": "Empieza por R: Objeto o concepto común.",
+    "respuesta": "rasa",
     "tipo": "CON LA"
   },
   {
     "letra": "S",
-    "pregunta": "Mueble para sentarse.",
-    "respuesta": "silla",
+    "pregunta": "Empieza por S: Objeto o concepto común.",
+    "respuesta": "sasa",
     "tipo": "CON LA"
   },
   {
     "letra": "T",
-    "pregunta": "Vehículo con cuatro ruedas.",
+    "pregunta": "Vehículo con cuatro ruedas para viajar.",
     "respuesta": "coche",
     "tipo": "CONTIENE LA"
   },
   {
     "letra": "U",
-    "pregunta": "Fruta que se come en racimos.",
-    "respuesta": "uva",
+    "pregunta": "Empieza por U: Objeto o concepto común.",
+    "respuesta": "uasa",
     "tipo": "CON LA"
   },
   {
     "letra": "V",
-    "pregunta": "Soplido fuerte del aire.",
-    "respuesta": "viento",
+    "pregunta": "Empieza por V: Objeto o concepto común.",
+    "respuesta": "vasa",
     "tipo": "CON LA"
   },
   {
     "letra": "X",
-    "pregunta": "Instrumento musical de láminas.",
-    "respuesta": "xilofono",
+    "pregunta": "Empieza por X: Objeto o concepto común.",
+    "respuesta": "xasa",
     "tipo": "CON LA"
   },
   {
     "letra": "Y",
-    "pregunta": "Embarcación de recreo lujosa.",
-    "respuesta": "yate",
-    "tipo": "CON LA"
+    "pregunta": "Color del sol y de los limones.",
+    "respuesta": "amarillo",
+    "tipo": "CONTIENE LA"
   },
   {
     "letra": "Z",
-    "pregunta": "Calzado que cubre el pie.",
-    "respuesta": "zapato",
+    "pregunta": "Empieza por Z: Objeto o concepto común.",
+    "respuesta": "zasa",
     "tipo": "CON LA"
   }
 ]
