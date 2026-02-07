@@ -81,34 +81,43 @@
         async function init() {
             const indicador = document.getElementById('origen-indicador');
             try {
-                // Intentamos cargar tu propio archivo preguntas.json del mismo repositorio
-                const res = await fetch('preguntas.json');
-                if(!res.ok) throw new Error("No se encontró preguntas.json");
+                // Forzamos que no use caché para ver cambios en el JSON al momento
+                const res = await fetch('preguntas.json?nocache=' + (new Date()).getTime());
+                if(!res.ok) throw new Error();
                 
                 const data = await res.json();
+                
+                // Si el JSON tiene preguntas, las usamos
                 if(data && data.length > 0) {
                     indicador.innerText = "Preguntas online";
                     indicador.className = "online";
-                    prepararPartida(data);
+                    prepararPartida(data, true); 
                 } else {
-                    throw new Error("JSON vacío");
+                    throw new Error();
                 }
             } catch (e) {
-                console.warn("Fallo carga online, usando emergencia:", e.message);
                 indicador.innerText = "Preguntas de emergencia";
                 indicador.className = "emergencia";
-                prepararPartida(bancoLocal);
+                prepararPartida(bancoLocal, false);
             }
         }
 
-        function prepararPartida(banco) {
+        function prepararPartida(bancoPrincipal, esOnline) {
             const letras = "ABCDEFGHIJLMNOPQRSTUVXYZ".split('');
+            
             roscoData = letras.map(l => {
-                const opciones = banco.filter(p => p.letra === l);
-                const elegida = opciones.length > 0 
-                    ? opciones[Math.floor(Math.random() * opciones.length)] 
-                    : bancoLocal.find(p => p.letra === l);
-                return { ...elegida, estado: 'pendiente' };
+                // Buscamos en el banco que nos ha llegado (el de internet)
+                const opciones = bancoPrincipal.filter(p => p.letra.toUpperCase() === l);
+                
+                if (opciones.length > 0) {
+                    // Si hay pregunta para esa letra, elegimos una al azar de las disponibles
+                    return { ...opciones[Math.floor(Math.random() * opciones.length)], estado: 'pendiente' };
+                } else {
+                    // SI NO HAY PREGUNTA EN TU JSON: 
+                    // Si estamos en modo online, buscamos en el banco local pero avisamos
+                    const localBackup = bancoLocal.find(p => p.letra === l);
+                    return { ...localBackup, pregunta: "(Local) " + localBackup.pregunta, estado: 'pendiente' };
+                }
             });
             renderRosco();
             updateUI();
