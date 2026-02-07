@@ -22,40 +22,36 @@ def generar_rosco_ia():
     letras = "ABCDEFGHIJLMNOPQRSTUVXYZ"
     rosco_final = []
 
-    # INSTRUCCIONES ESTRICTAS
-    prompt_base = """
-    Eres un experto en el diccionario de la lengua española (RAE). 
-    Genera una pregunta de Pasapalabra para la letra '{letra}'.
-    REGLA DE ORO: La respuesta debe ser una palabra en ESPAÑOL que cumpla la regla ortográfica.
-    PROHIBIDO: No pienses en inglés. (Ejemplo: No uses 'Elefante' para la H porque en inglés sea 'Elephant').
-    
-    Responde ÚNICAMENTE con este formato JSON:
-    {{"letra": "{letra}", "pregunta": "...", "respuesta": "...", "tipo": "CON LA o CONTIENE LA"}}
-    """
-
     for l in letras:
-        print(f"Solicitando letra {l}...")
-        intento = 0
-        exito = False
+        print(f"Buscando palabra para la {l}...")
+        exito_letra = False
+        intentos = 0
         
-        while intento < 3 and not exito:
+        while intentos < 5 and not exito_letra:
+            prompt = f"""
+            Eres un experto en español. Dame una pregunta de Pasapalabra para la letra '{l}'.
+            REGLA: La respuesta DEBE empezar por la letra '{l}' (usar 'CON LA').
+            Responde SOLO con este JSON:
+            {{"letra": "{l}", "pregunta": "...", "respuesta": "palabra_que_empiece_por_{l}", "tipo": "CON LA"}}
+            """
             try:
-                response = model.generate_content(prompt_base.format(letra=l))
+                response = model.generate_content(prompt)
                 texto = response.text.strip()
                 if "```json" in texto:
                     texto = texto.split("```json")[1].split("```")[0].strip()
                 
                 p = json.loads(texto)
+                # Forzamos a que el tipo sea 'CON LA' para evitar confusiones como 'Gato' para la C
+                p['tipo'] = "CON LA" 
                 
-                if validar(p['letra'], p['respuesta'], p['tipo']):
+                if validar(l, p['respuesta'], p['tipo']):
                     rosco_final.append(p)
-                    exito = True
-                    print(f"✅ Letra {l} correcta: {p['respuesta']}")
+                    exito_letra = True
+                    print(f"  ✅ {l} encontrada: {p['respuesta']}")
                 else:
-                    print(f"⚠️ Reintentando {l}... la IA sugirió '{p['respuesta']}' incorrectamente.")
-                    intento += 1
+                    intentos += 1
             except:
-                intento += 1
+                intentos += 1
 
     with open('preguntas.json', 'w', encoding='utf-8') as f:
         json.dump(rosco_final, f, ensure_ascii=False, indent=2)
