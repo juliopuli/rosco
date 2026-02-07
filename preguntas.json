@@ -1,1 +1,146 @@
-[]
+[
+  {
+    "letra": "A",
+    "pregunta": "Primera letra del abecedario.",
+    "respuesta": "a",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "B",
+    "pregunta": "Empieza por la letra B.",
+    "respuesta": "b",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "C",
+    "pregunta": "Empieza por la letra C.",
+    "respuesta": "c",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "D",
+    "pregunta": "Empieza por la letra D.",
+    "respuesta": "d",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "E",
+    "pregunta": "Empieza por la letra E.",
+    "respuesta": "e",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "F",
+    "pregunta": "Empieza por la letra F.",
+    "respuesta": "f",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "G",
+    "pregunta": "Empieza por la letra G.",
+    "respuesta": "g",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "H",
+    "pregunta": "Lo que pones en la bebida para enfriarla.",
+    "respuesta": "hielo",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "I",
+    "pregunta": "Empieza por la letra I.",
+    "respuesta": "i",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "J",
+    "pregunta": "Empieza por la letra J.",
+    "respuesta": "j",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "L",
+    "pregunta": "Empieza por la letra L.",
+    "respuesta": "l",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "M",
+    "pregunta": "Empieza por la letra M.",
+    "respuesta": "m",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "N",
+    "pregunta": "Empieza por la letra N.",
+    "respuesta": "n",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "O",
+    "pregunta": "Empieza por la letra O.",
+    "respuesta": "o",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "P",
+    "pregunta": "Empieza por la letra P.",
+    "respuesta": "p",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "Q",
+    "pregunta": "Empieza por la letra Q.",
+    "respuesta": "q",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "R",
+    "pregunta": "Empieza por la letra R.",
+    "respuesta": "r",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "S",
+    "pregunta": "Empieza por la letra S.",
+    "respuesta": "s",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "T",
+    "pregunta": "Empieza por la letra T.",
+    "respuesta": "t",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "U",
+    "pregunta": "Empieza por la letra U.",
+    "respuesta": "u",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "V",
+    "pregunta": "Empieza por la letra V.",
+    "respuesta": "v",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "X",
+    "pregunta": "Empieza por la letra X.",
+    "respuesta": "x",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "Y",
+    "pregunta": "Empieza por la letra Y.",
+    "respuesta": "y",
+    "tipo": "CON LA"
+  },
+  {
+    "letra": "Z",
+    "pregunta": "Empieza por la letra Z.",
+    "respuesta": "z",
+    "tipo": "CON LA"
+  }
+]
