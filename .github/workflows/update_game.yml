@@ -1,0 +1,26 @@
+name: Actualizar Rosco con IA
+on:
+  workflow_dispatch: # Esto permite darle a un botón para actualizar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v2
+      
+      - name: Configurar Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+          
+      - name: Generar nuevas preguntas
+        run: python generador.py
+        
+      - name: Guardar cambios en GitHub
+        run: |
+          git config --global user.name 'IA-Generator'
+          git config --global user.email 'ia@github.com'
+          git add preguntas.json
+          git commit -m "IA: Rosco generado automáticamente"
+          git push
