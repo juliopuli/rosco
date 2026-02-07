@@ -2,48 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra IA Automático</title>
+    <title>Pasapalabra IA - Validado</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #050510; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        #origen-indicador { position: absolute; top: 15px; right: 15px; padding: 6px 18px; border-radius: 20px; font-size: 0.85em; font-weight: bold; background: #1f4068; border: 1px solid #00f2ff; color: #00f2ff; box-shadow: 0 0 10px #00f2ff; }
+        #origen-indicador { position: absolute; top: 15px; right: 15px; padding: 6px 18px; border-radius: 20px; font-size: 0.85em; font-weight: bold; background: #16213e; border: 1px solid #00f2ff; color: #00f2ff; }
         #rosco-container { position: relative; width: 450px; height: 450px; margin: 40px auto; }
         .letra { position: absolute; width: 35px; height: 35px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #fff; transition: 0.3s; transform: translate(-50%, -50%); }
         .acierto { background: #2ecc71 !important; box-shadow: 0 0 15px #2ecc71; }
         .fallo { background: #e74c3c !important; box-shadow: 0 0 15px #e74c3c; }
         .activa { border: 4px solid #f1c40f !important; scale: 1.3; z-index: 10; box-shadow: 0 0 20px #f1c40f; }
         #panel { background: #16213e; padding: 30px; border-radius: 20px; width: 90%; max-width: 550px; text-align: center; border: 1px solid #1f4068; }
-        input { padding: 12px; width: 80%; border-radius: 8px; border: none; font-size: 18px; margin: 15px 0; text-align: center; outline: none; }
-        button { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; text-transform: uppercase; }
+        input { padding: 12px; width: 80%; border-radius: 8px; font-size: 18px; margin: 15px 0; text-align: center; }
+        button { padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; border: none; }
         .btn-enviar { background: #2ecc71; color: white; }
         .btn-paso { background: #f1c40f; color: #000; }
-        #pregunta { font-size: 1.25em; min-height: 100px; display: flex; align-items: center; justify-content: center; }
+        #pregunta { font-size: 1.2em; min-height: 80px; margin: 20px 0; }
     </style>
 </head>
 <body>
-    <div id="origen-indicador">🤖 IA GENERATIVA ACTIVA</div>
-    <h1>ROSC-O-MATIC</h1>
+    <div id="origen-indicador">🤖 IA VALIDADA</div>
+    <h1>PASAPALABRA PRO</h1>
     <div id="rosco-container"></div>
     <div id="panel">
-        <div id="pregunta">Cargando partida...</div>
-        <input type="text" id="respuesta" placeholder="Tu respuesta..." autocomplete="off">
+        <div id="pregunta">Cargando...</div>
+        <input type="text" id="respuesta" placeholder="Escribe aquí..." autocomplete="off">
         <br>
-        <button class="btn-enviar" onclick="validar()">RESPONDER</button>
+        <button class="btn-enviar" onclick="validar()">ENVIAR</button>
         <button class="btn-paso" onclick="pasapalabra()">PASAPALABRA</button>
     </div>
 
     <script>
+        const respaldo = [
+            {letra: 'H', pregunta: 'Animal con trompa que vive en la selva.', respuesta: 'elefante', tipo: 'CONTIENE LA'},
+            {letra: 'K', pregunta: 'Fruta de piel vellosa y color verde.', respuesta: 'kiwi', tipo: 'CON LA'}
+        ];
+
         let roscoData = [];
         let currentIndex = 0;
 
         async function init() {
             try {
-                // Añadimos un timestamp para evitar que el navegador guarde la versión vieja
                 const res = await fetch('preguntas.json?t=' + Date.now());
-                roscoData = await res.json();
+                const dataIA = await res.json();
+                
+                const letras = "ABCDEFGHIJLMNOPQRSTUVXYZ".split('');
+                roscoData = letras.map(l => {
+                    // Busca en la IA, si no está o está mal, busca en respaldo
+                    return dataIA.find(p => p.letra === l) || 
+                           respaldo.find(p => p.letra === l) || 
+                           {letra: l, pregunta: "Pregunta en mantenimiento...", respuesta: "error", tipo: "CON LA"};
+                }).map(p => ({...p, estado: 'pendiente'}));
+
                 renderRosco();
                 updateUI();
             } catch (e) {
-                document.getElementById('pregunta').innerText = "Error al conectar con la IA.";
+                document.getElementById('pregunta').innerText = "Error cargando datos.";
             }
         }
 
@@ -65,11 +78,12 @@
         }
 
         function updateUI() {
-            if (roscoData.every(p => p.estado && p.estado !== 'pendiente')) {
-                document.getElementById('panel').innerHTML = "<h2>¡PARTIDA FINALIZADA!</h2><button onclick='location.reload()'>REINTENTAR</button>";
+            if (roscoData.every(p => p.estado !== 'pendiente')) {
+                const aciertos = roscoData.filter(p => p.estado === 'acierto').length;
+                document.getElementById('panel').innerHTML = `<h2>FIN: ${aciertos} ACIERTOS</h2><button onclick="location.reload()">NUEVA PARTIDA</button>`;
                 return;
             }
-            while (roscoData[currentIndex].estado && roscoData[currentIndex].estado !== 'pendiente') {
+            while (roscoData[currentIndex].estado !== 'pendiente') {
                 currentIndex = (currentIndex + 1) % roscoData.length;
             }
             document.querySelectorAll('.letra').forEach(l => l.classList.remove('activa'));
@@ -79,12 +93,11 @@
         }
 
         function validar() {
-            const userRes = document.getElementById('respuesta').value.toLowerCase().trim();
-            if (!userRes) return;
+            const userRes = document.getElementById('respuesta').value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const correcta = roscoData[currentIndex].respuesta.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const intento = userRes.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const el = document.getElementById(`l-${currentIndex}`);
-            if (intento === correcta) {
+            
+            if (userRes === correcta) {
                 roscoData[currentIndex].estado = 'acierto';
                 el.classList.add('acierto');
             } else {
