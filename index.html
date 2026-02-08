@@ -3,131 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pasapalabra Responsive</title>
+    <title>Pasapalabra Online - Mecánica Real</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         :root { --blue: #0044cc; --green: #2ecc71; --red: #e74c3c; --yellow: #f1c40f; --dark: #050510; --card: #16213e; }
-        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        #status-bar { position: absolute; top:0; width:100%; text-align:center; font-size:10px; padding:4px; color:var(--yellow); z-index:1000; background: rgba(0,0,0,0.3); }
 
-        body { 
-            background: var(--dark); 
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh;
-            overflow: hidden; /* Evita scroll molesto en móvil */
-        }
-
-        /* Menú Responsivo */
-        .card { 
-            background: var(--card); 
-            padding: 20px; 
-            border-radius: 20px; 
-            text-align: center; 
-            width: 90%; 
-            max-width: 350px; 
-            margin: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-        }
-
-        input[type="text"] { 
-            padding: 12px; 
-            border-radius: 8px; 
-            width: 100%; 
-            margin: 10px 0; 
-            text-align: center; 
-            font-size: 16px; /* Evita zoom automático en iOS */
-            border: 2px solid #1f4068;
-            background: #0a192f;
-            color: white;
-        }
-
+        .card { background: var(--card); padding: 25px; border-radius: 20px; text-align: center; width: 90%; max-width: 350px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input[type="text"] { padding: 12px; border-radius: 8px; width: 100%; margin: 10px 0; text-align: center; font-size: 16px; border: 2px solid #1f4068; background: #0a192f; color: white; }
         button { padding: 12px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; width: 100%; margin: 5px 0; text-transform: uppercase; }
         .btn-main { background: var(--green); color: white; }
         .btn-sec { background: var(--blue); color: white; }
 
-        /* Contenedor de Juego */
         #juego { display: none; width: 100%; height: 100%; position: relative; }
 
-        /* Roscos Adaptables */
-        .rosco-box { 
-            position: absolute; 
-            transition: all 0.6s ease-in-out; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
+        .rosco-box { position: absolute; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; }
+        
+        /* Ajuste Responsive */
+        .turno-activo { top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.9); z-index: 5; }
+        .turno-espera { top: 20px; left: 20px; transform: scale(0.35); transform-origin: top left; opacity: 0.5; }
 
-        /* TAMAÑO PARA MÓVIL (Por defecto) */
-        .turno-activo {
-            top: 35%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            z-index: 5;
-        }
-
-        .turno-espera {
-            top: 10px;
-            left: 10px;
-            transform: scale(0.35);
-            transform-origin: top left;
-            opacity: 0.6;
+        @media (min-width: 768px) {
+            .turno-activo { transform: translate(-50%, -50%) scale(1.3); top: 40%; }
+            .turno-espera { transform: scale(0.5); top: 30px; left: 30px; }
         }
 
         .rosco-container { position: relative; width: 300px; height: 300px; }
-        
-        .letra { 
-            position: absolute; 
-            width: 24px; height: 24px; 
-            background: var(--blue); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-            border: 1px solid white; 
-            transform: translate(-50%, -50%); 
-            font-size: 10px; 
-        }
-
-        .activa { border: 2px solid var(--yellow); scale: 1.2; box-shadow: 0 0 10px var(--yellow); }
+        .letra { position: absolute; width: 24px; height: 24px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid white; transform: translate(-50%, -50%); font-size: 10px; }
+        .activa { border: 2px solid var(--yellow); scale: 1.3; box-shadow: 0 0 15px var(--yellow); z-index: 10; }
         .acierto { background: var(--green) !important; }
         .fallo { background: var(--red) !important; }
 
-        /* Panel de Control Inferior */
-        #panel-control {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: var(--card);
-            padding: 15px;
-            border-radius: 20px 20px 0 0;
-            text-align: center;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-        }
+        #panel-control { position: absolute; bottom: 0; width: 100%; background: var(--card); padding: 15px; border-radius: 20px 20px 0 0; text-align: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        @media (min-width: 768px) { #panel-control { width: 500px; left: 50%; transform: translateX(-50%); bottom: 20px; border-radius: 20px; } }
 
-        #pregunta-txt { font-size: 1.1em; margin: 10px 0; min-height: 50px; }
-
-        /* Ajustes para pantallas más grandes (Desktop) */
-        @media (min-width: 768px) {
-            .turno-activo { transform: translate(-50%, -50%) scale(1.4); top: 40%; }
-            .turno-espera { transform: scale(0.5); top: 30px; left: 30px; }
-            #panel-control { width: 500px; left: 50%; transform: translateX(-50%); bottom: 20px; border-radius: 20px; }
-        }
-
+        #pregunta-txt { font-size: 1.1em; margin: 10px 0; min-height: 50px; line-height: 1.3; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="status-bar" style="position: absolute; top:0; width:100%; text-align:center; font-size:10px; padding:2px; color:var(--yellow); z-index:1000;">Conectando...</div>
+    <div id="status-bar">CONECTANDO...</div>
 
     <div id="menu-inicial" class="card">
-        <h2 style="margin-top:0">PASAPALABRA</h2>
+        <h2>PASAPALABRA</h2>
         <button class="btn-main" onclick="configurarPartida('host')">CREAR PARTIDA</button>
         <div style="margin:10px 0; opacity:0.5">o</div>
         <input type="text" id="input-unirse" placeholder="CÓDIGO AQUÍ" maxlength="5">
@@ -136,37 +58,29 @@
 
     <div id="esperando" class="card hidden">
         <h3>CÓDIGO: <span id="display-codigo" style="color:var(--yellow)">---</span></h3>
-        <p style="font-size: 0.8em">Envía el código a tu rival</p>
+        <p>Esperando al rival...</p>
     </div>
 
     <div id="juego">
-        <div id="box-j1" class="rosco-box">
-            <div id="rosco1" class="rosco-container"></div>
-        </div>
-
-        <div id="box-j2" class="rosco-box">
-            <div id="rosco2" class="rosco-container"></div>
-        </div>
+        <div id="box-j1" class="rosco-box"><div id="rosco1" class="rosco-container"></div></div>
+        <div id="box-j2" class="rosco-box"><div id="rosco2" class="rosco-container"></div></div>
 
         <div id="panel-control">
-            <div id="badge-turno" style="font-size:0.7em; font-weight:bold; margin-bottom:5px;">CARGANDO...</div>
-            <div id="pregunta-txt">Esperando...</div>
+            <div id="badge-turno" style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">COMPROBANDO TURNO...</div>
+            <div id="pregunta-txt">Cargando pregunta...</div>
             
             <div id="inputs-zona">
                 <input type="text" id="ans" placeholder="Tu respuesta..." autocomplete="off" spellcheck="false">
-                <div style="display: flex; gap: 5px;">
+                <div style="display: flex; gap: 8px;">
                     <button class="btn-main" onclick="responder('ok')" style="flex:2">ENVIAR</button>
                     <button class="btn-sec" onclick="responder('paso')" style="background:var(--yellow); color:black; flex:1">PASO</button>
                 </div>
             </div>
-            <div id="msg-alerta" style="font-size:0.8em; margin-top:5px; height:15px; color:var(--yellow)"></div>
+            <div id="msg-alerta" style="font-size:0.8em; margin-top:8px; min-height:1.2em; color:var(--yellow)"></div>
         </div>
     </div>
 
     <script>
-        // ... (Aquí va la misma lógica JavaScript del mensaje anterior) ...
-        // He incluido los mismos nombres de variables para que solo tengas que copiar y pegar.
-        
         let client, salaID, miRol, preguntas = [];
         let miTurno = false, idxJ1 = 0, idxJ2 = 0, estJ1 = [], estJ2 = [];
 
@@ -206,6 +120,7 @@
                 document.getElementById('esperando').classList.remove('hidden');
             } else {
                 salaID = document.getElementById('input-unirse').value.trim().toUpperCase();
+                if(!salaID) return alert("Pon un código");
             }
             conectar();
         }
@@ -223,6 +138,7 @@
                     client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'JOIN'}));
                 }
             });
+
             client.on('message', (topic, message) => {
                 const d = JSON.parse(message.toString());
                 if(d.tipo === 'JOIN' && miRol === 'host') {
@@ -236,9 +152,12 @@
                     miTurno = false; empezar();
                 }
                 if(d.tipo === 'ACCION') {
-                    if(d.player === 'host') estJ1[d.idx] = d.res; else estJ2[d.idx] = d.res;
-                    if(d.res !== 'acierto' && d.player !== miRol) miTurno = true;
-                    if(d.res === 'fallo') document.getElementById('msg-alerta').innerText = "ERA: " + d.target.toUpperCase();
+                    if(d.player === 'host') { estJ1[d.idx] = d.res; } else { estJ2[d.idx] = d.res; }
+                    
+                    if(d.player !== miRol) {
+                        if(d.res !== 'acierto') miTurno = true;
+                        if(d.res === 'fallo') document.getElementById('msg-alerta').innerText = "RIVAL FALLÓ: ERA " + d.target.toUpperCase();
+                    }
                     dibujar();
                 }
             });
@@ -252,21 +171,26 @@
         }
 
         function dibujar() {
-            const j1Turno = (miRol === 'host' && miTurno) || (miRol === 'guest' && !miTurno);
-            document.getElementById('box-j1').className = j1Turno ? "rosco-box turno-activo" : "rosco-box turno-espera";
-            document.getElementById('box-j2').className = !j1Turno ? "rosco-box turno-activo" : "rosco-box turno-espera";
+            const j1EsActivo = (miRol === 'host' && miTurno) || (miRol === 'guest' && !miTurno);
+            document.getElementById('box-j1').className = j1EsActivo ? "rosco-box turno-activo" : "rosco-box turno-espera";
+            document.getElementById('box-j2').className = !j1EsActivo ? "rosco-box turno-activo" : "rosco-box turno-espera";
             
-            document.getElementById('badge-turno').innerText = miTurno ? "TU TURNO" : "ESPERANDO RIVAL...";
-            document.getElementById('badge-turno').style.color = miTurno ? "var(--green)" : "var(--red)";
+            const badge = document.getElementById('badge-turno');
+            badge.innerText = miTurno ? "TU TURNO" : "TURNO DEL RIVAL";
+            badge.style.color = miTurno ? "var(--green)" : "var(--red)";
 
-            renderRosco('rosco1', estJ1, idxJ1, j1Turno);
-            renderRosco('rosco2', estJ2, idxJ2, !j1Turno);
+            renderRosco('rosco1', estJ1, idxJ1, j1EsActivo);
+            renderRosco('rosco2', estJ2, idxJ2, !j1EsActivo);
 
-            const p = preguntas[miRol === 'host' ? idxJ1 : idxJ2];
-            if(miTurno) document.getElementById('pregunta-txt').innerText = p.tipo + ": " + p.pregunta;
-            else document.getElementById('pregunta-txt').innerText = "Rival jugando...";
-            
-            document.getElementById('inputs-zona').style.visibility = miTurno ? "visible" : "hidden";
+            if(miTurno) {
+                const p = preguntas[miRol === 'host' ? idxJ1 : idxJ2];
+                document.getElementById('pregunta-txt').innerText = p.tipo + ": " + p.pregunta;
+                document.getElementById('inputs-zona').style.visibility = "visible";
+                document.getElementById('ans').focus();
+            } else {
+                document.getElementById('pregunta-txt').innerText = "El rival está pensando...";
+                document.getElementById('inputs-zona').style.visibility = "hidden";
+            }
         }
 
         function renderRosco(id, estados, activo, esSuTurno) {
@@ -285,26 +209,59 @@
 
         function responder(tipo) {
             if(!miTurno) return;
-            const pIdx = (miRol === 'host' ? idxJ1 : idxJ2);
-            let res = (tipo === 'paso') ? 'pendiente' : 'fallo';
+            let pIdx = (miRol === 'host' ? idxJ1 : idxJ2);
+            let res = 'pendiente';
             const target = preguntas[pIdx].respuesta;
 
             if(tipo === 'ok') {
-                const u = document.getElementById('ans').value.toLowerCase().trim();
-                if(u === target.toLowerCase()) res = 'acierto';
-                else miTurno = false;
-            } else { miTurno = false; }
-
-            if(miRol === 'host') estJ1[pIdx] = res; else estJ2[pIdx] = res;
-            client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'ACCION', player:miRol, idx:pIdx, res:res, target:target}));
-            
-            if(res !== 'pendiente') {
-                if(miRol==='host') do{idxJ1=(idxJ1+1)%24}while(estJ1[idxJ1]!=='pendiente');
-                else do{idxJ2=(idxJ2+1)%24}while(estJ2[idxJ2]!=='pendiente');
+                const u = document.getElementById('ans').value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const t = target.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                if(u === t) {
+                    res = 'acierto';
+                    document.getElementById('msg-alerta').innerText = "¡CORRECTO!";
+                } else {
+                    res = 'fallo';
+                    miTurno = false;
+                    document.getElementById('msg-alerta').innerText = "ERROR: ERA " + target.toUpperCase();
+                }
+            } else {
+                // PASAPALABRA
+                res = 'pendiente';
+                miTurno = false;
+                document.getElementById('msg-alerta').innerText = "HAS PASADO PALABRA";
             }
+
+            // Guardar estado
+            if(miRol === 'host') estJ1[pIdx] = res; else estJ2[pIdx] = res;
+
+            // ENVIAR ACCIÓN
+            client.publish("pasa/sala/" + salaID, JSON.stringify({
+                tipo: 'ACCION', player: miRol, idx: pIdx, res: res, target: target
+            }));
+            
+            // AVANZAR SIEMPRE EL ÍNDICE (La clave de tu petición)
+            avanzarIndiceLocal();
+
             document.getElementById('ans').value = "";
             dibujar();
         }
+
+        function avanzarIndiceLocal() {
+            if(miRol === 'host') {
+                // Buscamos la siguiente 'pendiente' empezando desde la actual + 1
+                let original = idxJ1;
+                do {
+                    idxJ1 = (idxJ1 + 1) % 24;
+                } while(estJ1[idxJ1] !== 'pendiente' && idxJ1 !== original);
+            } else {
+                let original = idxJ2;
+                do {
+                    idxJ2 = (idxJ2 + 1) % 24;
+                } while(estJ2[idxJ2] !== 'pendiente' && idxJ2 !== original);
+            }
+        }
+
+        document.getElementById('ans').addEventListener('keypress', (e) => { if(e.key==='Enter') responder('ok'); });
     </script>
 </body>
 </html>
