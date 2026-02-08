@@ -1,146 +1,146 @@
 [
   {
     "letra": "A",
-    "pregunta": "Empieza por A: Objeto o concepto común.",
-    "respuesta": "aasa",
-    "tipo": "CON LA"
+    "pregunta": "Nave que viaja por el espacio.",
+    "respuesta": "astro",
+    "tipo": "CONTIENE LA"
   },
   {
     "letra": "B",
-    "pregunta": "Empieza por B: Objeto o concepto común.",
-    "respuesta": "basa",
+    "pregunta": "Objeto que sirve para iluminar.",
+    "respuesta": "bombilla",
     "tipo": "CON LA"
   },
   {
     "letra": "C",
-    "pregunta": "Animal doméstico que caza ratones.",
-    "respuesta": "gato",
-    "tipo": "CONTIENE LA"
+    "pregunta": "Lugar donde se proyectan películas.",
+    "respuesta": "cine",
+    "tipo": "CON LA"
   },
   {
     "letra": "D",
-    "pregunta": "Día de la semana que sigue al domingo.",
-    "respuesta": "lunes",
-    "tipo": "CONTIENE LA"
+    "pregunta": "Objeto que se lanza para jugar.",
+    "respuesta": "dado",
+    "tipo": "CON LA"
   },
   {
     "letra": "E",
-    "pregunta": "Empieza por E: Objeto o concepto común.",
-    "respuesta": "easa",
+    "pregunta": "Empieza por E.",
+    "respuesta": "ezul",
     "tipo": "CON LA"
   },
   {
     "letra": "F",
-    "pregunta": "Empieza por F: Objeto o concepto común.",
-    "respuesta": "fasa",
+    "pregunta": "Empieza por F.",
+    "respuesta": "fzul",
     "tipo": "CON LA"
   },
   {
     "letra": "G",
-    "pregunta": "Fruta roja de verano con pepitas negras.",
-    "respuesta": "sandia",
-    "tipo": "CONTIENE LA"
+    "pregunta": "Empieza por G.",
+    "respuesta": "gzul",
+    "tipo": "CON LA"
   },
   {
     "letra": "H",
-    "pregunta": "Empieza por H: Objeto o concepto común.",
-    "respuesta": "hasa",
+    "pregunta": "Empieza por H.",
+    "respuesta": "hzul",
     "tipo": "CON LA"
   },
   {
     "letra": "I",
-    "pregunta": "Empieza por I: Objeto o concepto común.",
-    "respuesta": "iasa",
+    "pregunta": "Empieza por I.",
+    "respuesta": "izul",
     "tipo": "CON LA"
   },
   {
     "letra": "J",
-    "pregunta": "Empieza por J: Objeto o concepto común.",
-    "respuesta": "jasa",
+    "pregunta": "Empieza por J.",
+    "respuesta": "jzul",
     "tipo": "CON LA"
   },
   {
     "letra": "L",
-    "pregunta": "Empieza por L: Objeto o concepto común.",
-    "respuesta": "lasa",
+    "pregunta": "Empieza por L.",
+    "respuesta": "lzul",
     "tipo": "CON LA"
   },
   {
     "letra": "M",
-    "pregunta": "Empieza por M: Objeto o concepto común.",
-    "respuesta": "masa",
+    "pregunta": "Empieza por M.",
+    "respuesta": "mzul",
     "tipo": "CON LA"
   },
   {
     "letra": "N",
-    "pregunta": "Cuerpo celeste que brilla de noche.",
-    "respuesta": "estrella",
-    "tipo": "CONTIENE LA"
+    "pregunta": "Empieza por N.",
+    "respuesta": "nzul",
+    "tipo": "CON LA"
   },
   {
     "letra": "O",
-    "pregunta": "Empieza por O: Objeto o concepto común.",
-    "respuesta": "oasa",
+    "pregunta": "Empieza por O.",
+    "respuesta": "ozul",
     "tipo": "CON LA"
   },
   {
     "letra": "P",
-    "pregunta": "Empieza por P: Objeto o concepto común.",
-    "respuesta": "pasa",
+    "pregunta": "Empieza por P.",
+    "respuesta": "pzul",
     "tipo": "CON LA"
   },
   {
     "letra": "Q",
-    "pregunta": "Empieza por Q: Objeto o concepto común.",
-    "respuesta": "qasa",
+    "pregunta": "Empieza por Q.",
+    "respuesta": "qzul",
     "tipo": "CON LA"
   },
   {
     "letra": "R",
-    "pregunta": "Empieza por R: Objeto o concepto común.",
-    "respuesta": "rasa",
+    "pregunta": "Empieza por R.",
+    "respuesta": "rzul",
     "tipo": "CON LA"
   },
   {
     "letra": "S",
-    "pregunta": "Empieza por S: Objeto o concepto común.",
-    "respuesta": "sasa",
+    "pregunta": "Empieza por S.",
+    "respuesta": "szul",
     "tipo": "CON LA"
   },
   {
     "letra": "T",
-    "pregunta": "Vehículo con cuatro ruedas para viajar.",
-    "respuesta": "coche",
-    "tipo": "CONTIENE LA"
+    "pregunta": "Bebida caliente hecha con hojas de planta.",
+    "respuesta": "te",
+    "tipo": "CON LA"
   },
   {
     "letra": "U",
-    "pregunta": "Empieza por U: Objeto o concepto común.",
-    "respuesta": "uasa",
+    "pregunta": "Empieza por U.",
+    "respuesta": "uzul",
     "tipo": "CON LA"
   },
   {
     "letra": "V",
-    "pregunta": "Empieza por V: Objeto o concepto común.",
-    "respuesta": "vasa",
+    "pregunta": "Empieza por V.",
+    "respuesta": "vzul",
     "tipo": "CON LA"
   },
   {
     "letra": "X",
-    "pregunta": "Empieza por X: Objeto o concepto común.",
-    "respuesta": "xasa",
-    "tipo": "CON LA"
-  },
-  {
-    "letra": "Y",
-    "pregunta": "Color del sol y de los limones.",
-    "respuesta": "amarillo",
+    "pregunta": "Prueba o evaluación de conocimientos.",
+    "respuesta": "examen",
     "tipo": "CONTIENE LA"
   },
   {
+    "letra": "Y",
+    "pregunta": "Parte central de un huevo.",
+    "respuesta": "yema",
+    "tipo": "CON LA"
+  },
+  {
     "letra": "Z",
-    "pregunta": "Empieza por Z: Objeto o concepto común.",
-    "respuesta": "zasa",
+    "pregunta": "Empieza por Z.",
+    "respuesta": "zzul",
     "tipo": "CON LA"
   }
 ]
