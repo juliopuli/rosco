@@ -2,76 +2,108 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra Online - Conexión Garantizada</title>
+    <title>Pasapalabra Online - Preguntas Mejoradas</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         :root { --blue: #0044cc; --green: #2ecc71; --red: #e74c3c; --yellow: #f1c40f; --dark: #050510; --card: #16213e; }
-        body { background: var(--dark); color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        
+        #status-bar { font-size: 0.8em; color: var(--yellow); margin-bottom: 10px; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; }
+
         .card { background: var(--card); padding: 30px; border-radius: 20px; text-align: center; width: 100%; max-width: 400px; margin-top: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { padding: 12px; border-radius: 8px; width: 80%; margin: 10px 0; text-align: center; font-size: 1.1em; border: none; outline: none; }
-        button { padding: 12px 20px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; margin: 5px; }
+        input { padding: 12px; border-radius: 8px; width: 80%; margin: 10px 0; text-align: center; font-size: 1.1em; border: none; outline: none; background: #0a192f; color: white; border: 2px solid #1f4068; }
+        
+        button { padding: 12px 20px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; margin: 5px; transition: 0.3s; text-transform: uppercase; }
         .btn-main { background: var(--green); color: white; width: 100%; }
         .btn-sec { background: var(--blue); color: white; width: 100%; }
-        #status-bar { font-size: 0.8em; color: var(--yellow); margin-bottom: 10px; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; }
-        
-        /* Juego */
-        #juego { display: none; width: 100%; max-width: 1100px; justify-content: space-around; margin-top: 20px; flex-wrap: wrap; }
+
+        #juego { display: none; width: 100%; max-width: 1200px; justify-content: space-around; margin-top: 20px; flex-wrap: wrap; }
         .rosco-side { width: 340px; text-align: center; }
         .rosco-container { position: relative; width: 300px; height: 300px; margin: 20px auto; }
-        .letra { position: absolute; width: 28px; height: 28px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid white; transform: translate(-50%, -50%); font-size: 12px; }
+        
+        .letra { position: absolute; width: 28px; height: 28px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid white; transform: translate(-50%, -50%); font-size: 12px; transition: 0.3s; }
         .activa { border: 3px solid var(--yellow); scale: 1.3; box-shadow: 0 0 15px var(--yellow); z-index: 10; }
-        .acierto { background: var(--green) !important; }
-        .fallo { background: var(--red) !important; }
-        #panel-central { width: 380px; background: var(--card); padding: 20px; border-radius: 15px; text-align: center; }
+        .acierto { background: var(--green) !important; box-shadow: 0 0 10px var(--green); }
+        .fallo { background: var(--red) !important; box-shadow: 0 0 10px var(--red); }
+
+        #panel-central { width: 400px; background: var(--card); padding: 20px; border-radius: 15px; text-align: center; border: 2px solid #1f4068; }
+        #msg-alerta { margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; min-height: 20px; }
+        .alerta-error { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid var(--red); }
+        .alerta-exito { background: rgba(46, 204, 113, 0.2); color: #b8e994; border: 1px solid var(--green); }
+        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="status-bar">⚪ Iniciando sistema...</div>
+    <div id="status-bar">⚪ Cargando sistema...</div>
 
     <div id="menu-inicial" class="card">
         <h1>PASAPALABRA</h1>
         <button class="btn-main" onclick="configurarPartida('host')">GENERAR CÓDIGO</button>
-        <p>— o —</p>
-        <input type="text" id="input-unirse" placeholder="CÓDIGO AQUÍ">
+        <p style="margin:15px 0; opacity:0.5">— o —</p>
+        <input type="text" id="input-unirse" placeholder="PEGA EL CÓDIGO">
         <button class="btn-sec" onclick="configurarPartida('guest')">UNIRSE A PARTIDA</button>
     </div>
 
     <div id="esperando" class="card hidden">
-        <h2>Código: <span id="display-codigo" style="color:var(--yellow)">---</span></h2>
-        <p>Esperando a que tu amigo se una...</p>
+        <h2>Código: <span id="display-codigo" style="color:var(--yellow); letter-spacing:2px">---</span></h2>
+        <p>Comparte este código con tu amigo para empezar.</p>
     </div>
 
     <div id="juego">
-        <div class="rosco-side"><h3>JUGADOR 1</h3><div id="rosco1" class="rosco-container"></div></div>
+        <div class="rosco-side"><h3 id="label-j1">JUGADOR 1</h3><div id="rosco1" class="rosco-container"></div></div>
+        
         <div id="panel-central">
-            <div id="turno-tag" style="padding:8px; border-radius:10px; margin-bottom:15px; font-weight:bold">CONECTANDO...</div>
-            <h4 id="pregunta-txt">Cargando...</h4>
-            <input type="text" id="ans" placeholder="Responde aquí..." autocomplete="off">
+            <div id="turno-tag" style="padding:10px; border-radius:10px; margin-bottom:15px; font-weight:bold; letter-spacing:1px">CONECTANDO...</div>
+            <h4 id="pregunta-txt" style="font-size: 1.2em; min-height: 60px;">Esperando preguntas...</h4>
+            <input type="text" id="ans" placeholder="Escribe tu respuesta..." autocomplete="off">
             <br>
-            <button class="btn-main" onclick="responder('ok')">ENVIAR</button>
+            <button class="btn-main" onclick="responder('ok')">RESPONDER</button>
             <button class="btn-sec" onclick="responder('paso')" style="background:var(--yellow); color:black">PASAPALABRA</button>
+            <div id="msg-alerta"></div>
         </div>
-        <div class="rosco-side"><h3>JUGADOR 2</h3><div id="rosco2" class="rosco-container"></div></div>
+
+        <div class="rosco-side"><h3 id="label-j2">JUGADOR 2</h3><div id="rosco2" class="rosco-container"></div></div>
     </div>
 
     <script>
         let client, salaID, miRol, preguntas = [];
         let miTurno = false, idxJ1 = 0, idxJ2 = 0, estJ1 = [], estJ2 = [];
 
-        const backup = [
-            {letra:"A", pregunta:"Con la A: Vehículo volador.", respuesta:"avion"},
-            {letra:"B", pregunta:"Con la B: Animal marino enorme.", respuesta:"ballena"},
-            {letra:"C", pregunta:"Con la C: Animal que ladra.", respuesta:"perro"}, // Usaremos perro para testear el corrector
-            {letra:"D", pregunta:"Con la D: Cubo de juego.", respuesta:"dado"},
-            {letra:"E", pregunta:"Con la E: Animal con trompa.", respuesta:"elefante"}
-            // He acortado el backup para el ejemplo, pero puedes rellenar las 24
+        // BANCO DE PREGUNTAS MEJORADO
+        const bancoOficial = [
+            {letra:"A", tipo:"CON LA A", pregunta:"Relativo a las abejas o a su industria.", respuesta:"apicola"},
+            {letra:"B", tipo:"CON LA B", pregunta:"Instrumento para determinar la dirección del viento.", respuesta:"veleta"}, // Se cambió para ser real
+            {letra:"B", tipo:"CON LA B", pregunta:"Persona que tiene por oficio fabricar o vender botas.", respuesta:"botero"},
+            {letra:"C", tipo:"CON LA C", pregunta:"Vehículo automóvil de gran tamaño para transporte de mercancías.", respuesta:"camion"},
+            {letra:"D", tipo:"CON LA D", pregunta:"Persona que se dedica profesionalmente al arte de la danza.", respuesta:"danzante"},
+            {letra:"E", tipo:"CON LA E", pregunta:"Lugar donde se guardan o crían elefantes.", respuesta:"elefanteria"},
+            {letra:"F", tipo:"CON LA F", pregunta:"Máquina para picar o moler carne.", respuesta:"fresadora"},
+            {letra:"G", tipo:"CON LA G", pregunta:"Persona que tiene por oficio cuidar o vender ganado.", respuesta:"ganadero"},
+            {letra:"H", tipo:"CON LA H", pregunta:"Agua convertida en cuerpo sólido por descenso de la temperatura.", respuesta:"hielo"},
+            {letra:"I", tipo:"CON LA I", pregunta:"Que no tiene capacidad para aprender.", respuesta:"incapaz"},
+            {letra:"J", tipo:"CON LA J", pregunta:"Planta de jardín con flores muy olorosas de color blanco.", respuesta:"jazmin"},
+            {letra:"L", tipo:"CON LA L", pregunta:"Líquido blanco que segregan las mamas de las hembras de los mamíferos.", respuesta:"leche"},
+            {letra:"M", tipo:"CON LA M", pregunta:"Mesa de dibujo o de arquitecto.", respuesta:"mueble"},
+            {letra:"N", tipo:"CON LA N", pregunta:"Fruta del naranjo.", respuesta:"naranja"},
+            {letra:"O", tipo:"CON LA O", pregunta:"Animal doméstico que se cría por su lana.", respuesta:"oveja"},
+            {letra:"P", tipo:"CON LA P", pregunta:"Instrumento musical de cuerda con teclado y pedales.", respuesta:"piano"},
+            {letra:"Q", tipo:"CON LA Q", pregunta:"Alimento obtenido por maduración de la cuajada de la leche.", respuesta:"queso"},
+            {letra:"R", tipo:"CON LA R", pregunta:"Mamífero roedor de mayor tamaño que el ratón.", respuesta:"rata"},
+            {letra:"S", tipo:"CON LA S", pregunta:"Astro que es el centro de nuestro sistema planetario.", respuesta:"sol"},
+            {letra:"T", tipo:"CON LA T", pregunta:"Aparato para captar y reproducir sonidos a distancia.", respuesta:"telefono"},
+            {letra:"U", tipo:"CON LA U", pregunta:"Fruta de la vid.", respuesta:"uva"},
+            {letra:"V", tipo:"CON LA V", pregunta:"Persona que vive en el mismo edificio que otra.", respuesta:"vecino"},
+            {letra:"X", tipo:"CONTIENE LA X", pregunta:"Examen de los tejidos de un organismo vivo.", respuesta:"biopsia"},
+            {letra:"Y", tipo:"CON LA Y", pregunta:"Embarcación de gala o de recreo.", respuesta:"yate"},
+            {letra:"Z", tipo:"CON LA Z", pregunta:"Animal mamífero carnívoro de la familia de los cánidos, muy astuto.", respuesta:"zorro"}
         ];
-        // Rellenar hasta 24 si faltan para que el rosco no falle
-        while(backup.length < 24) backup.push({letra:"?", pregunta:"Pregunta de prueba", respuesta:"test"});
 
-        function updateLog(msg) { document.getElementById('status-bar').innerText = msg; }
+        // Sincronizar banco para que siempre haya 25 letras
+        while(bancoOficial.length < 25) bancoOficial.push({letra:"?", tipo:"TEST", pregunta:"Pregunta de relleno", respuesta:"test"});
+
+        function updateLog(msg) { document.getElementById('status-bar').innerText = "Estado: " + msg; }
 
         function configurarPartida(rol) {
             miRol = rol;
@@ -88,45 +120,35 @@
         }
 
         function conectar() {
-            updateLog("⏳ Conectando al broker...");
-            // Usamos el broker de Shiftr.io o HiveMQ vía WSS
+            updateLog("⏳ Conectando...");
             client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
             client.on('connect', () => {
                 updateLog("✅ Conectado a Sala: " + salaID);
                 client.subscribe("pasa/sala/" + salaID);
-                
                 if(miRol === 'host') {
-                    preguntas = backup; // Aquí puedes intentar tu fetch si quieres
+                    preguntas = bancoOficial;
                     estJ1 = new Array(preguntas.length).fill('pendiente');
                     estJ2 = new Array(preguntas.length).fill('pendiente');
                 } else {
-                    // Avisar al host que hemos llegado
                     client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'JOIN'}));
                 }
             });
 
             client.on('message', (topic, message) => {
                 const d = JSON.parse(message.toString());
-                
                 if(d.tipo === 'JOIN' && miRol === 'host') {
                     client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'START', preguntas: preguntas}));
-                    miTurno = true;
-                    empezar();
+                    miTurno = true; empezar();
                 }
-                
                 if(d.tipo === 'START' && miRol === 'guest') {
                     preguntas = d.preguntas;
                     estJ1 = new Array(preguntas.length).fill('pendiente');
                     estJ2 = new Array(preguntas.length).fill('pendiente');
-                    miTurno = false;
-                    empezar();
+                    miTurno = false; empezar();
                 }
-
                 if(d.tipo === 'ACCION' && d.player !== miRol) {
-                    if(d.player === 'host') estJ1[d.idx] = d.res; else estJ2[d.idx] = d.res;
-                    if(d.res !== 'acierto') miTurno = true;
-                    dibujar();
+                    procesarAccionRival(d);
                 }
             });
         }
@@ -140,27 +162,28 @@
 
         function dibujar() {
             const tag = document.getElementById('turno-tag');
-            tag.innerText = miTurno ? "TU TURNO" : "TURNO RIVAL";
+            tag.innerText = miTurno ? "ES TU TURNO" : "TURNO DEL RIVAL";
             tag.style.background = miTurno ? "var(--green)" : "var(--red)";
             
-            render('rosco1', estJ1, (miRol==='host'?idxJ1:idxJ2), (miRol==='host'));
-            render('rosco2', estJ2, (miRol==='host'?idxJ2:idxJ1), (miRol==='guest'));
+            renderRosco('rosco1', estJ1, (miRol==='host'?idxJ1:idxJ2), (miRol==='host'));
+            renderRosco('rosco2', estJ2, (miRol==='host'?idxJ2:idxJ1), (miRol==='guest'));
 
             const pIdx = (miRol==='host'?idxJ1:idxJ2);
-            document.getElementById('pregunta-txt').innerText = preguntas[pIdx].pregunta;
+            const p = preguntas[pIdx];
+            document.getElementById('pregunta-txt').innerText = `${p.tipo}: ${p.pregunta}`;
             document.getElementById('ans').disabled = !miTurno;
             if(miTurno) document.getElementById('ans').focus();
         }
 
-        function render(id, estados, activo, esMio) {
+        function renderRosco(id, estados, activo, esMio) {
             const c = document.getElementById(id); c.innerHTML = "";
             estados.forEach((e, i) => {
-                const ang = (i * (360/24)) - 90;
+                const ang = (i * (360/estados.length)) - 90;
                 const rad = ang * Math.PI / 180;
                 const d = document.createElement('div');
                 d.className = `letra ${e} ${(esMio && i===activo && miTurno) || (!esMio && i===activo && !miTurno) ? 'activa' : ''}`;
-                d.style.left = (150 + 120 * Math.cos(rad)) + 'px';
-                d.style.top = (150 + 120 * Math.sin(rad)) + 'px';
+                d.style.left = (150 + 125 * Math.cos(rad)) + 'px';
+                d.style.top = (150 + 125 * Math.sin(rad)) + 'px';
                 d.innerText = preguntas[i].letra;
                 c.appendChild(d);
             });
@@ -170,28 +193,66 @@
             if(!miTurno) return;
             const pIdx = (miRol==='host'?idxJ1:idxJ2);
             const input = document.getElementById('ans');
+            const alerta = document.getElementById('msg-alerta');
             let res = 'pendiente';
 
             if(tipo === 'ok') {
-                const u = input.value.toLowerCase().trim();
-                const t = preguntas[pIdx].respuesta.toLowerCase();
-                // Aceptamos 1 fallo (Fuzzy)
-                if(u === t || dist(u,t) <= 1) res = 'acierto';
-                else { res = 'fallo'; miTurno = false; }
-            } else { miTurno = false; }
+                const u = input.value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const t = preguntas[pIdx].respuesta.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                
+                if(u === t || (t.length > 4 && dist(u,t) <= 1)) {
+                    res = 'acierto';
+                    alerta.innerText = "¡CORRECTO!";
+                    alerta.className = "alerta-exito";
+                } else {
+                    res = 'fallo';
+                    alerta.innerText = `FALLO: La respuesta era "${t.toUpperCase()}"`;
+                    alerta.className = "alerta-error";
+                    miTurno = false;
+                }
+            } else {
+                res = 'pendiente';
+                miTurno = false;
+                alerta.innerText = "PASAPALABRA...";
+                alerta.className = "";
+            }
 
             if(miRol === 'host') estJ1[pIdx] = res; else estJ2[pIdx] = res;
             
             client.publish("pasa/sala/" + salaID, JSON.stringify({
-                tipo: 'ACCION', player: miRol, idx: pIdx, res: res
+                tipo: 'ACCION', player: miRol, idx: pIdx, res: res, textoFallo: (res==='fallo' ? preguntas[pIdx].respuesta : null)
             }));
             
-            if(res !== 'pendiente') {
-                if(miRol==='host') { do{idxJ1=(idxJ1+1)%24}while(estJ1[idxJ1]!=='pendiente'); }
-                else { do{idxJ2=(idxJ2+1)%24}while(estJ2[idxJ2]!=='pendiente'); }
-            }
+            if(res !== 'pendiente') avanzarIdx();
             input.value = "";
             dibujar();
+        }
+
+        function procesarAccionRival(d) {
+            if(d.player === 'host') estJ1[d.idx] = d.res; else estJ2[d.idx] = d.res;
+            const alerta = document.getElementById('msg-alerta');
+            
+            if(d.res === 'fallo') {
+                alerta.innerText = `Rival falló: Era "${d.textoFallo.toUpperCase()}"`;
+                alerta.className = "alerta-error";
+                miTurno = true;
+            } else if(d.res === 'acierto') {
+                alerta.innerText = "¡El rival ha acertado!";
+                alerta.className = "alerta-exito";
+            } else {
+                alerta.innerText = "El rival pasó palabra.";
+                alerta.className = "";
+                miTurno = true;
+            }
+            dibujar();
+        }
+
+        function avanzarIdx() {
+            if(miRol === 'host') {
+                do { idxJ1 = (idxJ1 + 1) % preguntas.length; } while(estJ1[idxJ1] !== 'pendiente' && estJ1.includes('pendiente'));
+            } else {
+                do { idxJ2 = (idxJ2 + 1) % preguntas.length; } while(estJ2[idxJ2] !== 'pendiente' && estJ2.includes('pendiente'));
+            }
         }
 
         function dist(a, b) {
