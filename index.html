@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pasapalabra Pro - Ortografía Estricta</title>
+    <title>Pasapalabra Pro - 6 Cifras</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         :root { --blue: #0044cc; --green: #2ecc71; --red: #e74c3c; --yellow: #f1c40f; --dark: #050510; --card: #16213e; }
@@ -13,7 +13,7 @@
         #status-bar { position: absolute; top:0; width:100%; text-align:center; font-size:10px; padding:4px; color:var(--yellow); z-index:1000; background: rgba(0,0,0,0.3); }
 
         .card { background: var(--card); padding: 25px; border-radius: 20px; text-align: center; width: 90%; max-width: 350px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input[type="text"] { padding: 12px; border-radius: 8px; width: 100%; margin: 10px 0; text-align: center; font-size: 16px; border: 2px solid #1f4068; background: #0a192f; color: white; }
+        input[type="text"], input[type="number"] { padding: 12px; border-radius: 8px; width: 100%; margin: 10px 0; text-align: center; font-size: 16px; border: 2px solid #1f4068; background: #0a192f; color: white; }
         button { padding: 12px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; width: 100%; margin: 5px 0; text-transform: uppercase; }
         .btn-main { background: var(--green); color: white; }
         .btn-sec { background: var(--blue); color: white; }
@@ -47,16 +47,17 @@
     <div id="status-bar">CONECTANDO...</div>
 
     <div id="menu-inicial" class="card">
-        <h2>PASAPALABRA PRO</h2>
-        <button class="btn-main" onclick="configurarPartida('host')">CREAR PARTIDA</button>
+        <h2>PASAPALABRA</h2>
+        <button class="btn-main" onclick="configurarPartida('host')">CREAR CÓDIGO (6 CIFRAS)</button>
         <div style="margin:10px 0; opacity:0.5">o</div>
-        <input type="text" id="input-unirse" placeholder="CÓDIGO AQUÍ" maxlength="5">
-        <button class="btn-sec" onclick="configurarPartida('guest')">UNIRSE</button>
+        <input type="number" id="input-unirse" placeholder="ESCRIBE LOS 6 NÚMEROS">
+        <button class="btn-sec" onclick="configurarPartida('guest')">ENTRAR A LA SALA</button>
     </div>
 
     <div id="esperando" class="card hidden">
-        <h3>CÓDIGO: <span id="display-codigo" style="color:var(--yellow)">---</span></h3>
-        <p>Esperando al rival...</p>
+        <h3 style="margin-bottom:5px">SALA PRIVADA</h3>
+        <h1 id="display-codigo" style="color:var(--yellow); font-size: 2.5em; letter-spacing: 5px; margin: 10px 0;">000000</h1>
+        <p>Dicta estos números a tu rival...</p>
     </div>
 
     <div id="juego">
@@ -64,11 +65,11 @@
         <div id="box-j2" class="rosco-box"><div id="rosco2" class="rosco-container"></div></div>
 
         <div id="panel-control">
-            <div id="badge-turno" style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">CONECTANDO...</div>
+            <div id="badge-turno" style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">CARGANDO...</div>
             <div id="pregunta-txt">...</div>
             
             <div id="inputs-zona">
-                <input type="text" id="ans" placeholder="¡Cuidado con las tildes!" autocomplete="off" spellcheck="false">
+                <input type="text" id="ans" placeholder="Respuesta exacta..." autocomplete="off" spellcheck="false">
                 <div style="display: flex; gap: 8px;">
                     <button class="btn-main" onclick="responder('ok')" style="flex:2">RESPONDER</button>
                     <button class="btn-sec" onclick="responder('paso')" style="background:var(--yellow); color:black; flex:1">PASO</button>
@@ -82,12 +83,10 @@
         let client, salaID, miRol, preguntasJ1 = [], preguntasJ2 = [];
         let miTurno = false, idxJ1 = 0, idxJ2 = 0, estJ1 = [], estJ2 = [];
 
-        // BANCO JUGADOR 1
         const bancoA = [
             {letra:"A", tipo:"CON LA A", pregunta:"Relativo a las abejas.", respuesta:"apícola"},
             {letra:"B", tipo:"CON LA B", pregunta:"Instrumento para medir la presión atmosférica.", respuesta:"barómetro"},
             {letra:"C", tipo:"CON LA C", pregunta:"Vehículo de carga.", respuesta:"camión"},
-            {letra:"D", tipo:"CON LA D", pregunta:"Órgano que permite el gusto.", respuesta:"lengua"}, // Contiene la D
             {letra:"D", tipo:"CON LA D", pregunta:"Mamífero marino inteligente.", respuesta:"delfín"},
             {letra:"E", tipo:"CON LA E", pregunta:"Lugar donde se guardan elefantes.", respuesta:"elefantería"},
             {letra:"F", tipo:"CON LA F", pregunta:"Luz que guía barcos.", respuesta:"faro"},
@@ -111,31 +110,30 @@
             {letra:"Z", tipo:"CON LA Z", pregunta:"Animal muy astuto.", respuesta:"zorro"}
         ];
 
-        // BANCO JUGADOR 2
         const bancoB = [
             {letra:"A", tipo:"CON LA A", pregunta:"Árbol que da bellotas.", respuesta:"alcornoque"},
             {letra:"B", tipo:"CON LA B", pregunta:"Embarcación de vela pequeña.", respuesta:"balandra"},
-            {letra:"C", tipo:"CON LA C", pregunta:"Cría del caballo.", respuesta:"potro"}, // Contiene la C
             {letra:"C", tipo:"CON LA C", pregunta:"Cabeza de la ciudad.", respuesta:"capital"},
             {letra:"D", tipo:"CON LA D", pregunta:"Número diez.", respuesta:"decena"},
-            {letra:"E", tipo:"CON LA E", pregunta:"Aparato para subir pisos.", respuesta:"ascensor"}, // Contiene E
+            {letra:"E", tipo:"CON LA E", pregunta:"Relativo a las estrellas.", respuesta:"estelar"},
             {letra:"F", tipo:"CON LA F", pregunta:"Poder de mover cosas.", respuesta:"fuerza"},
-            {letra:"G", tipo:"CON LA G", pregunta:"Punto más alto de una montaña.", respuesta:"cima"}, // Contiene G
             {letra:"G", tipo:"CON LA G", pregunta:"Animal que maúlla.", respuesta:"gato"},
-            {letra:"H", tipo:"CON LA H", pregunta:"Hijo del hermano.", respuesta:"sobrino"}, // Contiene H
+            {letra:"H", tipo:"CON LA H", pregunta:"Persona que hace humor.", respuesta:"humorista"},
             {letra:"I", tipo:"CON LA I", pregunta:"Lugar sagrado.", respuesta:"iglesia"},
             {letra:"J", tipo:"CON LA J", pregunta:"Persona que juzga.", respuesta:"juez"},
             {letra:"L", tipo:"CON LA L", pregunta:"Lugar de libros.", respuesta:"librería"},
-            {letra:"M", tipo:"CON LA M", pregunta:"Satélite de la Tierra.", respuesta:"luna"}, // Contiene M
-            {letra:"N", tipo:"CON LA N", pregunta:"Cuerpo que flota y viaja por el agua.", respuesta:"barco"}, // Contiene N
-            {letra:"O", tipo:"CON LA O", pregunta:"Pájaro que no vuela y corre mucho.", respuesta:"avestruz"}, // Contiene O
-            {letra:"P", tipo:"CON LA P", pregunta:"Animal que ladra.", respuesta:"perro"},
-            {letra:"Q", tipo:"CON LA Q", pregunta:"Parte de una casa.", respuesta:"tabique"}, // Contiene Q
+            {letra:"M", tipo:"CON LA M", pregunta:"Planeta rojo.", respuesta:"Marte"},
+            {letra:"N", tipo:"CON LA N", pregunta:"Cuerpo que viaja por el agua.", respuesta:"nave"},
+            {letra:"O", tipo:"CON LA O", pregunta:"Pájaro corredor gigante.", respuesta:"avestruz"},
+            {letra:"P", tipo:"CON LA P", pregunta:"Cría del caballo.", respuesta:"potro"},
+            {letra:"Q", tipo:"CON LA Q", pregunta:"Parte de una casa.", respuesta:"tabique"},
             {letra:"R", tipo:"CON LA R", pregunta:"Instrumento para medir el tiempo.", respuesta:"reloj"},
             {letra:"S", tipo:"CON LA S", pregunta:"Asiento para una persona.", respuesta:"silla"},
-            {letra:"T", tipo:"CON LA T", pregunta:"Rayas de un tigre.", respuesta:"franjas"}, // Contiene T
+            {letra:"T", tipo:"CON LA T", pregunta:"Persona que trabaja el campo.", respuesta:"trabajador"},
+            {letra:"U", tipo:"CON LA U", pregunta:"Lo que es de un solo color.", respuesta:"unicolor"},
             {letra:"V", tipo:"CON LA V", pregunta:"Estación después de primavera.", respuesta:"verano"},
-            {letra:"X", tipo:"CONTIENE X", pregunta:"Instrumento musical de láminas.", respuesta:"xilófono"},
+            {letra:"W", tipo:"CONTIENE W", pregunta:"Fruta de carne roja y pepitas.", respuesta:"sandía"}, 
+            {letra:"X", tipo:"CONTIENE X", pregunta:"Instrumento de láminas.", respuesta:"xilófono"},
             {letra:"Y", tipo:"CON LA Y", pregunta:"Parte amarilla del huevo.", respuesta:"yema"},
             {letra:"Z", tipo:"CON LA Z", pregunta:"Calzado que cubre el pie.", respuesta:"zapato"}
         ];
@@ -143,12 +141,14 @@
         function configurarPartida(rol) {
             miRol = rol;
             if(rol === 'host') {
-                salaID = Math.random().toString(36).substring(2, 7).toUpperCase();
+                // Generar 6 números aleatorios
+                salaID = Math.floor(100000 + Math.random() * 900000).toString();
                 document.getElementById('display-codigo').innerText = salaID;
                 document.getElementById('menu-inicial').classList.add('hidden');
                 document.getElementById('esperando').classList.remove('hidden');
             } else {
-                salaID = document.getElementById('input-unirse').value.trim().toUpperCase();
+                salaID = document.getElementById('input-unirse').value.trim();
+                if(salaID.length !== 6) return alert("El código debe ser de 6 números");
             }
             conectar();
         }
@@ -156,11 +156,12 @@
         function conectar() {
             client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
             client.on('connect', () => {
-                document.getElementById('status-bar').innerText = "SALA: " + salaID;
+                document.getElementById('status-bar').innerText = "CONECTADO A LA SALA " + salaID;
                 client.subscribe("pasa/sala/" + salaID);
                 if(miRol === 'host') {
                     preguntasJ1 = bancoA; preguntasJ2 = bancoB;
-                    estJ1 = new Array(25).fill('pendiente'); estJ2 = new Array(25).fill('pendiente');
+                    estJ1 = new Array(preguntasJ1.length).fill('pendiente');
+                    estJ2 = new Array(preguntasJ2.length).fill('pendiente');
                 } else {
                     client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'JOIN'}));
                 }
@@ -174,13 +175,13 @@
                 }
                 if(d.tipo === 'START' && miRol === 'guest') {
                     preguntasJ1 = d.p1; preguntasJ2 = d.p2;
-                    estJ1 = new Array(25).fill('pendiente'); estJ2 = new Array(25).fill('pendiente');
+                    estJ1 = new Array(preguntasJ1.length).fill('pendiente');
+                    estJ2 = new Array(preguntasJ2.length).fill('pendiente');
                     miTurno = false; empezar();
                 }
                 if(d.tipo === 'ACCION') {
                     if(d.player === 'host') { estJ1[d.idx] = d.res; idxJ1 = d.nextIdx; } 
                     else { estJ2[d.idx] = d.res; idxJ2 = d.nextIdx; }
-                    
                     if(d.player !== miRol) {
                         if(d.res !== 'acierto') miTurno = true;
                         if(d.res === 'fallo') document.getElementById('msg-alerta').innerText = "RIVAL FALLÓ: ERA " + d.target.toUpperCase();
@@ -202,18 +203,13 @@
             document.getElementById('box-j1').className = j1Activo ? "rosco-box turno-activo" : "rosco-box turno-espera";
             document.getElementById('box-j2').className = !j1Activo ? "rosco-box turno-activo" : "rosco-box turno-espera";
             
-            const badge = document.getElementById('badge-turno');
-            badge.innerText = miTurno ? "ES TU TURNO" : "TURNO RIVAL";
-            badge.style.color = miTurno ? "var(--green)" : "var(--red)";
+            document.getElementById('badge-turno').innerText = miTurno ? "ES TU TURNO" : "TURNO DEL RIVAL";
+            document.getElementById('badge-turno').style.color = miTurno ? "var(--green)" : "var(--red)";
 
             renderRosco('rosco1', estJ1, idxJ1, j1Activo, preguntasJ1);
             renderRosco('rosco2', estJ2, idxJ2, !j1Activo, preguntasJ2);
 
-            // Mostrar pregunta actual (sea tuya o del rival)
-            let p;
-            if(j1Activo) p = preguntasJ1[idxJ1];
-            else p = preguntasJ2[idxJ2];
-            
+            let p = j1Activo ? preguntasJ1[idxJ1] : preguntasJ2[idxJ2];
             document.getElementById('pregunta-txt').innerText = p.tipo + ": " + p.pregunta;
             document.getElementById('inputs-zona').style.visibility = miTurno ? "visible" : "hidden";
             if(miTurno) document.getElementById('ans').focus();
@@ -222,7 +218,7 @@
         function renderRosco(id, estados, activo, esSuTurno, listaP) {
             const c = document.getElementById(id); c.innerHTML = "";
             estados.forEach((e, i) => {
-                const ang = (i * (360/25)) - 90;
+                const ang = (i * (360/listaP.length)) - 90;
                 const rad = ang * Math.PI / 180;
                 const d = document.createElement('div');
                 d.className = `letra ${e} ${(esSuTurno && i===activo) ? 'activa' : ''}`;
@@ -238,13 +234,13 @@
             let pIdx = (miRol === 'host' ? idxJ1 : idxJ2);
             let listaP = (miRol === 'host' ? preguntasJ1 : preguntasJ2);
             let estados = (miRol === 'host' ? estJ1 : estJ2);
-            
-            let res = 'pendiente';
             const target = listaP[pIdx].respuesta;
+            let res = 'pendiente';
 
             if(tipo === 'ok') {
-                const u = document.getElementById('ans').value.trim(); // ORTOGRAFÍA ESTRICTA (No normalize)
-                if(u.toLowerCase() === target.toLowerCase()) {
+                const u = document.getElementById('ans').value.trim();
+                // COMPROBACIÓN ESTRICTA (Diferencia tildes y mayúsculas si no coinciden)
+                if(u === target || u.toLowerCase() === target.toLowerCase()) {
                     res = 'acierto';
                     document.getElementById('msg-alerta').innerText = "¡CORRECTO!";
                 } else {
@@ -257,17 +253,12 @@
                 document.getElementById('msg-alerta').innerText = "PASAPALABRA";
             }
 
-            // Guardar localmente
             estados[pIdx] = res;
-            
-            // Avanzar índice
-            let original = pIdx;
             let next = pIdx;
-            do { next = (next + 1) % 25; } while(estados[next] !== 'pendiente' && next !== original);
+            do { next = (next + 1) % listaP.length; } while(estados[next] !== 'pendiente' && estados.includes('pendiente'));
             
             if(miRol === 'host') idxJ1 = next; else idxJ2 = next;
 
-            // Enviar
             client.publish("pasa/sala/" + salaID, JSON.stringify({
                 tipo: 'ACCION', player: miRol, idx: pIdx, res: res, target: target, nextIdx: next
             }));
