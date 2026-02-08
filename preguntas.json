@@ -1,146 +1,146 @@
 [
   {
-    "letra": "A",
-    "pregunta": "Nave que viaja por el espacio.",
-    "respuesta": "astro",
-    "tipo": "CONTIENE LA"
+    "pregunta": "Insecto que produce miel.",
+    "respuesta": "abeja",
+    "tipo": "CON LA",
+    "letra": "A"
   },
   {
-    "letra": "B",
-    "pregunta": "Objeto que sirve para iluminar.",
-    "respuesta": "bombilla",
-    "tipo": "CON LA"
+    "pregunta": "Mamífero marino enorme.",
+    "respuesta": "ballena",
+    "tipo": "CON LA",
+    "letra": "B"
   },
   {
-    "letra": "C",
-    "pregunta": "Lugar donde se proyectan películas.",
-    "respuesta": "cine",
-    "tipo": "CON LA"
+    "pregunta": "Edificio donde vivimos.",
+    "respuesta": "casa",
+    "tipo": "CON LA",
+    "letra": "C"
   },
   {
-    "letra": "D",
-    "pregunta": "Objeto que se lanza para jugar.",
-    "respuesta": "dado",
-    "tipo": "CON LA"
+    "pregunta": "Reptil extinguido.",
+    "respuesta": "dinosaurio",
+    "tipo": "CON LA",
+    "letra": "D"
   },
   {
-    "letra": "E",
-    "pregunta": "Empieza por E.",
-    "respuesta": "ezul",
-    "tipo": "CON LA"
+    "pregunta": "Animal con trompa.",
+    "respuesta": "elefante",
+    "tipo": "CON LA",
+    "letra": "E"
   },
   {
-    "letra": "F",
-    "pregunta": "Empieza por F.",
-    "respuesta": "fzul",
-    "tipo": "CON LA"
+    "pregunta": "Torre con luz para barcos.",
+    "respuesta": "faro",
+    "tipo": "CON LA",
+    "letra": "F"
   },
   {
-    "letra": "G",
-    "pregunta": "Empieza por G.",
-    "respuesta": "gzul",
-    "tipo": "CON LA"
+    "pregunta": "Ave que pone huevos.",
+    "respuesta": "gallina",
+    "tipo": "CON LA",
+    "letra": "G"
   },
   {
-    "letra": "H",
-    "pregunta": "Empieza por H.",
-    "respuesta": "hzul",
-    "tipo": "CON LA"
+    "pregunta": "Agua congelada.",
+    "respuesta": "hielo",
+    "tipo": "CON LA",
+    "letra": "H"
   },
   {
-    "letra": "I",
-    "pregunta": "Empieza por I.",
-    "respuesta": "izul",
-    "tipo": "CON LA"
+    "pregunta": "Tierra rodeada de agua.",
+    "respuesta": "isla",
+    "tipo": "CON LA",
+    "letra": "I"
   },
   {
-    "letra": "J",
-    "pregunta": "Empieza por J.",
-    "respuesta": "jzul",
-    "tipo": "CON LA"
+    "pregunta": "Animal de cuello largo.",
+    "respuesta": "jirafa",
+    "tipo": "CON LA",
+    "letra": "J"
   },
   {
-    "letra": "L",
-    "pregunta": "Empieza por L.",
-    "respuesta": "lzul",
-    "tipo": "CON LA"
+    "pregunta": "Satélite de la Tierra.",
+    "respuesta": "luna",
+    "tipo": "CON LA",
+    "letra": "L"
   },
   {
-    "letra": "M",
-    "pregunta": "Empieza por M.",
-    "respuesta": "mzul",
-    "tipo": "CON LA"
+    "pregunta": "Fruta roja o verde.",
+    "respuesta": "manzana",
+    "tipo": "CON LA",
+    "letra": "M"
   },
   {
-    "letra": "N",
-    "pregunta": "Empieza por N.",
-    "respuesta": "nzul",
-    "tipo": "CON LA"
+    "pregunta": "Color oscuro.",
+    "respuesta": "negro",
+    "tipo": "CON LA",
+    "letra": "N"
   },
   {
-    "letra": "O",
-    "pregunta": "Empieza por O.",
-    "respuesta": "ozul",
-    "tipo": "CON LA"
+    "pregunta": "Sirve para escuchar.",
+    "respuesta": "oido",
+    "tipo": "CON LA",
+    "letra": "O"
   },
   {
-    "letra": "P",
-    "pregunta": "Empieza por P.",
-    "respuesta": "pzul",
-    "tipo": "CON LA"
+    "pregunta": "El mejor amigo del hombre.",
+    "respuesta": "perro",
+    "tipo": "CON LA",
+    "letra": "P"
   },
   {
-    "letra": "Q",
-    "pregunta": "Empieza por Q.",
-    "respuesta": "qzul",
-    "tipo": "CON LA"
+    "pregunta": "Comida hecha de leche.",
+    "respuesta": "queso",
+    "tipo": "CON LA",
+    "letra": "Q"
   },
   {
-    "letra": "R",
-    "pregunta": "Empieza por R.",
-    "respuesta": "rzul",
-    "tipo": "CON LA"
+    "pregunta": "Animal al que le gusta el queso.",
+    "respuesta": "raton",
+    "tipo": "CON LA",
+    "letra": "R"
   },
   {
-    "letra": "S",
-    "pregunta": "Empieza por S.",
-    "respuesta": "szul",
-    "tipo": "CON LA"
+    "pregunta": "Estrella del sistema solar.",
+    "respuesta": "sol",
+    "tipo": "CON LA",
+    "letra": "S"
   },
   {
-    "letra": "T",
-    "pregunta": "Bebida caliente hecha con hojas de planta.",
-    "respuesta": "te",
-    "tipo": "CON LA"
+    "pregunta": "Vehículo sobre raíles.",
+    "respuesta": "tren",
+    "tipo": "CON LA",
+    "letra": "T"
   },
   {
-    "letra": "U",
-    "pregunta": "Empieza por U.",
-    "respuesta": "uzul",
-    "tipo": "CON LA"
+    "pregunta": "Fruta para el vino.",
+    "respuesta": "uva",
+    "tipo": "CON LA",
+    "letra": "U"
   },
   {
-    "letra": "V",
-    "pregunta": "Empieza por V.",
-    "respuesta": "vzul",
-    "tipo": "CON LA"
+    "pregunta": "Estación calurosa.",
+    "respuesta": "verano",
+    "tipo": "CON LA",
+    "letra": "V"
   },
   {
-    "letra": "X",
-    "pregunta": "Prueba o evaluación de conocimientos.",
-    "respuesta": "examen",
-    "tipo": "CONTIENE LA"
+    "pregunta": "Instrumento musical.",
+    "respuesta": "xilofono",
+    "tipo": "CON LA",
+    "letra": "X"
   },
   {
-    "letra": "Y",
-    "pregunta": "Parte central de un huevo.",
+    "pregunta": "Parte amarilla del huevo.",
     "respuesta": "yema",
-    "tipo": "CON LA"
+    "tipo": "CON LA",
+    "letra": "Y"
   },
   {
-    "letra": "Z",
-    "pregunta": "Empieza por Z.",
-    "respuesta": "zzul",
-    "tipo": "CON LA"
+    "pregunta": "Calzado.",
+    "respuesta": "zapato",
+    "tipo": "CON LA",
+    "letra": "Z"
   }
 ]
