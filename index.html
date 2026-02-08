@@ -2,21 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra IA</title>
+    <title>Pasapalabra IA - Versión Oficial</title>
     <style>
-        body { background: #050510; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
-        #rosco-container { position: relative; width: 400px; height: 400px; margin: 40px; }
-        .letra { position: absolute; width: 30px; height: 30px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: translate(-50%, -50%); transition: 0.3s; }
+        body { background: #050510; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
+        #rosco-container { position: relative; width: 420px; height: 420px; margin: 30px; }
+        .letra { position: absolute; width: 32px; height: 32px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: translate(-50%, -50%); transition: 0.3s; font-size: 14px; }
         .activa { border: 4px solid #f1c40f; scale: 1.3; box-shadow: 0 0 20px #f1c40f; z-index: 10; }
-        .acierto { background: #2ecc71 !important; }
-        .fallo { background: #e74c3c !important; }
-        #panel { background: #16213e; padding: 25px; border-radius: 20px; text-align: center; width: 90%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input { padding: 12px; width: 80%; margin: 15px 0; border-radius: 8px; border: none; font-size: 1.1em; outline: none; }
-        button { padding: 12px 25px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; margin: 5px; transition: 0.2s; }
-        button:hover { opacity: 0.8; transform: translateY(-2px); }
+        .acierto { background: #2ecc71 !important; box-shadow: 0 0 15px #2ecc71; }
+        .fallo { background: #e74c3c !important; box-shadow: 0 0 15px #e74c3c; }
+        
+        #panel { background: #16213e; padding: 25px; border-radius: 20px; text-align: center; width: 90%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+        input { padding: 12px; width: 80%; margin: 15px 0; border-radius: 8px; border: 2px solid #1f4068; background: #0a192f; color: white; font-size: 1.1em; outline: none; }
+        button { padding: 12px 25px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; margin: 5px; }
         .btn-ok { background: #2ecc71; color: white; }
         .btn-paso { background: #f1c40f; color: #333; }
-        #stats { margin-bottom: 15px; font-size: 0.9em; opacity: 0.8; }
+        
+        /* Estilo para el mensaje de error */
+        #feedback { display: none; margin-top: 15px; padding: 15px; border-radius: 10px; font-weight: bold; animation: fadeIn 0.3s; }
+        .msg-error { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #ff7675; }
+        .msg-success { background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; color: #55efc4; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -24,12 +30,20 @@
     <div id="rosco-container"></div>
 
     <div id="panel">
-        <div id="stats">Aciertos: <span id="hits">0</span> | Fallos: <span id="miss">0</span></div>
+        <div id="stats" style="margin-bottom:10px; opacity:0.7;">
+            Aciertos: <span id="hits">0</span> | Fallos: <span id="miss">0</span>
+        </div>
+        
         <h3 id="pregunta">Cargando rosco...</h3>
-        <input type="text" id="respuesta" placeholder="Escribe tu respuesta..." autocomplete="off">
-        <br>
-        <button class="btn-ok" onclick="validar()">RESPONDER</button>
-        <button class="btn-paso" onclick="pasapalabra()">PASAPALABRA</button>
+        
+        <div id="game-controls">
+            <input type="text" id="respuesta" placeholder="Escribe tu respuesta..." autocomplete="off">
+            <br>
+            <button class="btn-ok" id="btn-responder" onclick="validar()">RESPONDER</button>
+            <button class="btn-paso" id="btn-paso" onclick="pasapalabra()">PASAPALABRA</button>
+        </div>
+
+        <div id="feedback"></div>
     </div>
 
     <script>
@@ -37,36 +51,33 @@
         let idx = 0;
         let aciertos = 0;
         let fallos = 0;
+        let bloqueado = false;
 
         async function iniciar() {
             try {
-                // TRUCO MAESTRO: ?v= + Date.now() evita que el navegador use el archivo viejo (caché)
                 const res = await fetch('preguntas.json?v=' + Date.now());
                 const datos = await res.json();
                 rosco = datos.map(p => ({ ...p, estado: 'pendiente' }));
                 dibujarRosco();
                 actualizarPregunta();
             } catch (e) {
-                document.getElementById('pregunta').innerText = "Error cargando preguntas. ¡Lanza el Workflow en GitHub!";
+                document.getElementById('pregunta').innerText = "Error cargando preguntas.";
             }
         }
 
         function dibujarRosco() {
             const cont = document.getElementById('rosco-container');
-            const total = rosco.length;
             rosco.forEach((p, i) => {
-                const angulo = (i * (360 / total)) - 90;
+                const angulo = (i * (360 / rosco.length)) - 90;
                 const rad = angulo * Math.PI / 180;
-                const x = 200 + 170 * Math.cos(rad);
-                const y = 200 + 170 * Math.sin(rad);
-                
+                const x = 210 + 180 * Math.cos(rad);
+                const y = 210 + 180 * Math.sin(rad);
                 const div = document.createElement('div');
                 div.id = 'letra-' + i;
                 div.className = 'letra';
                 div.style.left = x + 'px';
                 div.style.top = y + 'px';
-                // Si p.letra no existe por error, usamos el abecedario por defecto
-                div.innerText = p.letra || "ABCDEFGHIJLMNOPQRSTUVXYZ"[i];
+                div.innerText = p.letra;
                 cont.appendChild(div);
             });
         }
@@ -74,52 +85,68 @@
         function actualizarPregunta() {
             const faltan = rosco.filter(p => p.estado === 'pendiente').length;
             if (faltan === 0) {
-                document.getElementById('panel').innerHTML = `<h2>Juego Terminado</h2><p>Aciertos: ${aciertos} | Fallos: ${fallos}</p><button onclick="location.reload()">Jugar otra vez</button>`;
+                document.getElementById('panel').innerHTML = `<h2>¡Fin del juego!</h2><h3>Aciertos: ${aciertos}</h3><button onclick="location.reload()">Nuevo Rosco</button>`;
                 return;
             }
 
-            // Buscar la siguiente pendiente
             while (rosco[idx].estado !== 'pendiente') {
                 idx = (idx + 1) % rosco.length;
             }
 
-            // Visual
             document.querySelectorAll('.letra').forEach(el => el.classList.remove('activa'));
             document.getElementById('letra-' + idx).classList.add('activa');
 
             const p = rosco[idx];
             document.getElementById('pregunta').innerText = `${p.tipo} la ${p.letra}: ${p.pregunta}`;
+            document.getElementById('feedback').style.display = 'none';
+            bloqueado = false;
+            document.getElementById('respuesta').focus();
         }
 
         function validar() {
+            if (bloqueado) return;
+            
             const input = document.getElementById('respuesta');
+            const feedback = document.getElementById('feedback');
             const user = input.value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const target = rosco[idx].respuesta.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
             if (user === "") return;
+            bloqueado = true;
 
             if (user === target) {
+                // ACIERTO
                 rosco[idx].estado = 'acierto';
                 document.getElementById('letra-' + idx).classList.add('acierto');
                 aciertos++;
+                document.getElementById('hits').innerText = aciertos;
+                input.value = "";
+                actualizarPregunta();
             } else {
+                // FALLO - MOSTRAR RESPUESTA
                 rosco[idx].estado = 'fallo';
                 document.getElementById('letra-' + idx).classList.add('fallo');
                 fallos++;
-            }
+                document.getElementById('miss').innerText = fallos;
+                
+                feedback.innerHTML = `❌ ¡FALLO! La respuesta era: <b style="text-transform:uppercase">${rosco[idx].respuesta}</b>`;
+                feedback.className = "msg-error";
+                feedback.style.display = 'block';
 
-            document.getElementById('hits').innerText = aciertos;
-            document.getElementById('miss').innerText = fallos;
-            input.value = "";
-            actualizarPregunta();
+                // Pausa de 2 segundos para que el usuario lea la respuesta
+                setTimeout(() => {
+                    input.value = "";
+                    actualizarPregunta();
+                }, 2500);
+            }
         }
 
         function pasapalabra() {
+            if (bloqueado) return;
             idx = (idx + 1) % rosco.length;
             actualizarPregunta();
         }
 
-        // Enter para responder
         document.getElementById('respuesta').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') validar();
         });
