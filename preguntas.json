@@ -1,145 +1,145 @@
 [
   {
     "letra": "A",
-    "pregunta": "Aparato con alas que vuela por el cielo movido por motores.",
+    "pregunta": "Vehículo con alas que vuela por el aire.",
     "respuesta": "avion",
     "tipo": "CON LA"
   },
   {
     "letra": "B",
-    "pregunta": "Mamífero marino de enorme tamaño que vive en todos los océanos.",
+    "pregunta": "Mamífero marino de gran tamaño.",
     "respuesta": "ballena",
     "tipo": "CON LA"
   },
   {
     "letra": "C",
-    "pregunta": "Edificio o parte de él que sirve de vivienda para una familia.",
+    "pregunta": "Edificio donde vive una familia.",
     "respuesta": "casa",
     "tipo": "CON LA"
   },
   {
     "letra": "D",
-    "pregunta": "Pieza cúbica usada en juegos de azar que tiene puntos del uno al seis.",
+    "pregunta": "Pieza cúbica con puntos para jugar.",
     "respuesta": "dado",
     "tipo": "CON LA"
   },
   {
     "letra": "E",
-    "pregunta": "Animal mamífero con una larga trompa y grandes orejas.",
+    "pregunta": "Animal con trompa y orejas grandes.",
     "respuesta": "elefante",
     "tipo": "CON LA"
   },
   {
     "letra": "F",
-    "pregunta": "Torre alta con una luz potente que guía a los barcos de noche.",
+    "pregunta": "Torre con luz para guiar barcos.",
     "respuesta": "faro",
     "tipo": "CON LA"
   },
   {
     "letra": "G",
-    "pregunta": "Animal doméstico de la familia de los felinos que maúlla y caza ratones.",
+    "pregunta": "Animal que maúlla y caza ratones.",
     "respuesta": "gato",
     "tipo": "CON LA"
   },
   {
     "letra": "H",
-    "pregunta": "Agua que se ha vuelto sólida y fría debido al descenso de la temperatura.",
+    "pregunta": "Agua congelada.",
     "respuesta": "hielo",
     "tipo": "CON LA"
   },
   {
     "letra": "I",
-    "pregunta": "Porción de tierra rodeada de agua por todas partes.",
+    "pregunta": "Tierra rodeada de agua.",
     "respuesta": "isla",
     "tipo": "CON LA"
   },
   {
     "letra": "J",
-    "pregunta": "Animal de África con el cuello muy largo y manchas en su piel.",
+    "pregunta": "Animal con el cuello muy largo.",
     "respuesta": "jirafa",
     "tipo": "CON LA"
   },
   {
     "letra": "L",
-    "pregunta": "Cuerpo celeste que gira alrededor de la Tierra y brilla de noche.",
+    "pregunta": "Satélite de la Tierra que brilla de noche.",
     "respuesta": "luna",
     "tipo": "CON LA"
   },
   {
     "letra": "M",
-    "pregunta": "Fruto del manzano, de forma redonda y piel roja, verde o amarilla.",
+    "pregunta": "Fruto del manzano.",
     "respuesta": "manzana",
     "tipo": "CON LA"
   },
   {
     "letra": "N",
-    "pregunta": "Fruta cítrica de color naranja con mucha vitamina C.",
+    "pregunta": "Fruta con mucha vitamina C.",
     "respuesta": "naranja",
     "tipo": "CON LA"
   },
   {
     "letra": "O",
-    "pregunta": "Órgano del cuerpo que sirve para percibir los sonidos.",
+    "pregunta": "Órgano para escuchar.",
     "respuesta": "oreja",
     "tipo": "CON LA"
   },
   {
     "letra": "P",
-    "pregunta": "Animal mamífero conocido por ser el mejor amigo del hombre.",
+    "pregunta": "Animal amigo del hombre que ladra.",
     "respuesta": "perro",
     "tipo": "CON LA"
   },
   {
     "letra": "Q",
-    "pregunta": "Alimento sólido que se obtiene madurando la cuajada de la leche.",
+    "pregunta": "Alimento hecho de leche.",
     "respuesta": "queso",
     "tipo": "CON LA"
   },
   {
     "letra": "R",
-    "pregunta": "Aparato que sirve para medir el tiempo y dar las horas.",
+    "pregunta": "Aparato para ver la hora.",
     "respuesta": "reloj",
     "tipo": "CON LA"
   },
   {
     "letra": "S",
-    "pregunta": "Estrella con luz propia que nos da calor y luz durante el día.",
+    "pregunta": "Estrella que nos da luz y calor.",
     "respuesta": "sol",
     "tipo": "CON LA"
   },
   {
     "letra": "T",
-    "pregunta": "Medio de transporte que circula por raíles formado por varios vagones.",
+    "pregunta": "Vehículo sobre raíles.",
     "respuesta": "tren",
     "tipo": "CON LA"
   },
   {
     "letra": "U",
-    "pregunta": "Fruta pequeña y redonda que crece en racimos y sirve para hacer vino.",
+    "pregunta": "Fruta que crece en racimos.",
     "respuesta": "uva",
     "tipo": "CON LA"
   },
   {
     "letra": "V",
-    "pregunta": "Estación del año en la que hace más calor y los días son más largos.",
+    "pregunta": "Estación de más calor.",
     "respuesta": "verano",
     "tipo": "CON LA"
   },
   {
     "letra": "X",
-    "pregunta": "Prueba que se hace para evaluar los conocimientos de un alumno.",
+    "pregunta": "Prueba escolar para evaluar.",
     "respuesta": "examen",
     "tipo": "CONTIENE LA"
   },
   {
     "letra": "Y",
-    "pregunta": "Embarcación de lujo de gran tamaño y recreo.",
+    "pregunta": "Barco de recreo grande.",
     "respuesta": "yate",
     "tipo": "CON LA"
   },
   {
     "letra": "Z",
-    "pregunta": "Calzado que cubre el pie para protegerlo al caminar.",
+    "pregunta": "Calzado para el pie.",
     "respuesta": "zapato",
     "tipo": "CON LA"
   }
