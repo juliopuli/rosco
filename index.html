@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra - Corregido</title>
+    <title>Pasapalabra - Fix Online</title>
     <style>
         body { 
             background-color: #050a1f; 
@@ -26,22 +26,22 @@
         }
         .btn-local { background: #2ecc71; color: white; }
         .btn-online { background: #3498db; color: white; }
-        .input-codigo { padding: 15px; width: 200px; border-radius: 10px; border: none; font-size: 1.2rem; text-align: center; margin-bottom: 10px; }
+        .input-codigo { padding: 15px; width: 200px; border-radius: 10px; border: none; font-size: 1.2rem; text-align: center; margin-bottom: 10px; background: white; color: black; }
 
         /* --- INTERFAZ JUEGO --- */
         #juego-contenedor { display: none; text-align: center; }
-        .info-sala { color: #ffcc00; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; }
+        .info-sala { color: #ffcc00; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; font-size: 18px; }
         .rosco-container { position: relative; width: 420px; height: 420px; margin: 0 auto 20px; }
         .letra { 
             position: absolute; width: 38px; height: 38px; background: #0044ff; 
             border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-            font-weight: bold; font-size: 15px; border: 2px solid white;
+            font-weight: bold; font-size: 15px; border: 2px solid white; color: white;
         }
-        .letra.activa { box-shadow: 0 0 20px #ffcc00; border: 2px solid #ffcc00; }
+        .letra.activa { box-shadow: 0 0 20px #ffcc00; border: 2px solid #ffcc00; transform: scale(1.1); }
         .letra.correcta { background: #28a745; }
         .letra.incorrecta { background: #dc3545; }
 
-        .panel { background: #111b3d; padding: 25px; border-radius: 20px; width: 450px; border: 1px solid #2a3a6d; }
+        .panel { background: #111b3d; padding: 25px; border-radius: 20px; width: 450px; border: 1px solid #2a3a6d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .turno-text { color: #2ecc71; font-weight: bold; margin-bottom: 10px; }
         input#respuesta { width: 85%; padding: 15px; border-radius: 10px; border: none; margin: 15px 0; font-size: 1.1rem; text-align: center; background: #0a142f; color: white; border: 1px solid #2a3a6d; }
         .btns-juego { display: flex; gap: 10px; }
@@ -62,16 +62,16 @@
         <h1 class="titulo">MODO ONLINE</h1>
         <button class="btn-menu btn-online" onclick="generarCodigo()">GENERAR CÓDIGO</button>
         <p>— O —</p>
-        <input type="text" id="input-unirse" class="input-codigo" placeholder="Código 6 cifras">
+        <input type="text" id="input-unirse" class="input-codigo" placeholder="Código 6 cifras" maxlength="6">
         <button class="btn-menu btn-local" onclick="unirseCodigo()">UNIRSE A SALA</button>
-        <button style="background:transparent; color:gray; border:none; cursor:pointer;" onclick="volverMenu()">Volver</button>
+        <button style="background:transparent; color:gray; border:none; cursor:pointer; margin-top:10px;" onclick="volverMenu()">Volver</button>
     </div>
 
     <div id="juego-contenedor">
         <div class="info-sala" id="display-sala"></div>
         <div class="rosco-container" id="rosco"></div>
         <div class="panel">
-            <div class="turno-text">TU TURNO</div>
+            <div class="turno-text" id="label-turno">TU TURNO</div>
             <div id="pregunta-box" style="font-size: 1.2rem; min-height: 50px;">
                 <b id="prefijo"></b> <span id="texto-p"></span>
             </div>
@@ -84,7 +84,6 @@
     </div>
 
     <script>
-        // BANCO DE DATOS UNIFICADO Y CORREGIDO
         const bancoPreguntas = [
             {letra:"A", tipo:"CON LA A", pregunta:"Relativo a las abejas.", respuesta:"apícola"},
             {letra:"B", tipo:"CON LA B", pregunta:"Instrumento para el viento.", respuesta:"veleta"},
@@ -127,25 +126,29 @@
 
         function iniciarLocal() {
             document.getElementById('menu-inicio').style.display = 'none';
-            document.getElementById('juego-contenedor').style.display = 'block';
             document.getElementById('display-sala').innerText = "MODO LOCAL";
+            document.getElementById('juego-contenedor').style.display = 'block';
             crearRosco();
         }
 
+        // --- CORRECCIÓN AQUÍ ---
         function generarCodigo() {
-            const num = Math.floor(100000 + Math.random() * 900000);
+            const num = Math.floor(100000 + Math.random() * 900000); // Genera 6 cifras
             document.getElementById('menu-online').style.display = 'none';
+            document.getElementById('display-sala').innerText = "SALA: " + num; // Actualiza el texto
             document.getElementById('juego-contenedor').style.display = 'block';
-            document.getElementById('display-sala').innerText = "SALA: " + num;
             crearRosco();
         }
 
         function unirseCodigo() {
             const cod = document.getElementById('input-unirse').value;
-            if(cod.length < 4) return alert("Código no válido");
+            if(cod.length < 4) {
+                alert("Introduce un código válido");
+                return;
+            }
             document.getElementById('menu-online').style.display = 'none';
-            document.getElementById('juego-contenedor').style.display = 'block';
             document.getElementById('display-sala').innerText = "SALA: " + cod;
+            document.getElementById('juego-contenedor').style.display = 'block';
             crearRosco();
         }
 
@@ -194,6 +197,11 @@
             indice = (indice + 1) % bancoPreguntas.length;
             actualizarPregunta();
         }
+
+        // Permitir Enter para enviar
+        document.getElementById("respuesta").addEventListener("keyup", function(e) {
+            if (e.key === "Enter") validar();
+        });
     </script>
 </body>
 </html>
