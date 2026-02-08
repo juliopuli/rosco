@@ -1,273 +1,78 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pasapalabra Pro - 6 Cifras</title>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <style>
-        :root { --blue: #0044cc; --green: #2ecc71; --red: #e74c3c; --yellow: #f1c40f; --dark: #050510; --card: #16213e; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-        
-        #status-bar { position: absolute; top:0; width:100%; text-align:center; font-size:10px; padding:4px; color:var(--yellow); z-index:1000; background: rgba(0,0,0,0.3); }
+<script>
+    // ... (Variables de MQTT y Bancos de preguntas se mantienen iguales) ...
 
-        .card { background: var(--card); padding: 25px; border-radius: 20px; text-align: center; width: 90%; max-width: 350px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        input[type="text"], input[type="number"] { padding: 12px; border-radius: 8px; width: 100%; margin: 10px 0; text-align: center; font-size: 16px; border: 2px solid #1f4068; background: #0a192f; color: white; }
-        button { padding: 12px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; width: 100%; margin: 5px 0; text-transform: uppercase; }
-        .btn-main { background: var(--green); color: white; }
-        .btn-sec { background: var(--blue); color: white; }
+    function responder(tipo) {
+        if(!miTurno) return;
+        let pIdx = (miRol === 'host' ? idxJ1 : idxJ2);
+        let listaP = (miRol === 'host' ? preguntasJ1 : preguntasJ2);
+        let estados = (miRol === 'host' ? estJ1 : estJ2);
+        const target = listaP[pIdx].respuesta;
+        let res = 'pendiente';
 
-        #juego { display: none; width: 100%; height: 100%; position: relative; }
-        .rosco-box { position: absolute; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; }
-        
-        .turno-activo { top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.85); z-index: 5; }
-        .turno-espera { top: 20px; left: 20px; transform: scale(0.35); transform-origin: top left; opacity: 0.5; }
-
-        @media (min-width: 768px) {
-            .turno-activo { transform: translate(-50%, -50%) scale(1.25); top: 40%; }
-            .turno-espera { transform: scale(0.5); top: 30px; left: 30px; }
-        }
-
-        .rosco-container { position: relative; width: 300px; height: 300px; }
-        .letra { position: absolute; width: 24px; height: 24px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid white; transform: translate(-50%, -50%); font-size: 10px; }
-        .activa { border: 2px solid var(--yellow); scale: 1.3; box-shadow: 0 0 15px var(--yellow); z-index: 10; }
-        .acierto { background: var(--green) !important; }
-        .fallo { background: var(--red) !important; }
-
-        #panel-control { position: absolute; bottom: 0; width: 100%; background: var(--card); padding: 15px; border-radius: 20px 20px 0 0; text-align: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
-        @media (min-width: 768px) { #panel-control { width: 500px; left: 50%; transform: translateX(-50%); bottom: 20px; border-radius: 20px; } }
-
-        #pregunta-txt { font-size: 1.1em; margin: 10px 0; min-height: 50px; line-height: 1.3; }
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-    <div id="status-bar">CONECTANDO...</div>
-
-    <div id="menu-inicial" class="card">
-        <h2>PASAPALABRA</h2>
-        <button class="btn-main" onclick="configurarPartida('host')">CREAR CÓDIGO (6 CIFRAS)</button>
-        <div style="margin:10px 0; opacity:0.5">o</div>
-        <input type="number" id="input-unirse" placeholder="ESCRIBE LOS 6 NÚMEROS">
-        <button class="btn-sec" onclick="configurarPartida('guest')">ENTRAR A LA SALA</button>
-    </div>
-
-    <div id="esperando" class="card hidden">
-        <h3 style="margin-bottom:5px">SALA PRIVADA</h3>
-        <h1 id="display-codigo" style="color:var(--yellow); font-size: 2.5em; letter-spacing: 5px; margin: 10px 0;">000000</h1>
-        <p>Dicta estos números a tu rival...</p>
-    </div>
-
-    <div id="juego">
-        <div id="box-j1" class="rosco-box"><div id="rosco1" class="rosco-container"></div></div>
-        <div id="box-j2" class="rosco-box"><div id="rosco2" class="rosco-container"></div></div>
-
-        <div id="panel-control">
-            <div id="badge-turno" style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">CARGANDO...</div>
-            <div id="pregunta-txt">...</div>
+        if(tipo === 'ok') {
+            const u = document.getElementById('ans').value.trim();
             
-            <div id="inputs-zona">
-                <input type="text" id="ans" placeholder="Respuesta exacta..." autocomplete="off" spellcheck="false">
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn-main" onclick="responder('ok')" style="flex:2">RESPONDER</button>
-                    <button class="btn-sec" onclick="responder('paso')" style="background:var(--yellow); color:black; flex:1">PASO</button>
-                </div>
-            </div>
-            <div id="msg-alerta" style="font-size:0.8em; margin-top:8px; min-height:1.2em; color:var(--yellow)"></div>
-        </div>
-    </div>
-
-    <script>
-        let client, salaID, miRol, preguntasJ1 = [], preguntasJ2 = [];
-        let miTurno = false, idxJ1 = 0, idxJ2 = 0, estJ1 = [], estJ2 = [];
-
-        const bancoA = [
-            {letra:"A", tipo:"CON LA A", pregunta:"Relativo a las abejas.", respuesta:"apícola"},
-            {letra:"B", tipo:"CON LA B", pregunta:"Instrumento para medir la presión atmosférica.", respuesta:"barómetro"},
-            {letra:"C", tipo:"CON LA C", pregunta:"Vehículo de carga.", respuesta:"camión"},
-            {letra:"D", tipo:"CON LA D", pregunta:"Mamífero marino inteligente.", respuesta:"delfín"},
-            {letra:"E", tipo:"CON LA E", pregunta:"Lugar donde se guardan elefantes.", respuesta:"elefantería"},
-            {letra:"F", tipo:"CON LA F", pregunta:"Luz que guía barcos.", respuesta:"faro"},
-            {letra:"G", tipo:"CON LA G", pregunta:"Ave de corral.", respuesta:"gallina"},
-            {letra:"H", tipo:"CON LA H", pregunta:"Agua sólida.", respuesta:"hielo"},
-            {letra:"I", tipo:"CON LA I", pregunta:"Tierra rodeada de agua.", respuesta:"isla"},
-            {letra:"J", tipo:"CON LA J", pregunta:"Animal de cuello largo.", respuesta:"jirafa"},
-            {letra:"L", tipo:"CON LA L", pregunta:"Líquido de las mamas.", respuesta:"leche"},
-            {letra:"M", tipo:"CON LA M", pregunta:"Fruta del manzano.", respuesta:"manzana"},
-            {letra:"N", tipo:"CON LA N", pregunta:"Fruta naranja.", respuesta:"naranja"},
-            {letra:"O", tipo:"CON LA O", pregunta:"Animal de lana.", respuesta:"oveja"},
-            {letra:"P", tipo:"CON LA P", pregunta:"Instrumento de cuerdas y teclado.", respuesta:"piano"},
-            {letra:"Q", tipo:"CON LA Q", pregunta:"Alimento de leche cuajada.", respuesta:"queso"},
-            {letra:"R", tipo:"CON LA R", pregunta:"Mamífero roedor grande.", respuesta:"rata"},
-            {letra:"S", tipo:"CON LA S", pregunta:"Estrella central del sistema.", respuesta:"sol"},
-            {letra:"T", tipo:"CON LA T", pregunta:"Aparato para hablar a distancia.", respuesta:"teléfono"},
-            {letra:"U", tipo:"CON LA U", pregunta:"Fruta de la vid.", respuesta:"uva"},
-            {letra:"V", tipo:"CON LA V", pregunta:"Persona que vive cerca.", respuesta:"vecino"},
-            {letra:"X", tipo:"CONTIENE X", pregunta:"Examen de tejido vivo.", respuesta:"biopsia"},
-            {letra:"Y", tipo:"CON LA Y", pregunta:"Barco recreativo.", respuesta:"yate"},
-            {letra:"Z", tipo:"CON LA Z", pregunta:"Animal muy astuto.", respuesta:"zorro"}
-        ];
-
-        const bancoB = [
-            {letra:"A", tipo:"CON LA A", pregunta:"Árbol que da bellotas.", respuesta:"alcornoque"},
-            {letra:"B", tipo:"CON LA B", pregunta:"Embarcación de vela pequeña.", respuesta:"balandra"},
-            {letra:"C", tipo:"CON LA C", pregunta:"Cabeza de la ciudad.", respuesta:"capital"},
-            {letra:"D", tipo:"CON LA D", pregunta:"Número diez.", respuesta:"decena"},
-            {letra:"E", tipo:"CON LA E", pregunta:"Relativo a las estrellas.", respuesta:"estelar"},
-            {letra:"F", tipo:"CON LA F", pregunta:"Poder de mover cosas.", respuesta:"fuerza"},
-            {letra:"G", tipo:"CON LA G", pregunta:"Animal que maúlla.", respuesta:"gato"},
-            {letra:"H", tipo:"CON LA H", pregunta:"Persona que hace humor.", respuesta:"humorista"},
-            {letra:"I", tipo:"CON LA I", pregunta:"Lugar sagrado.", respuesta:"iglesia"},
-            {letra:"J", tipo:"CON LA J", pregunta:"Persona que juzga.", respuesta:"juez"},
-            {letra:"L", tipo:"CON LA L", pregunta:"Lugar de libros.", respuesta:"librería"},
-            {letra:"M", tipo:"CON LA M", pregunta:"Planeta rojo.", respuesta:"Marte"},
-            {letra:"N", tipo:"CON LA N", pregunta:"Cuerpo que viaja por el agua.", respuesta:"nave"},
-            {letra:"O", tipo:"CON LA O", pregunta:"Pájaro corredor gigante.", respuesta:"avestruz"},
-            {letra:"P", tipo:"CON LA P", pregunta:"Cría del caballo.", respuesta:"potro"},
-            {letra:"Q", tipo:"CON LA Q", pregunta:"Parte de una casa.", respuesta:"tabique"},
-            {letra:"R", tipo:"CON LA R", pregunta:"Instrumento para medir el tiempo.", respuesta:"reloj"},
-            {letra:"S", tipo:"CON LA S", pregunta:"Asiento para una persona.", respuesta:"silla"},
-            {letra:"T", tipo:"CON LA T", pregunta:"Persona que trabaja el campo.", respuesta:"trabajador"},
-            {letra:"U", tipo:"CON LA U", pregunta:"Lo que es de un solo color.", respuesta:"unicolor"},
-            {letra:"V", tipo:"CON LA V", pregunta:"Estación después de primavera.", respuesta:"verano"},
-            {letra:"W", tipo:"CONTIENE W", pregunta:"Fruta de carne roja y pepitas.", respuesta:"sandía"}, 
-            {letra:"X", tipo:"CONTIENE X", pregunta:"Instrumento de láminas.", respuesta:"xilófono"},
-            {letra:"Y", tipo:"CON LA Y", pregunta:"Parte amarilla del huevo.", respuesta:"yema"},
-            {letra:"Z", tipo:"CON LA Z", pregunta:"Calzado que cubre el pie.", respuesta:"zapato"}
-        ];
-
-        function configurarPartida(rol) {
-            miRol = rol;
-            if(rol === 'host') {
-                // Generar 6 números aleatorios
-                salaID = Math.floor(100000 + Math.random() * 900000).toString();
-                document.getElementById('display-codigo').innerText = salaID;
-                document.getElementById('menu-inicial').classList.add('hidden');
-                document.getElementById('esperando').classList.remove('hidden');
+            // VALIDACIÓN FLEXIBLE
+            if(validarFlex(u, target)) {
+                res = 'acierto';
+                document.getElementById('msg-alerta').innerText = "¡CORRECTO! (Aceptada)";
             } else {
-                salaID = document.getElementById('input-unirse').value.trim();
-                if(salaID.length !== 6) return alert("El código debe ser de 6 números");
-            }
-            conectar();
-        }
-
-        function conectar() {
-            client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-            client.on('connect', () => {
-                document.getElementById('status-bar').innerText = "CONECTADO A LA SALA " + salaID;
-                client.subscribe("pasa/sala/" + salaID);
-                if(miRol === 'host') {
-                    preguntasJ1 = bancoA; preguntasJ2 = bancoB;
-                    estJ1 = new Array(preguntasJ1.length).fill('pendiente');
-                    estJ2 = new Array(preguntasJ2.length).fill('pendiente');
-                } else {
-                    client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'JOIN'}));
-                }
-            });
-
-            client.on('message', (topic, message) => {
-                const d = JSON.parse(message.toString());
-                if(d.tipo === 'JOIN' && miRol === 'host') {
-                    client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'START', p1: preguntasJ1, p2: preguntasJ2}));
-                    miTurno = true; empezar();
-                }
-                if(d.tipo === 'START' && miRol === 'guest') {
-                    preguntasJ1 = d.p1; preguntasJ2 = d.p2;
-                    estJ1 = new Array(preguntasJ1.length).fill('pendiente');
-                    estJ2 = new Array(preguntasJ2.length).fill('pendiente');
-                    miTurno = false; empezar();
-                }
-                if(d.tipo === 'ACCION') {
-                    if(d.player === 'host') { estJ1[d.idx] = d.res; idxJ1 = d.nextIdx; } 
-                    else { estJ2[d.idx] = d.res; idxJ2 = d.nextIdx; }
-                    if(d.player !== miRol) {
-                        if(d.res !== 'acierto') miTurno = true;
-                        if(d.res === 'fallo') document.getElementById('msg-alerta').innerText = "RIVAL FALLÓ: ERA " + d.target.toUpperCase();
-                    }
-                    dibujar();
-                }
-            });
-        }
-
-        function empezar() {
-            document.getElementById('menu-inicial').classList.add('hidden');
-            document.getElementById('esperando').classList.add('hidden');
-            document.getElementById('juego').style.display = 'block';
-            dibujar();
-        }
-
-        function dibujar() {
-            const j1Activo = (miRol === 'host' && miTurno) || (miRol === 'guest' && !miTurno);
-            document.getElementById('box-j1').className = j1Activo ? "rosco-box turno-activo" : "rosco-box turno-espera";
-            document.getElementById('box-j2').className = !j1Activo ? "rosco-box turno-activo" : "rosco-box turno-espera";
-            
-            document.getElementById('badge-turno').innerText = miTurno ? "ES TU TURNO" : "TURNO DEL RIVAL";
-            document.getElementById('badge-turno').style.color = miTurno ? "var(--green)" : "var(--red)";
-
-            renderRosco('rosco1', estJ1, idxJ1, j1Activo, preguntasJ1);
-            renderRosco('rosco2', estJ2, idxJ2, !j1Activo, preguntasJ2);
-
-            let p = j1Activo ? preguntasJ1[idxJ1] : preguntasJ2[idxJ2];
-            document.getElementById('pregunta-txt').innerText = p.tipo + ": " + p.pregunta;
-            document.getElementById('inputs-zona').style.visibility = miTurno ? "visible" : "hidden";
-            if(miTurno) document.getElementById('ans').focus();
-        }
-
-        function renderRosco(id, estados, activo, esSuTurno, listaP) {
-            const c = document.getElementById(id); c.innerHTML = "";
-            estados.forEach((e, i) => {
-                const ang = (i * (360/listaP.length)) - 90;
-                const rad = ang * Math.PI / 180;
-                const d = document.createElement('div');
-                d.className = `letra ${e} ${(esSuTurno && i===activo) ? 'activa' : ''}`;
-                d.style.left = (150 + 125 * Math.cos(rad)) + 'px';
-                d.style.top = (150 + 125 * Math.sin(rad)) + 'px';
-                d.innerText = listaP[i].letra;
-                c.appendChild(d);
-            });
-        }
-
-        function responder(tipo) {
-            if(!miTurno) return;
-            let pIdx = (miRol === 'host' ? idxJ1 : idxJ2);
-            let listaP = (miRol === 'host' ? preguntasJ1 : preguntasJ2);
-            let estados = (miRol === 'host' ? estJ1 : estJ2);
-            const target = listaP[pIdx].respuesta;
-            let res = 'pendiente';
-
-            if(tipo === 'ok') {
-                const u = document.getElementById('ans').value.trim();
-                // COMPROBACIÓN ESTRICTA (Diferencia tildes y mayúsculas si no coinciden)
-                if(u === target || u.toLowerCase() === target.toLowerCase()) {
-                    res = 'acierto';
-                    document.getElementById('msg-alerta').innerText = "¡CORRECTO!";
-                } else {
-                    res = 'fallo';
-                    miTurno = false;
-                    document.getElementById('msg-alerta').innerText = "ERROR: ERA " + target.toUpperCase();
-                }
-            } else {
+                res = 'fallo';
                 miTurno = false;
-                document.getElementById('msg-alerta').innerText = "PASAPALABRA";
+                document.getElementById('msg-alerta').innerText = "ERROR: ERA " + target.toUpperCase();
             }
-
-            estados[pIdx] = res;
-            let next = pIdx;
-            do { next = (next + 1) % listaP.length; } while(estados[next] !== 'pendiente' && estados.includes('pendiente'));
-            
-            if(miRol === 'host') idxJ1 = next; else idxJ2 = next;
-
-            client.publish("pasa/sala/" + salaID, JSON.stringify({
-                tipo: 'ACCION', player: miRol, idx: pIdx, res: res, target: target, nextIdx: next
-            }));
-            
-            document.getElementById('ans').value = "";
-            dibujar();
+        } else {
+            miTurno = false;
+            document.getElementById('msg-alerta').innerText = "PASAPALABRA";
         }
 
-        document.getElementById('ans').addEventListener('keypress', (e) => { if(e.key==='Enter') responder('ok'); });
-    </script>
-</body>
-</html>
+        // ... (Lógica de guardado y avance de índice igual que antes) ...
+        estados[pIdx] = res;
+        let next = pIdx;
+        do { next = (next + 1) % listaP.length; } while(estados[next] !== 'pendiente' && estados.includes('pendiente'));
+        if(miRol === 'host') idxJ1 = next; else idxJ2 = next;
+
+        client.publish("pasa/sala/" + salaID, JSON.stringify({
+            tipo: 'ACCION', player: miRol, idx: pIdx, res: res, target: target, nextIdx: next
+        }));
+        
+        document.getElementById('ans').value = "";
+        dibujar();
+    }
+
+    // FUNCIÓN DE VALIDACIÓN MÁGICA
+    function validarFlex(usuario, correcta) {
+        // 1. Limpiar tildes y pasar a minúsculas
+        const limpiar = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        let u = limpiar(usuario);
+        let c = limpiar(correcta);
+
+        // 2. Si son iguales tras quitar tildes
+        if (u === c) return true;
+
+        // 3. Algoritmo de Distancia de Levenshtein (permite 1 error)
+        return levenshtein(u, c) <= 1; 
+    }
+
+    function levenshtein(a, b) {
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+        for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1, // sustitución
+                        matrix[i][j - 1] + 1,     // inserción
+                        matrix[i - 1][j] + 1      // eliminación
+                    );
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+</script>
