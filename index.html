@@ -2,737 +2,261 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra Online</title>
+    <title>Pasapalabra Online Sincronizado</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
-        body { background: #050510; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
+        body { background: #050510; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
         
-        /* Pantalla de Inicio */
-        #menu-inicial, #menu-online { background: #16213e; padding: 40px; border-radius: 20px; text-align: center; margin-top: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* Menús */
+        .card { background: #16213e; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 400px; width: 100%; margin-top: 50px; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #1f4068; background: #0a192f; color: white; width: 80%; margin: 10px 0; font-size: 1.1em; text-align: center; }
+        button { padding: 12px 20px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; margin: 5px; transition: 0.3s; }
+        .btn-main { background: #2ecc71; color: white; width: 100%; }
+        .btn-sec { background: #0044cc; color: white; width: 100%; }
         
-        /* Contenedores de Roscos */
-        #juego { display: none; width: 100%; max-width: 1000px; justify-content: space-around; flex-wrap: wrap; }
-        .rosco-box { text-align: center; position: relative; width: 420px; height: 450px; }
-        .rosco-container { position: relative; width: 350px; height: 350px; margin: 0 auto; }
-        
-        /* Estilos Letras */
-        .letra { position: absolute; width: 28px; height: 28px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: translate(-50%, -50%); font-size: 12px; transition: 0.3s; }
-        .activa { border: 4px solid #f1c40f; scale: 1.2; box-shadow: 0 0 15px #f1c40f; }
+        /* Juego */
+        #juego { display: none; width: 100%; justify-content: space-around; align-items: flex-start; margin-top: 20px; }
+        .rosco-side { display: flex; flex-direction: column; align-items: center; width: 350px; }
+        .rosco-container { position: relative; width: 320px; height: 320px; margin: 20px; }
+        .letra { position: absolute; width: 26px; height: 26px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid white; transform: translate(-50%, -50%); font-size: 11px; }
+        .activa { border: 3px solid #f1c40f; scale: 1.3; box-shadow: 0 0 15px #f1c40f; z-index: 10; }
         .acierto { background: #2ecc71 !important; }
         .fallo { background: #e74c3c !important; }
 
-        /* Panel de control */
-        #panel-control { background: #16213e; padding: 20px; border-radius: 15px; margin-top: 20px; width: 90%; max-width: 500px; text-align: center; }
-        input { padding: 10px; border-radius: 5px; border: none; margin: 10px; width: 70%; }
-        button { padding: 12px 20px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; background: #2ecc71; color: white; margin: 5px; }
-        .btn-blue { background: #0044cc; }
-        .turno-aviso { color: #f1c40f; font-weight: bold; margin: 10px; height: 24px; }
+        #panel-central { width: 400px; background: #16213e; padding: 20px; border-radius: 15px; text-align: center; }
+        .turno-tag { padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .mi-turno { background: #2ecc71; color: #050510; }
+        .su-turno { background: #e74c3c; color: white; }
         
-        .hidden { display: none !important; }
+        .hidden { display: none; }
+        #copy-code { background: #34495e; color: #ecf0f1; padding: 10px; border-radius: 5px; cursor: pointer; font-family: monospace; }
     </style>
 </head>
 <body>
 
-    <div id="menu-inicial">
+    <div id="menu-inicial" class="card">
         <h1>PASAPALABRA</h1>
-        <button class="btn-blue" onclick="iniciarLocal()">MODO LOCAL</button>
-        <button onclick="mostrarOnline()">MODO ONLINE</button>
+        <button class="btn-main" onclick="iniciarModo('local')">MODO LOCAL</button>
+        <button class="btn-sec" onclick="mostrarMenuOnline()">MODO ONLINE</button>
     </div>
 
-    <div id="menu-online" class="hidden">
-        <h2>Modo Online</h2>
-        <input type="text" id="sala-id" placeholder="Código de sala (ej: PATATA123)">
-        <br>
-        <button onclick="conectarOnline('host')">GENERAR CÓDIGO (Ser Jugador 1)</button>
-        <button class="btn-blue" onclick="conectarOnline('guest')">UNIRSE A PARTIDA (Ser Jugador 2)</button>
-        <br>
-        <button style="background: #555" onclick="location.reload()">VOLVER</button>
+    <div id="menu-online" class="card hidden">
+        <div id="paso-1">
+            <button class="btn-main" onclick="generarCodigoPartida()">GENERAR CÓDIGO</button>
+            <p>o</p>
+            <input type="text" id="input-unirse" placeholder="Pega el código aquí">
+            <button class="btn-sec" onclick="unirseAPartida()">UNIRSE A PARTIDA</button>
+        </div>
+        
+        <div id="esperando" class="hidden">
+            <h3>Código de tu sala:</h3>
+            <div id="copy-code" onclick="copiarCodigo()">---</div>
+            <p>Pásale este código a tu amigo. <br> Esperando conexión...</p>
+        </div>
     </div>
 
     <div id="juego">
-        <div class="rosco-box">
-            <h3 id="nombre-j1">Jugador 1</h3>
+        <div class="rosco-side">
+            <h3 id="label-j1">TÚ</h3>
             <div id="rosco1" class="rosco-container"></div>
         </div>
-        
-        <div id="panel-control">
-            <div id="turno-texto" class="turno-aviso">Esperando contrincante...</div>
-            <h4 id="pregunta-texto">La pregunta aparecerá aquí</h4>
-            <div id="interaccion">
-                <input type="text" id="input-respuesta" placeholder="Escribe tu respuesta..." autocomplete="off">
+
+        <div id="panel-central">
+            <div id="badge-turno" class="turno-tag">Cargando...</div>
+            <p id="pregunta-txt">Esperando al otro jugador...</p>
+            <div id="controles">
+                <input type="text" id="ans" placeholder="Escribe..." autocomplete="off">
                 <br>
-                <button onclick="enviarAccion('responder')">RESPONDER</button>
-                <button style="background:#f1c40f; color:black" onclick="enviarAccion('pasapalabra')">PASAPALABRA</button>
+                <button class="btn-main" onclick="procesarAccion('ok')">RESPONDER</button>
+                <button class="btn-sec" onclick="procesarAccion('paso')" style="background:#f1c40f; color:black">PASAPALABRA</button>
             </div>
         </div>
 
-        <div class="rosco-box">
-            <h3 id="nombre-j2">Jugador 2</h3>
+        <div class="rosco-side">
+            <h3 id="label-j2">RIVAL</h3>
             <div id="rosco2" class="rosco-container"></div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN MQTT
-        let client;
-        let salaActual = "";
-        let miRol = "local"; // host, guest, local
-        let miTurno = true;
-        let misAciertos = 0;
-        let misFallos = 0;
+        let client, salaID, miRol; 
+        let miTurno = false;
         let preguntas = [];
-        let indexPregunta = 0;
+        let idxJ1 = 0, idxJ2 = 0;
+        let estadosJ1 = [], estadosJ2 = [];
 
-        // Estado de los roscos
-        let estadoJ1 = []; 
-        let estadoJ2 = [];
-
-        async function cargarPreguntas() {
-            const res = await fetch('preguntas.json?v=' + Date.now());
-            preguntas = await res.json();
-            estadoJ1 = preguntas.map(p => 'pendiente');
-            estadoJ2 = preguntas.map(p => 'pendiente');
-        }
-
-        // --- LÓGICA DE NAVEGACIÓN ---
-        function iniciarLocal() {
-            miRol = "local";
-            document.getElementById('menu-inicial').classList.add('hidden');
-            document.getElementById('juego').style.display = 'flex';
-            document.getElementById('nombre-j2').classList.add('hidden');
-            document.getElementById('rosco2').classList.add('hidden');
-            document.getElementById('turno-texto').innerText = "MODO LOCAL";
-            setupPartida();
-        }
-
-        function mostrarOnline() {
+        // 1. NAVEGACIÓN
+        function mostrarMenuOnline() {
             document.getElementById('menu-inicial').classList.add('hidden');
             document.getElementById('menu-online').classList.remove('hidden');
         }
 
-        // --- LÓGICA MQTT ---
-        function conectarOnline(rol) {
-            salaActual = document.getElementById('sala-id').value.trim();
-            if(!salaActual) return alert("Pon un código");
-            
-            miRol = rol;
-            miTurno = (rol === 'host');
+        // 2. GENERAR CÓDIGO (HOST)
+        function generarCodigoPartida() {
+            salaID = Math.random().toString(36).substring(2, 8).toUpperCase();
+            miRol = 'host';
+            miTurno = true;
+            document.getElementById('copy-code').innerText = salaID;
+            document.getElementById('paso-1').classList.add('hidden');
+            document.getElementById('esperando').classList.remove('hidden');
+            conectarMQTT();
+        }
 
-            // Conectar al broker gratuito de HiveMQ (vía WebSockets)
-            client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "user_" + Math.random());
-            
-            client.onMessageArrived = recibirMensaje;
+        // 3. UNIRSE (GUEST)
+        function unirseAPartida() {
+            salaID = document.getElementById('input-unirse').value.trim().toUpperCase();
+            if(!salaID) return alert("Introduce un código");
+            miRol = 'guest';
+            miTurno = false;
+            conectarMQTT();
+        }
+
+        // 4. MQTT LOGIC
+        function conectarMQTT() {
+            client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "pasa_" + Math.random());
+            client.onMessageArrived = manejarMensaje;
             client.connect({ onSuccess: () => {
-                client.subscribe("pasapalabra/" + salaActual);
-                document.getElementById('menu-online').classList.add('hidden');
-                document.getElementById('juego').style.display = 'flex';
-                setupPartida();
-                
-                // Avisar que estamos listos
-                enviarMQTT({ tipo: 'SISTEMA', texto: 'Jugador conectado', rol: miRol });
+                client.subscribe("pasa/sala/" + salaID);
+                if(miRol === 'host') {
+                    // El host carga las preguntas y espera al invitado
+                    prepararPreguntasHost();
+                } else {
+                    // El invitado avisa que entró
+                    enviarMsg({ tipo: 'JOIN' });
+                }
             }});
         }
 
-        function enviarMQTT(obj) {
-            if(miRol === 'local') return;
+        async function prepararPreguntasHost() {
+            const res = await fetch('preguntas.json');
+            preguntas = await res.json();
+            estadosJ1 = new Array(preguntas.length).fill('pendiente');
+            estadosJ2 = new Array(preguntas.length).fill('pendiente');
+        }
+
+        function enviarMsg(obj) {
             const message = new Paho.MQTT.Message(JSON.stringify(obj));
-            message.destinationName = "pasapalabra/" + salaActual;
+            message.destinationName = "pasa/sala/" + salaID;
             client.send(message);
         }
 
-        function recibirMensaje(msg) {
+        function manejarMensaje(msg) {
             const data = JSON.parse(msg.payloadString);
-            
-            // Si el otro responde, actualizamos su rosco
+
+            if(data.tipo === 'JOIN' && miRol === 'host') {
+                // Invitado entró: El host le manda las preguntas
+                enviarMsg({ tipo: 'START', preguntas: preguntas });
+                empezarJuego();
+            }
+
+            if(data.tipo === 'START' && miRol === 'guest') {
+                preguntas = data.preguntas;
+                estadosJ1 = new Array(preguntas.length).fill('pendiente');
+                estadosJ2 = new Array(preguntas.length).fill('pendiente');
+                empezarJuego();
+            }
+
             if(data.tipo === 'ACCION') {
-                if(data.rol !== miRol) {
-                    const roscoEnemigo = (data.rol === 'host') ? estadoJ1 : estadoJ2;
-                    roscoEnemigo[data.idx] = data.resultado;
-                    dibujarRoscos();
-                    
-                    if(data.resultado !== 'acierto') {
-                        miTurno = true;
-                        actualizarUI();
-                    }
+                if(data.player !== miRol) {
+                    actualizarEstadoRival(data);
                 }
             }
         }
 
-        // --- LÓGICA DEL JUEGO ---
-        async function setupPartida() {
-            await cargarPreguntas();
+        // 5. LÓGICA DE JUEGO
+        function empezarJuego() {
+            document.getElementById('menu-online').classList.add('hidden');
+            document.getElementById('menu-inicial').classList.add('hidden');
+            document.getElementById('juego').style.display = 'flex';
             dibujarRoscos();
             actualizarUI();
         }
 
         function dibujarRoscos() {
-            renderRosco('rosco1', estadoJ1, (miRol === 'host' && miTurno));
-            renderRosco('rosco2', estadoJ2, (miRol === 'guest' && miTurno));
+            renderRosco('rosco1', estadosJ1, (miRol === 'host' ? idxJ1 : idxJ2)); 
+            renderRosco('rosco2', estadosJ2, (miRol === 'host' ? idxJ2 : idxJ1));
         }
 
-        function renderRosco(id, estados, resaltado) {
+        function renderRosco(id, estados, activoIdx) {
             const cont = document.getElementById(id);
             cont.innerHTML = "";
             estados.forEach((est, i) => {
                 const ang = (i * (360 / 24)) - 90;
                 const rad = ang * Math.PI / 180;
                 const div = document.createElement('div');
-                div.className = `letra ${est}`;
-                if(resaltado && i === indexPregunta) div.classList.add('activa');
-                div.style.left = (175 + 150 * Math.cos(rad)) + 'px';
-                div.style.top = (175 + 150 * Math.sin(rad)) + 'px';
+                div.className = `letra ${est} ${i === activoIdx ? 'activa' : ''}`;
+                div.style.left = (160 + 140 * Math.cos(rad)) + 'px';
+                div.style.top = (160 + 140 * Math.sin(rad)) + 'px';
                 div.innerText = preguntas[i].letra;
                 cont.appendChild(div);
             });
         }
 
         function actualizarUI() {
-            const p = preguntas[indexPregunta];
-            document.getElementById('pregunta-texto').innerText = `${p.tipo} ${p.letra}: ${p.pregunta}`;
-            document.getElementById('turno-texto').innerText = miTurno ? "TU TURNO" : "TURNO DEL OPONENTE";
-            document.getElementById('interaccion').style.opacity = miTurno ? "1" : "0.3";
-            document.getElementById('input-respuesta').disabled = !miTurno;
+            const badge = document.getElementById('badge-turno');
+            badge.innerText = miTurno ? "ES TU TURNO" : "TURNO RIVAL";
+            badge.className = "turno-tag " + (miTurno ? "mi-turno" : "su-turno");
+            
+            const pIdx = (miRol === 'host' ? idxJ1 : idxJ2);
+            const p = preguntas[pIdx];
+            document.getElementById('pregunta-txt').innerText = `${p.tipo} ${p.letra}: ${p.pregunta}`;
+            document.getElementById('controles').style.opacity = miTurno ? "1" : "0.3";
+            document.getElementById('ans').disabled = !miTurno;
         }
 
-        function enviarAccion(tipo) {
+        function procesarAccion(tipo) {
             if(!miTurno) return;
+            const input = document.getElementById('ans');
+            const pIdx = (miRol === 'host' ? idxJ1 : idxJ2);
+            let res = 'pendiente';
 
-            const input = document.getElementById('input-respuesta');
-            const user = input.value.toLowerCase().trim(); // Aquí iría tu lógica de Levenshtein
-            const target = preguntas[indexPregunta].respuesta.toLowerCase();
-            
-            let resultado = "";
-
-            if(tipo === 'pasapalabra') {
-                resultado = 'pendiente';
-                miTurno = false; // En online, pasapalabra cede turno
-            } else {
-                if(user === target) { // Simplificado para este ejemplo
-                    resultado = 'acierto';
-                    (miRol === 'host' || miRol === 'local' ? estadoJ1 : estadoJ2)[indexPregunta] = 'acierto';
+            if(tipo === 'ok') {
+                const user = input.value.toLowerCase().trim();
+                const target = preguntas[pIdx].respuesta.toLowerCase();
+                // Aquí podrías meter tu lógica de Levenshtein
+                if(user === target) {
+                    res = 'acierto';
                 } else {
-                    resultado = 'fallo';
-                    (miRol === 'host' || miRol === 'local' ? estadoJ1 : estadoJ2)[indexPregunta] = 'fallo';
+                    res = 'fallo';
                     miTurno = false;
                 }
+            } else {
+                miTurno = false; // Pasapalabra cambia turno
             }
 
-            // Sincronizar por MQTT
-            enviarMQTT({
-                tipo: 'ACCION',
-                rol: miRol,
-                idx: indexPregunta,
-                resultado: resultado
-            });
+            if(miRol === 'host') { estadosJ1[pIdx] = res; if(res !== 'acierto') miTurno = false; }
+            else { estadosJ2[pIdx] = res; if(res !== 'acierto') miTurno = false; }
 
-            // Mover índice a la siguiente pendiente
-            avanzarPregunta();
+            enviarMsg({ tipo: 'ACCION', player: miRol, idx: pIdx, res: res });
+            
+            if(res !== 'pendiente') avanzarIdx();
             input.value = "";
             dibujarRoscos();
             actualizarUI();
         }
 
-        function avanzarPregunta() {
-            // Lógica para buscar la siguiente letra azul
-            indexPregunta = (indexPregunta + 1) % 24;
-            const miEstado = (miRol === 'host' || miRol === 'local') ? estadoJ1 : estadoJ2;
-            let vueltas = 0;
-            while(miEstado[indexPregunta] !== 'pendiente' && vueltas < 24) {
-                indexPregunta = (indexPregunta + 1) % 24;
-                vueltas++;
-            }
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Pasapalabra Online</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-    <style>
-        body { background: #050510; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
-        
-        /* Pantalla de Inicio */
-        #menu-inicial, #menu-online { background: #16213e; padding: 40px; border-radius: 20px; text-align: center; margin-top: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        /* Contenedores de Roscos */
-        #juego { display: none; width: 100%; max-width: 1000px; justify-content: space-around; flex-wrap: wrap; }
-        .rosco-box { text-align: center; position: relative; width: 420px; height: 450px; }
-        .rosco-container { position: relative; width: 350px; height: 350px; margin: 0 auto; }
-        
-        /* Estilos Letras */
-        .letra { position: absolute; width: 28px; height: 28px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: translate(-50%, -50%); font-size: 12px; transition: 0.3s; }
-        .activa { border: 4px solid #f1c40f; scale: 1.2; box-shadow: 0 0 15px #f1c40f; }
-        .acierto { background: #2ecc71 !important; }
-        .fallo { background: #e74c3c !important; }
-
-        /* Panel de control */
-        #panel-control { background: #16213e; padding: 20px; border-radius: 15px; margin-top: 20px; width: 90%; max-width: 500px; text-align: center; }
-        input { padding: 10px; border-radius: 5px; border: none; margin: 10px; width: 70%; }
-        button { padding: 12px 20px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; background: #2ecc71; color: white; margin: 5px; }
-        .btn-blue { background: #0044cc; }
-        .turno-aviso { color: #f1c40f; font-weight: bold; margin: 10px; height: 24px; }
-        
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-    <div id="menu-inicial">
-        <h1>PASAPALABRA</h1>
-        <button class="btn-blue" onclick="iniciarLocal()">MODO LOCAL</button>
-        <button onclick="mostrarOnline()">MODO ONLINE</button>
-    </div>
-
-    <div id="menu-online" class="hidden">
-        <h2>Modo Online</h2>
-        <input type="text" id="sala-id" placeholder="Código de sala (ej: PATATA123)">
-        <br>
-        <button onclick="conectarOnline('host')">GENERAR CÓDIGO (Ser Jugador 1)</button>
-        <button class="btn-blue" onclick="conectarOnline('guest')">UNIRSE A PARTIDA (Ser Jugador 2)</button>
-        <br>
-        <button style="background: #555" onclick="location.reload()">VOLVER</button>
-    </div>
-
-    <div id="juego">
-        <div class="rosco-box">
-            <h3 id="nombre-j1">Jugador 1</h3>
-            <div id="rosco1" class="rosco-container"></div>
-        </div>
-        
-        <div id="panel-control">
-            <div id="turno-texto" class="turno-aviso">Esperando contrincante...</div>
-            <h4 id="pregunta-texto">La pregunta aparecerá aquí</h4>
-            <div id="interaccion">
-                <input type="text" id="input-respuesta" placeholder="Escribe tu respuesta..." autocomplete="off">
-                <br>
-                <button onclick="enviarAccion('responder')">RESPONDER</button>
-                <button style="background:#f1c40f; color:black" onclick="enviarAccion('pasapalabra')">PASAPALABRA</button>
-            </div>
-        </div>
-
-        <div class="rosco-box">
-            <h3 id="nombre-j2">Jugador 2</h3>
-            <div id="rosco2" class="rosco-container"></div>
-        </div>
-    </div>
-
-    <script>
-        // CONFIGURACIÓN MQTT
-        let client;
-        let salaActual = "";
-        let miRol = "local"; // host, guest, local
-        let miTurno = true;
-        let misAciertos = 0;
-        let misFallos = 0;
-        let preguntas = [];
-        let indexPregunta = 0;
-
-        // Estado de los roscos
-        let estadoJ1 = []; 
-        let estadoJ2 = [];
-
-        async function cargarPreguntas() {
-            const res = await fetch('preguntas.json?v=' + Date.now());
-            preguntas = await res.json();
-            estadoJ1 = preguntas.map(p => 'pendiente');
-            estadoJ2 = preguntas.map(p => 'pendiente');
-        }
-
-        // --- LÓGICA DE NAVEGACIÓN ---
-        function iniciarLocal() {
-            miRol = "local";
-            document.getElementById('menu-inicial').classList.add('hidden');
-            document.getElementById('juego').style.display = 'flex';
-            document.getElementById('nombre-j2').classList.add('hidden');
-            document.getElementById('rosco2').classList.add('hidden');
-            document.getElementById('turno-texto').innerText = "MODO LOCAL";
-            setupPartida();
-        }
-
-        function mostrarOnline() {
-            document.getElementById('menu-inicial').classList.add('hidden');
-            document.getElementById('menu-online').classList.remove('hidden');
-        }
-
-        // --- LÓGICA MQTT ---
-        function conectarOnline(rol) {
-            salaActual = document.getElementById('sala-id').value.trim();
-            if(!salaActual) return alert("Pon un código");
-            
-            miRol = rol;
-            miTurno = (rol === 'host');
-
-            // Conectar al broker gratuito de HiveMQ (vía WebSockets)
-            client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "user_" + Math.random());
-            
-            client.onMessageArrived = recibirMensaje;
-            client.connect({ onSuccess: () => {
-                client.subscribe("pasapalabra/" + salaActual);
-                document.getElementById('menu-online').classList.add('hidden');
-                document.getElementById('juego').style.display = 'flex';
-                setupPartida();
-                
-                // Avisar que estamos listos
-                enviarMQTT({ tipo: 'SISTEMA', texto: 'Jugador conectado', rol: miRol });
-            }});
-        }
-
-        function enviarMQTT(obj) {
-            if(miRol === 'local') return;
-            const message = new Paho.MQTT.Message(JSON.stringify(obj));
-            message.destinationName = "pasapalabra/" + salaActual;
-            client.send(message);
-        }
-
-        function recibirMensaje(msg) {
-            const data = JSON.parse(msg.payloadString);
-            
-            // Si el otro responde, actualizamos su rosco
-            if(data.tipo === 'ACCION') {
-                if(data.rol !== miRol) {
-                    const roscoEnemigo = (data.rol === 'host') ? estadoJ1 : estadoJ2;
-                    roscoEnemigo[data.idx] = data.resultado;
-                    dibujarRoscos();
-                    
-                    if(data.resultado !== 'acierto') {
-                        miTurno = true;
-                        actualizarUI();
-                    }
-                }
-            }
-        }
-
-        // --- LÓGICA DEL JUEGO ---
-        async function setupPartida() {
-            await cargarPreguntas();
-            dibujarRoscos();
-            actualizarUI();
-        }
-
-        function dibujarRoscos() {
-            renderRosco('rosco1', estadoJ1, (miRol === 'host' && miTurno));
-            renderRosco('rosco2', estadoJ2, (miRol === 'guest' && miTurno));
-        }
-
-        function renderRosco(id, estados, resaltado) {
-            const cont = document.getElementById(id);
-            cont.innerHTML = "";
-            estados.forEach((est, i) => {
-                const ang = (i * (360 / 24)) - 90;
-                const rad = ang * Math.PI / 180;
-                const div = document.createElement('div');
-                div.className = `letra ${est}`;
-                if(resaltado && i === indexPregunta) div.classList.add('activa');
-                div.style.left = (175 + 150 * Math.cos(rad)) + 'px';
-                div.style.top = (175 + 150 * Math.sin(rad)) + 'px';
-                div.innerText = preguntas[i].letra;
-                cont.appendChild(div);
-            });
-        }
-
-        function actualizarUI() {
-            const p = preguntas[indexPregunta];
-            document.getElementById('pregunta-texto').innerText = `${p.tipo} ${p.letra}: ${p.pregunta}`;
-            document.getElementById('turno-texto').innerText = miTurno ? "TU TURNO" : "TURNO DEL OPONENTE";
-            document.getElementById('interaccion').style.opacity = miTurno ? "1" : "0.3";
-            document.getElementById('input-respuesta').disabled = !miTurno;
-        }
-
-        function enviarAccion(tipo) {
-            if(!miTurno) return;
-
-            const input = document.getElementById('input-respuesta');
-            const user = input.value.toLowerCase().trim(); // Aquí iría tu lógica de Levenshtein
-            const target = preguntas[indexPregunta].respuesta.toLowerCase();
-            
-            let resultado = "";
-
-            if(tipo === 'pasapalabra') {
-                resultado = 'pendiente';
-                miTurno = false; // En online, pasapalabra cede turno
+        function actualizarEstadoRival(data) {
+            if(data.player === 'host') {
+                estadosJ1[data.idx] = data.res;
             } else {
-                if(user === target) { // Simplificado para este ejemplo
-                    resultado = 'acierto';
-                    (miRol === 'host' || miRol === 'local' ? estadoJ1 : estadoJ2)[indexPregunta] = 'acierto';
-                } else {
-                    resultado = 'fallo';
-                    (miRol === 'host' || miRol === 'local' ? estadoJ1 : estadoJ2)[indexPregunta] = 'fallo';
-                    miTurno = false;
-                }
+                estadosJ2[data.idx] = data.res;
             }
-
-            // Sincronizar por MQTT
-            enviarMQTT({
-                tipo: 'ACCION',
-                rol: miRol,
-                idx: indexPregunta,
-                resultado: resultado
-            });
-
-            // Mover índice a la siguiente pendiente
-            avanzarPregunta();
-            input.value = "";
+            if(data.res !== 'acierto') miTurno = true;
             dibujarRoscos();
             actualizarUI();
         }
 
-        function avanzarPregunta() {
-            // Lógica para buscar la siguiente letra azul
-            indexPregunta = (indexPregunta + 1) % 24;
-            const miEstado = (miRol === 'host' || miRol === 'local') ? estadoJ1 : estadoJ2;
-            let vueltas = 0;
-            while(miEstado[indexPregunta] !== 'pendiente' && vueltas < 24) {
-                indexPregunta = (indexPregunta + 1) % 24;
-                vueltas++;
-            }
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Pasapalabra Online</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-    <style>
-        body { background: #050510; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
-        
-        /* Pantalla de Inicio */
-        #menu-inicial, #menu-online { background: #16213e; padding: 40px; border-radius: 20px; text-align: center; margin-top: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        /* Contenedores de Roscos */
-        #juego { display: none; width: 100%; max-width: 1000px; justify-content: space-around; flex-wrap: wrap; }
-        .rosco-box { text-align: center; position: relative; width: 420px; height: 450px; }
-        .rosco-container { position: relative; width: 350px; height: 350px; margin: 0 auto; }
-        
-        /* Estilos Letras */
-        .letra { position: absolute; width: 28px; height: 28px; background: #0044cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: translate(-50%, -50%); font-size: 12px; transition: 0.3s; }
-        .activa { border: 4px solid #f1c40f; scale: 1.2; box-shadow: 0 0 15px #f1c40f; }
-        .acierto { background: #2ecc71 !important; }
-        .fallo { background: #e74c3c !important; }
-
-        /* Panel de control */
-        #panel-control { background: #16213e; padding: 20px; border-radius: 15px; margin-top: 20px; width: 90%; max-width: 500px; text-align: center; }
-        input { padding: 10px; border-radius: 5px; border: none; margin: 10px; width: 70%; }
-        button { padding: 12px 20px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; background: #2ecc71; color: white; margin: 5px; }
-        .btn-blue { background: #0044cc; }
-        .turno-aviso { color: #f1c40f; font-weight: bold; margin: 10px; height: 24px; }
-        
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-    <div id="menu-inicial">
-        <h1>PASAPALABRA</h1>
-        <button class="btn-blue" onclick="iniciarLocal()">MODO LOCAL</button>
-        <button onclick="mostrarOnline()">MODO ONLINE</button>
-    </div>
-
-    <div id="menu-online" class="hidden">
-        <h2>Modo Online</h2>
-        <input type="text" id="sala-id" placeholder="Código de sala (ej: PATATA123)">
-        <br>
-        <button onclick="conectarOnline('host')">GENERAR CÓDIGO (Ser Jugador 1)</button>
-        <button class="btn-blue" onclick="conectarOnline('guest')">UNIRSE A PARTIDA (Ser Jugador 2)</button>
-        <br>
-        <button style="background: #555" onclick="location.reload()">VOLVER</button>
-    </div>
-
-    <div id="juego">
-        <div class="rosco-box">
-            <h3 id="nombre-j1">Jugador 1</h3>
-            <div id="rosco1" class="rosco-container"></div>
-        </div>
-        
-        <div id="panel-control">
-            <div id="turno-texto" class="turno-aviso">Esperando contrincante...</div>
-            <h4 id="pregunta-texto">La pregunta aparecerá aquí</h4>
-            <div id="interaccion">
-                <input type="text" id="input-respuesta" placeholder="Escribe tu respuesta..." autocomplete="off">
-                <br>
-                <button onclick="enviarAccion('responder')">RESPONDER</button>
-                <button style="background:#f1c40f; color:black" onclick="enviarAccion('pasapalabra')">PASAPALABRA</button>
-            </div>
-        </div>
-
-        <div class="rosco-box">
-            <h3 id="nombre-j2">Jugador 2</h3>
-            <div id="rosco2" class="rosco-container"></div>
-        </div>
-    </div>
-
-    <script>
-        // CONFIGURACIÓN MQTT
-        let client;
-        let salaActual = "";
-        let miRol = "local"; // host, guest, local
-        let miTurno = true;
-        let misAciertos = 0;
-        let misFallos = 0;
-        let preguntas = [];
-        let indexPregunta = 0;
-
-        // Estado de los roscos
-        let estadoJ1 = []; 
-        let estadoJ2 = [];
-
-        async function cargarPreguntas() {
-            const res = await fetch('preguntas.json?v=' + Date.now());
-            preguntas = await res.json();
-            estadoJ1 = preguntas.map(p => 'pendiente');
-            estadoJ2 = preguntas.map(p => 'pendiente');
-        }
-
-        // --- LÓGICA DE NAVEGACIÓN ---
-        function iniciarLocal() {
-            miRol = "local";
-            document.getElementById('menu-inicial').classList.add('hidden');
-            document.getElementById('juego').style.display = 'flex';
-            document.getElementById('nombre-j2').classList.add('hidden');
-            document.getElementById('rosco2').classList.add('hidden');
-            document.getElementById('turno-texto').innerText = "MODO LOCAL";
-            setupPartida();
-        }
-
-        function mostrarOnline() {
-            document.getElementById('menu-inicial').classList.add('hidden');
-            document.getElementById('menu-online').classList.remove('hidden');
-        }
-
-        // --- LÓGICA MQTT ---
-        function conectarOnline(rol) {
-            salaActual = document.getElementById('sala-id').value.trim();
-            if(!salaActual) return alert("Pon un código");
-            
-            miRol = rol;
-            miTurno = (rol === 'host');
-
-            // Conectar al broker gratuito de HiveMQ (vía WebSockets)
-            client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "user_" + Math.random());
-            
-            client.onMessageArrived = recibirMensaje;
-            client.connect({ onSuccess: () => {
-                client.subscribe("pasapalabra/" + salaActual);
-                document.getElementById('menu-online').classList.add('hidden');
-                document.getElementById('juego').style.display = 'flex';
-                setupPartida();
-                
-                // Avisar que estamos listos
-                enviarMQTT({ tipo: 'SISTEMA', texto: 'Jugador conectado', rol: miRol });
-            }});
-        }
-
-        function enviarMQTT(obj) {
-            if(miRol === 'local') return;
-            const message = new Paho.MQTT.Message(JSON.stringify(obj));
-            message.destinationName = "pasapalabra/" + salaActual;
-            client.send(message);
-        }
-
-        function recibirMensaje(msg) {
-            const data = JSON.parse(msg.payloadString);
-            
-            // Si el otro responde, actualizamos su rosco
-            if(data.tipo === 'ACCION') {
-                if(data.rol !== miRol) {
-                    const roscoEnemigo = (data.rol === 'host') ? estadoJ1 : estadoJ2;
-                    roscoEnemigo[data.idx] = data.resultado;
-                    dibujarRoscos();
-                    
-                    if(data.resultado !== 'acierto') {
-                        miTurno = true;
-                        actualizarUI();
-                    }
-                }
-            }
-        }
-
-        // --- LÓGICA DEL JUEGO ---
-        async function setupPartida() {
-            await cargarPreguntas();
-            dibujarRoscos();
-            actualizarUI();
-        }
-
-        function dibujarRoscos() {
-            renderRosco('rosco1', estadoJ1, (miRol === 'host' && miTurno));
-            renderRosco('rosco2', estadoJ2, (miRol === 'guest' && miTurno));
-        }
-
-        function renderRosco(id, estados, resaltado) {
-            const cont = document.getElementById(id);
-            cont.innerHTML = "";
-            estados.forEach((est, i) => {
-                const ang = (i * (360 / 24)) - 90;
-                const rad = ang * Math.PI / 180;
-                const div = document.createElement('div');
-                div.className = `letra ${est}`;
-                if(resaltado && i === indexPregunta) div.classList.add('activa');
-                div.style.left = (175 + 150 * Math.cos(rad)) + 'px';
-                div.style.top = (175 + 150 * Math.sin(rad)) + 'px';
-                div.innerText = preguntas[i].letra;
-                cont.appendChild(div);
-            });
-        }
-
-        function actualizarUI() {
-            const p = preguntas[indexPregunta];
-            document.getElementById('pregunta-texto').innerText = `${p.tipo} ${p.letra}: ${p.pregunta}`;
-            document.getElementById('turno-texto').innerText = miTurno ? "TU TURNO" : "TURNO DEL OPONENTE";
-            document.getElementById('interaccion').style.opacity = miTurno ? "1" : "0.3";
-            document.getElementById('input-respuesta').disabled = !miTurno;
-        }
-
-        function enviarAccion(tipo) {
-            if(!miTurno) return;
-
-            const input = document.getElementById('input-respuesta');
-            const user = input.value.toLowerCase().trim(); // Aquí iría tu lógica de Levenshtein
-            const target = preguntas[indexPregunta].respuesta.toLowerCase();
-            
-            let resultado = "";
-
-            if(tipo === 'pasapalabra') {
-                resultado = 'pendiente';
-                miTurno = false; // En online, pasapalabra cede turno
+        function avanzarIdx() {
+            if(miRol === 'host') {
+                do { idxJ1 = (idxJ1 + 1) % 24; } while(estadosJ1[idxJ1] !== 'pendiente');
             } else {
-                if(user === target) { // Simplificado para este ejemplo
-                    resultado = 'acierto';
-                    (miRol === 'host' || miRol === 'local' ? estadoJ1 : estadoJ2)[indexPregunta] = 'acierto';
-                } else {
-                    resultado = 'fallo';
-                    (miRol === 'host' || miRol === 'local' ? estadoJ1 : estadoJ2)[indexPregunta] = 'fallo';
-                    miTurno = false;
-                }
+                do { idxJ2 = (idxJ2 + 1) % 24; } while(estadosJ2[idxJ2] !== 'pendiente');
             }
-
-            // Sincronizar por MQTT
-            enviarMQTT({
-                tipo: 'ACCION',
-                rol: miRol,
-                idx: indexPregunta,
-                resultado: resultado
-            });
-
-            // Mover índice a la siguiente pendiente
-            avanzarPregunta();
-            input.value = "";
-            dibujarRoscos();
-            actualizarUI();
         }
 
-        function avanzarPregunta() {
-            // Lógica para buscar la siguiente letra azul
-            indexPregunta = (indexPregunta + 1) % 24;
-            const miEstado = (miRol === 'host' || miRol === 'local') ? estadoJ1 : estadoJ2;
-            let vueltas = 0;
-            while(miEstado[indexPregunta] !== 'pendiente' && vueltas < 24) {
-                indexPregunta = (indexPregunta + 1) % 24;
-                vueltas++;
-            }
+        function copiarCodigo() {
+            navigator.clipboard.writeText(salaID);
+            alert("Código copiado: " + salaID);
         }
     </script>
 </body>
