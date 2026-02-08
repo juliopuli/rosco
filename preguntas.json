@@ -1,146 +1,124 @@
 [
   {
-    "pregunta": "Insecto que produce miel.",
-    "respuesta": "abeja",
-    "tipo": "CON LA",
-    "letra": "A"
+    "pregunta": "Cuerpo celeste que brilla con luz propia.",
+    "respuesta": "astro",
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Mamífero marino enorme.",
-    "respuesta": "ballena",
-    "tipo": "CON LA",
-    "letra": "B"
+    "pregunta": "Objeto que sirve para iluminar una estancia.",
+    "respuesta": "bombilla",
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Edificio donde vivimos.",
+    "pregunta": "Edificio o lugar donde se vive.",
     "respuesta": "casa",
-    "tipo": "CON LA",
-    "letra": "C"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Reptil extinguido.",
-    "respuesta": "dinosaurio",
-    "tipo": "CON LA",
-    "letra": "D"
+    "pregunta": "Objeto cúbico con puntos que se usa para jugar.",
+    "respuesta": "dado",
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Animal con trompa.",
+    "pregunta": "Animal mamífero con trompa y grandes orejas.",
     "respuesta": "elefante",
-    "tipo": "CON LA",
-    "letra": "E"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Torre con luz para barcos.",
+    "pregunta": "Torre alta con luz que guía a los barcos.",
     "respuesta": "faro",
-    "tipo": "CON LA",
-    "letra": "F"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Ave que pone huevos.",
-    "respuesta": "gallina",
-    "tipo": "CON LA",
-    "letra": "G"
+    "pregunta": "Animal doméstico que maúlla y caza ratones.",
+    "respuesta": "gato",
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Agua congelada.",
+    "pregunta": "Masa de agua congelada por el frío.",
     "respuesta": "hielo",
-    "tipo": "CON LA",
-    "letra": "H"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Tierra rodeada de agua.",
+    "pregunta": "Porción de tierra rodeada de agua por todas partes.",
     "respuesta": "isla",
-    "tipo": "CON LA",
-    "letra": "I"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Animal de cuello largo.",
-    "respuesta": "jirafa",
-    "tipo": "CON LA",
-    "letra": "J"
+    "pregunta": "Líquido que se extrae de las frutas al exprimirlas.",
+    "respuesta": "jugo",
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Satélite de la Tierra.",
+    "pregunta": "Satélite natural que gira alrededor de la Tierra.",
     "respuesta": "luna",
-    "tipo": "CON LA",
-    "letra": "L"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Fruta roja o verde.",
+    "pregunta": "Fruta de piel roja, verde o amarilla.",
     "respuesta": "manzana",
-    "tipo": "CON LA",
-    "letra": "M"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Color oscuro.",
+    "pregunta": "Color que representa la oscuridad total.",
     "respuesta": "negro",
-    "tipo": "CON LA",
-    "letra": "N"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Sirve para escuchar.",
+    "pregunta": "Parte del cuerpo que sirve para oír.",
     "respuesta": "oido",
-    "tipo": "CON LA",
-    "letra": "O"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "El mejor amigo del hombre.",
+    "pregunta": "Animal mamífero conocido como el mejor amigo del hombre.",
     "respuesta": "perro",
-    "tipo": "CON LA",
-    "letra": "P"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Comida hecha de leche.",
+    "pregunta": "Alimento sólido que se obtiene de la leche.",
     "respuesta": "queso",
-    "tipo": "CON LA",
-    "letra": "Q"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Animal al que le gusta el queso.",
-    "respuesta": "raton",
-    "tipo": "CON LA",
-    "letra": "R"
+    "pregunta": "Aparato que sirve para medir el tiempo.",
+    "respuesta": "reloj",
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Estrella del sistema solar.",
-    "respuesta": "sol",
-    "tipo": "CON LA",
-    "letra": "S"
+    "pregunta": "Mueble que sirve para sentarse.",
+    "respuesta": "silla",
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Vehículo sobre raíles.",
+    "pregunta": "Vehículo pesado que circula sobre raíles.",
     "respuesta": "tren",
-    "tipo": "CON LA",
-    "letra": "T"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Fruta para el vino.",
+    "pregunta": "Fruta pequeña que crece en racimos.",
     "respuesta": "uva",
-    "tipo": "CON LA",
-    "letra": "U"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Estación calurosa.",
+    "pregunta": "Estación del año donde hace más calor.",
     "respuesta": "verano",
-    "tipo": "CON LA",
-    "letra": "V"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Instrumento musical.",
-    "respuesta": "xilofono",
-    "tipo": "CON LA",
-    "letra": "X"
+    "pregunta": "Prueba o evaluación de conocimientos.",
+    "respuesta": "examen",
+    "tipo": "CONTIENE LA"
   },
   {
-    "pregunta": "Parte amarilla del huevo.",
+    "pregunta": "Parte central y amarilla del huevo.",
     "respuesta": "yema",
-    "tipo": "CON LA",
-    "letra": "Y"
+    "tipo": "CON LA"
   },
   {
-    "pregunta": "Calzado.",
+    "pregunta": "Calzado que cubre el pie para caminar.",
     "respuesta": "zapato",
-    "tipo": "CON LA",
-    "letra": "Z"
+    "tipo": "CON LA"
   }
 ]
+
+
