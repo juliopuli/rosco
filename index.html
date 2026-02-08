@@ -1,57 +1,180 @@
-// BANCO COMPLETO JUGADOR 1
-const bancoA = [
-    {letra:"A", tipo:"CON LA A", pregunta:"Relativo a las abejas.", respuesta:"apícola"},
-    {letra:"B", tipo:"CON LA B", pregunta:"Instrumento que marca la dirección del viento.", respuesta:"veleta"},
-    {letra:"C", tipo:"CON LA C", pregunta:"Vehículo grande para transportar mercancías.", respuesta:"camión"},
-    {letra:"D", tipo:"CON LA D", pregunta:"Animal marino muy inteligente.", respuesta:"delfín"},
-    {letra:"E", tipo:"CON LA E", pregunta:"Lugar donde se crían elefantes.", respuesta:"elefantería"},
-    {letra:"F", tipo:"CON LA F", pregunta:"Luz potente que guía a los barcos.", respuesta:"faro"},
-    {letra:"G", tipo:"CON LA G", pregunta:"Ave de corral que pone huevos.", respuesta:"gallina"},
-    {letra:"H", tipo:"CON LA H", pregunta:"Agua en estado sólido por el frío.", respuesta:"hielo"},
-    {letra:"I", tipo:"CON LA I", pregunta:"Porción de tierra rodeada de agua.", respuesta:"isla"},
-    {letra:"J", tipo:"CON LA J", pregunta:"Animal de cuello muy largo.", respuesta:"jirafa"},
-    {letra:"L", tipo:"CON LA L", pregunta:"Líquido blanco que dan las vacas.", respuesta:"leche"},
-    {letra:"M", tipo:"CON LA M", pregunta:"Fruta del manzano.", respuesta:"manzana"},
-    {letra:"N", tipo:"CON LA N", pregunta:"Fruta cítrica de color naranja.", respuesta:"naranja"},
-    {letra:"Ñ", tipo:"CONLA Ñ", pregunta:"Persona que tiene pocos años.", respuesta:"niño"},
-    {letra:"O", tipo:"CON LA O", pregunta:"Animal que da lana.", respuesta:"oveja"},
-    {letra:"P", tipo:"CON LA P", pregunta:"Instrumento musical de teclas.", respuesta:"piano"},
-    {letra:"Q", tipo:"CON LA Q", pregunta:"Alimento hecho con leche cuajada.", respuesta:"queso"},
-    {letra:"R", tipo:"CON LA R", pregunta:"Mamífero roedor pequeño.", respuesta:"ratón"},
-    {letra:"S", tipo:"CON LA S", pregunta:"Cuerpo celeste que nos da luz y calor.", respuesta:"sol"},
-    {letra:"T", tipo:"CON LA T", pregunta:"Aparato para hablar a distancia.", respuesta:"teléfono"},
-    {letra:"U", tipo:"CON LA U", pregunta:"Fruta de la cual se hace el vino.", respuesta:"uva"},
-    {letra:"V", tipo:"CON LA V", pregunta:"Persona que vive en el mismo edificio.", respuesta:"vecino"},
-    {letra:"X", tipo:"CONTIENE LA X", pregunta:"Examen de un tejido vivo.", respuesta:"biopsia"},
-    {letra:"Y", tipo:"CON LA Y", pregunta:"Embarcación de lujo.", respuesta:"yate"},
-    {letra:"Z", tipo:"CON LA Z", pregunta:"Calzado que cubre el pie.", respuesta:"zapato"}
-];
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pasapalabra - Juego Completo</title>
+    <style>
+        /* ESTILOS (Sustituyen al archivo CSS que te falta) */
+        body { 
+            background-color: #050a1f; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+            height: 100vh; 
+            margin: 0; 
+        }
+        .rosco-container {
+            position: relative;
+            width: 450px;
+            height: 450px;
+            margin-bottom: 20px;
+        }
+        .letra { 
+            position: absolute; 
+            width: 35px; 
+            height: 35px; 
+            background: #0044ff; 
+            border: 2px solid #fff;
+            border-radius: 50%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-weight: bold; 
+            font-size: 14px;
+            transition: all 0.3s; 
+        }
+        .letra.activa { background: #ffcc00; color: black; transform: scale(1.2); box-shadow: 0 0 15px #ffcc00; }
+        .letra.correcta { background: #28a745; }
+        .letra.incorrecta { background: #dc3545; }
 
-// BANCO COMPLETO JUGADOR 2
-const bancoB = [
-    {letra:"A", tipo:"CON LA A", pregunta:"Árbol que produce bellotas.", respuesta:"alcornoque"},
-    {letra:"B", tipo:"CON LA B", pregunta:"Embarcación de vela pequeña.", respuesta:"balandra"},
-    {letra:"C", tipo:"CON LA C", pregunta:"Población que es cabeza de un estado.", respuesta:"capital"},
-    {letra:"D", tipo:"CON LA D", pregunta:"Número que sigue al nueve.", respuesta:"diez"},
-    {letra:"E", tipo:"CON LA E", pregunta:"Relativo a las estrellas.", respuesta:"estelar"},
-    {letra:"F", tipo:"CON LA F", pregunta:"Capacidad para mover algo pesado.", respuesta:"fuerza"},
-    {letra:"G", tipo:"CON LA G", pregunta:"Animal felino que maúlla.", respuesta:"gato"},
-    {letra:"H", tipo:"CON LA H", pregunta:"Persona que se dedica a hacer reír.", respuesta:"humorista"},
-    {letra:"I", tipo:"CON LA I", pregunta:"Edificio donde se va a rezar.", respuesta:"iglesia"},
-    {letra:"J", tipo:"CON LA J", pregunta:"Persona que dicta sentencia.", respuesta:"juez"},
-    {letra:"L", tipo:"CON LA L", pregunta:"Tienda donde se venden libros.", respuesta:"librería"},
-    {letra:"M", tipo:"CON LA M", pregunta:"El cuarto planeta del sistema solar.", respuesta:"marte"},
-    {letra:"N", tipo:"CON LA N", pregunta:"Cualquier vehículo que navega.", respuesta:"nave"},
-    {letra:"Ñ", tipo:"CONTIENE LA Ñ", pregunta:"Madera de un árbol cortada.", respuesta:"leña"},
-    {letra:"O", tipo:"CON LA O", pregunta:"Ave corredora muy grande.", respuesta:"avestruz"},
-    {letra:"P", tipo:"CON LA P", pregunta:"Cría del caballo.", respuesta:"potro"},
-    {letra:"Q", tipo:"CON LA Q", pregunta:"Pared delgada de una casa.", respuesta:"tabique"},
-    {letra:"R", tipo:"CON LA R", pregunta:"Máquina para medir el tiempo.", respuesta:"reloj"},
-    {letra:"S", tipo:"CON LA S", pregunta:"Mueble para sentarse una persona.", respuesta:"silla"},
-    {letra:"T", tipo:"CON LA T", pregunta:"Persona que realiza un empleo.", respuesta:"trabajador"},
-    {letra:"U", tipo:"CON LA U", pregunta:"Que tiene un solo color.", respuesta:"unicolor"},
-    {letra:"V", tipo:"CON LA V", pregunta:"Estación más calurosa del año.", respuesta:"verano"},
-    {letra:"X", tipo:"CONTIENE LA X", pregunta:"Instrumento musical de láminas.", respuesta:"xilófono"},
-    {letra:"Y", tipo:"CON LA Y", pregunta:"Parte central y amarilla del huevo.", respuesta:"yema"},
-    {letra:"Z", tipo:"CON LA Z", pregunta:"Animal mamífero muy astuto.", respuesta:"zorro"}
-];
+        .panel-control { 
+            background: #111b3d; 
+            padding: 25px; 
+            border-radius: 15px; 
+            border: 1px solid #2a3a6d; 
+            width: 400px;
+            text-align: center;
+        }
+        input { 
+            padding: 12px; 
+            width: 80%; 
+            border-radius: 5px; 
+            border: none; 
+            margin: 15px 0; 
+            font-size: 16px;
+        }
+        .botones { display: flex; gap: 10px; justify-content: center; }
+        button { 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            text-transform: uppercase;
+        }
+        #btn-enviar { background: #2ecc71; color: white; }
+        #btn-paso { background: #f1c40f; color: black; }
+    </style>
+</head>
+<body>
+
+    <div class="rosco-container" id="rosco">
+        </div>
+
+    <div class="panel-control">
+        <h3 id="tipo-pregunta">CARGANDO...</h3>
+        <p id="pregunta-texto">Cargando preguntas del banco de datos...</p>
+        <input type="text" id="respuesta-input" placeholder="Escribe tu respuesta..." autofocus>
+        <div class="botones">
+            <button onclick="comprobarRespuesta()" id="btn-enviar">Enviar</button>
+            <button onclick="pasapalabra()" id="btn-paso">Pasapalabra</button>
+        </div>
+    </div>
+
+    <script>
+        // DATOS EXTRAÍDOS DE TU CÓDIGO
+        const bancoA = [
+            {letra:"A", tipo:"CON LA A", pregunta:"Relativo a las abejas.", respuesta:"apícola"},
+            {letra:"B", tipo:"CON LA B", pregunta:"Instrumento que marca la dirección del viento.", respuesta:"veleta"},
+            {letra:"C", tipo:"CON LA C", pregunta:"Vehículo grande para transportar mercancías.", respuesta:"camión"},
+            {letra:"D", tipo:"CON LA D", pregunta:"Animal marino muy inteligente.", respuesta:"delfín"},
+            {letra:"E", tipo:"CON LA E", pregunta:"Lugar donde se crían elefantes.", respuesta:"elefantería"},
+            {letra:"F", tipo:"CON LA F", pregunta:"Luz potente que guía a los barcos.", respuesta:"faro"},
+            {letra:"G", tipo:"CON LA G", pregunta:"Ave de corral que pone huevos.", respuesta:"gallina"},
+            {letra:"H", tipo:"CON LA H", pregunta:"Agua en estado sólido por el frío.", respuesta:"hielo"},
+            {letra:"I", tipo:"CON LA I", pregunta:"Porción de tierra rodeada de agua.", respuesta:"isla"},
+            {letra:"J", tipo:"CON LA J", pregunta:"Animal de cuello muy largo.", respuesta:"jirafa"},
+            {letra:"L", tipo:"CON LA L", pregunta:"Líquido blanco que dan las vacas.", respuesta:"leche"},
+            {letra:"M", tipo:"CON LA M", pregunta:"Fruta del manzano.", respuesta:"manzana"},
+            {letra:"N", tipo:"CON LA N", pregunta:"Fruta cítrica de color naranja.", respuesta:"naranja"},
+            {letra:"Ñ", tipo:"CONLA Ñ", pregunta:"Persona que tiene pocos años.", respuesta:"niño"},
+            {letra:"O", tipo:"CON LA O", pregunta:"Animal que da lana.", respuesta:"oveja"},
+            {letra:"P", tipo:"CON LA P", pregunta:"Instrumento musical de teclas.", respuesta:"piano"},
+            {letra:"Q", tipo:"CON LA Q", pregunta:"Alimento hecho con leche cuajada.", respuesta:"queso"},
+            {letra:"R", tipo:"CON LA R", pregunta:"Mamífero roedor pequeño.", respuesta:"ratón"},
+            {letra:"S", tipo:"CON LA S", pregunta:"Cuerpo celeste que nos da luz y calor.", respuesta:"sol"},
+            {letra:"T", tipo:"CON LA T", pregunta:"Aparato para hablar a distancia.", respuesta:"teléfono"},
+            {letra:"U", tipo:"CON LA U", pregunta:"Fruta de la cual se hace el vino.", respuesta:"uva"},
+            {letra:"V", tipo:"CON LA V", pregunta:"Persona que vive en el mismo edificio.", respuesta:"vecino"},
+            {letra:"X", tipo:"CONTIENE LA X", pregunta:"Examen de un tejido vivo.", respuesta:"biopsia"},
+            {letra:"Y", tipo:"CON LA Y", pregunta:"Embarcación de lujo.", respuesta:"yate"},
+            {letra:"Z", tipo:"CON LA Z", pregunta:"Calzado que cubre el pie.", respuesta:"zapato"}
+        ];
+
+        let indiceActual = 0;
+        const totalLetras = bancoA.length;
+
+        // Crear el rosco visual
+        function inicializarRosco() {
+            const rosco = document.getElementById('rosco');
+            for (let i = 0; i < totalLetras; i++) {
+                const div = document.createElement('div');
+                div.className = 'letra';
+                div.id = 'letra-' + i;
+                div.innerText = bancoA[i].letra;
+                
+                // Cálculo matemático para colocar en círculo
+                const angle = (i * 360 / totalLetras) - 90;
+                const x = 200 * Math.cos(angle * Math.PI / 180);
+                const y = 200 * Math.sin(angle * Math.PI / 180);
+                
+                div.style.left = `calc(50% + ${x}px - 17px)`;
+                div.style.top = `calc(50% + ${y}px - 17px)`;
+                rosco.appendChild(div);
+            }
+            mostrarPregunta();
+        }
+
+        function mostrarPregunta() {
+            const item = bancoA[indiceActual];
+            document.getElementById('tipo-pregunta').innerText = item.tipo;
+            document.getElementById('pregunta-texto').innerText = item.pregunta;
+            
+            // Marcar letra actual
+            document.querySelectorAll('.letra').forEach(l => l.classList.remove('activa'));
+            document.getElementById('letra-' + indiceActual).classList.add('activa');
+        }
+
+        function comprobarRespuesta() {
+            const input = document.getElementById('respuesta-input');
+            const respuestaUser = input.value.toLowerCase().trim();
+            const respuestaCorrecta = bancoA[indiceActual].respuesta.toLowerCase();
+            const el = document.getElementById('letra-' + indiceActual);
+
+            if (respuestaUser === respuestaCorrecta) {
+                el.classList.add('correcta');
+            } else {
+                el.classList.add('incorrecta');
+            }
+
+            input.value = "";
+            siguiente();
+        }
+
+        function pasapalabra() {
+            siguiente();
+        }
+
+        function siguiente() {
+            indiceActual = (indiceActual + 1) % totalLetras;
+            mostrarPregunta();
+        }
+
+        // Ejecutar al cargar
+        window.onload = inicializarRosco;
+    </script>
+</body>
+</html>
