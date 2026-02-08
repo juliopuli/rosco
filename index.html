@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pasapalabra Online - Mecánica Real</title>
+    <title>Pasapalabra Pro - Ortografía Estricta</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         :root { --blue: #0044cc; --green: #2ecc71; --red: #e74c3c; --yellow: #f1c40f; --dark: #050510; --card: #16213e; }
@@ -19,15 +19,13 @@
         .btn-sec { background: var(--blue); color: white; }
 
         #juego { display: none; width: 100%; height: 100%; position: relative; }
-
         .rosco-box { position: absolute; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; }
         
-        /* Ajuste Responsive */
-        .turno-activo { top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.9); z-index: 5; }
+        .turno-activo { top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.85); z-index: 5; }
         .turno-espera { top: 20px; left: 20px; transform: scale(0.35); transform-origin: top left; opacity: 0.5; }
 
         @media (min-width: 768px) {
-            .turno-activo { transform: translate(-50%, -50%) scale(1.3); top: 40%; }
+            .turno-activo { transform: translate(-50%, -50%) scale(1.25); top: 40%; }
             .turno-espera { transform: scale(0.5); top: 30px; left: 30px; }
         }
 
@@ -49,7 +47,7 @@
     <div id="status-bar">CONECTANDO...</div>
 
     <div id="menu-inicial" class="card">
-        <h2>PASAPALABRA</h2>
+        <h2>PASAPALABRA PRO</h2>
         <button class="btn-main" onclick="configurarPartida('host')">CREAR PARTIDA</button>
         <div style="margin:10px 0; opacity:0.5">o</div>
         <input type="text" id="input-unirse" placeholder="CÓDIGO AQUÍ" maxlength="5">
@@ -66,13 +64,13 @@
         <div id="box-j2" class="rosco-box"><div id="rosco2" class="rosco-container"></div></div>
 
         <div id="panel-control">
-            <div id="badge-turno" style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">COMPROBANDO TURNO...</div>
-            <div id="pregunta-txt">Cargando pregunta...</div>
+            <div id="badge-turno" style="font-size:0.8em; font-weight:bold; margin-bottom:5px;">CONECTANDO...</div>
+            <div id="pregunta-txt">...</div>
             
             <div id="inputs-zona">
-                <input type="text" id="ans" placeholder="Tu respuesta..." autocomplete="off" spellcheck="false">
+                <input type="text" id="ans" placeholder="¡Cuidado con las tildes!" autocomplete="off" spellcheck="false">
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn-main" onclick="responder('ok')" style="flex:2">ENVIAR</button>
+                    <button class="btn-main" onclick="responder('ok')" style="flex:2">RESPONDER</button>
                     <button class="btn-sec" onclick="responder('paso')" style="background:var(--yellow); color:black; flex:1">PASO</button>
                 </div>
             </div>
@@ -81,34 +79,65 @@
     </div>
 
     <script>
-        let client, salaID, miRol, preguntas = [];
+        let client, salaID, miRol, preguntasJ1 = [], preguntasJ2 = [];
         let miTurno = false, idxJ1 = 0, idxJ2 = 0, estJ1 = [], estJ2 = [];
 
-        const bancoOficial = [
-            {letra:"A", tipo:"CON LA A", pregunta:"Relativo a las abejas.", respuesta:"apicola"},
-            {letra:"B", tipo:"CON LA B", pregunta:"Instrumento para el viento.", respuesta:"veleta"},
-            {letra:"C", tipo:"CON LA C", pregunta:"Vehículo de carga.", respuesta:"camion"},
-            {letra:"D", tipo:"CON LA D", pregunta:"Persona que baila.", respuesta:"danzante"},
-            {letra:"E", tipo:"CON LA E", pregunta:"Lugar de elefantes.", respuesta:"elefanteria"},
-            {letra:"F", tipo:"CON LA F", pregunta:"Máquina para moler carne.", respuesta:"fresadora"},
-            {letra:"G", tipo:"CON LA G", pregunta:"Cuidador de ganado.", respuesta:"ganadero"},
+        // BANCO JUGADOR 1
+        const bancoA = [
+            {letra:"A", tipo:"CON LA A", pregunta:"Relativo a las abejas.", respuesta:"apícola"},
+            {letra:"B", tipo:"CON LA B", pregunta:"Instrumento para medir la presión atmosférica.", respuesta:"barómetro"},
+            {letra:"C", tipo:"CON LA C", pregunta:"Vehículo de carga.", respuesta:"camión"},
+            {letra:"D", tipo:"CON LA D", pregunta:"Órgano que permite el gusto.", respuesta:"lengua"}, // Contiene la D
+            {letra:"D", tipo:"CON LA D", pregunta:"Mamífero marino inteligente.", respuesta:"delfín"},
+            {letra:"E", tipo:"CON LA E", pregunta:"Lugar donde se guardan elefantes.", respuesta:"elefantería"},
+            {letra:"F", tipo:"CON LA F", pregunta:"Luz que guía barcos.", respuesta:"faro"},
+            {letra:"G", tipo:"CON LA G", pregunta:"Ave de corral.", respuesta:"gallina"},
             {letra:"H", tipo:"CON LA H", pregunta:"Agua sólida.", respuesta:"hielo"},
-            {letra:"I", tipo:"CON LA I", pregunta:"Incapaz de aprender.", respuesta:"incapaz"},
-            {letra:"J", tipo:"CON LA J", pregunta:"Flor blanca olorosa.", respuesta:"jazmin"},
+            {letra:"I", tipo:"CON LA I", pregunta:"Tierra rodeada de agua.", respuesta:"isla"},
+            {letra:"J", tipo:"CON LA J", pregunta:"Animal de cuello largo.", respuesta:"jirafa"},
             {letra:"L", tipo:"CON LA L", pregunta:"Líquido de las mamas.", respuesta:"leche"},
-            {letra:"M", tipo:"CON LA M", pregunta:"Objeto para sentarse.", respuesta:"mueble"},
+            {letra:"M", tipo:"CON LA M", pregunta:"Fruta del manzano.", respuesta:"manzana"},
             {letra:"N", tipo:"CON LA N", pregunta:"Fruta naranja.", respuesta:"naranja"},
             {letra:"O", tipo:"CON LA O", pregunta:"Animal de lana.", respuesta:"oveja"},
-            {letra:"P", tipo:"CON LA P", pregunta:"Teclado y cuerdas.", respuesta:"piano"},
-            {letra:"Q", tipo:"CON LA Q", pregunta:"Leche cuajada.", respuesta:"queso"},
-            {letra:"R", tipo:"CON LA R", pregunta:"Roedor grande.", respuesta:"rata"},
-            {letra:"S", tipo:"CON LA S", pregunta:"Estrella central.", respuesta:"sol"},
-            {letra:"T", tipo:"CON LA T", pregunta:"Hablar a distancia.", respuesta:"telefono"},
+            {letra:"P", tipo:"CON LA P", pregunta:"Instrumento de cuerdas y teclado.", respuesta:"piano"},
+            {letra:"Q", tipo:"CON LA Q", pregunta:"Alimento de leche cuajada.", respuesta:"queso"},
+            {letra:"R", tipo:"CON LA R", pregunta:"Mamífero roedor grande.", respuesta:"rata"},
+            {letra:"S", tipo:"CON LA S", pregunta:"Estrella central del sistema.", respuesta:"sol"},
+            {letra:"T", tipo:"CON LA T", pregunta:"Aparato para hablar a distancia.", respuesta:"teléfono"},
             {letra:"U", tipo:"CON LA U", pregunta:"Fruta de la vid.", respuesta:"uva"},
-            {letra:"V", tipo:"CON LA V", pregunta:"Vive cerca de ti.", respuesta:"vecino"},
+            {letra:"V", tipo:"CON LA V", pregunta:"Persona que vive cerca.", respuesta:"vecino"},
             {letra:"X", tipo:"CONTIENE X", pregunta:"Examen de tejido vivo.", respuesta:"biopsia"},
             {letra:"Y", tipo:"CON LA Y", pregunta:"Barco recreativo.", respuesta:"yate"},
-            {letra:"Z", tipo:"CON LA Z", pregunta:"Animal astuto.", respuesta:"zorro"}
+            {letra:"Z", tipo:"CON LA Z", pregunta:"Animal muy astuto.", respuesta:"zorro"}
+        ];
+
+        // BANCO JUGADOR 2
+        const bancoB = [
+            {letra:"A", tipo:"CON LA A", pregunta:"Árbol que da bellotas.", respuesta:"alcornoque"},
+            {letra:"B", tipo:"CON LA B", pregunta:"Embarcación de vela pequeña.", respuesta:"balandra"},
+            {letra:"C", tipo:"CON LA C", pregunta:"Cría del caballo.", respuesta:"potro"}, // Contiene la C
+            {letra:"C", tipo:"CON LA C", pregunta:"Cabeza de la ciudad.", respuesta:"capital"},
+            {letra:"D", tipo:"CON LA D", pregunta:"Número diez.", respuesta:"decena"},
+            {letra:"E", tipo:"CON LA E", pregunta:"Aparato para subir pisos.", respuesta:"ascensor"}, // Contiene E
+            {letra:"F", tipo:"CON LA F", pregunta:"Poder de mover cosas.", respuesta:"fuerza"},
+            {letra:"G", tipo:"CON LA G", pregunta:"Punto más alto de una montaña.", respuesta:"cima"}, // Contiene G
+            {letra:"G", tipo:"CON LA G", pregunta:"Animal que maúlla.", respuesta:"gato"},
+            {letra:"H", tipo:"CON LA H", pregunta:"Hijo del hermano.", respuesta:"sobrino"}, // Contiene H
+            {letra:"I", tipo:"CON LA I", pregunta:"Lugar sagrado.", respuesta:"iglesia"},
+            {letra:"J", tipo:"CON LA J", pregunta:"Persona que juzga.", respuesta:"juez"},
+            {letra:"L", tipo:"CON LA L", pregunta:"Lugar de libros.", respuesta:"librería"},
+            {letra:"M", tipo:"CON LA M", pregunta:"Satélite de la Tierra.", respuesta:"luna"}, // Contiene M
+            {letra:"N", tipo:"CON LA N", pregunta:"Cuerpo que flota y viaja por el agua.", respuesta:"barco"}, // Contiene N
+            {letra:"O", tipo:"CON LA O", pregunta:"Pájaro que no vuela y corre mucho.", respuesta:"avestruz"}, // Contiene O
+            {letra:"P", tipo:"CON LA P", pregunta:"Animal que ladra.", respuesta:"perro"},
+            {letra:"Q", tipo:"CON LA Q", pregunta:"Parte de una casa.", respuesta:"tabique"}, // Contiene Q
+            {letra:"R", tipo:"CON LA R", pregunta:"Instrumento para medir el tiempo.", respuesta:"reloj"},
+            {letra:"S", tipo:"CON LA S", pregunta:"Asiento para una persona.", respuesta:"silla"},
+            {letra:"T", tipo:"CON LA T", pregunta:"Rayas de un tigre.", respuesta:"franjas"}, // Contiene T
+            {letra:"V", tipo:"CON LA V", pregunta:"Estación después de primavera.", respuesta:"verano"},
+            {letra:"X", tipo:"CONTIENE X", pregunta:"Instrumento musical de láminas.", respuesta:"xilófono"},
+            {letra:"Y", tipo:"CON LA Y", pregunta:"Parte amarilla del huevo.", respuesta:"yema"},
+            {letra:"Z", tipo:"CON LA Z", pregunta:"Calzado que cubre el pie.", respuesta:"zapato"}
         ];
 
         function configurarPartida(rol) {
@@ -120,7 +149,6 @@
                 document.getElementById('esperando').classList.remove('hidden');
             } else {
                 salaID = document.getElementById('input-unirse').value.trim().toUpperCase();
-                if(!salaID) return alert("Pon un código");
             }
             conectar();
         }
@@ -131,9 +159,8 @@
                 document.getElementById('status-bar').innerText = "SALA: " + salaID;
                 client.subscribe("pasa/sala/" + salaID);
                 if(miRol === 'host') {
-                    preguntas = bancoOficial;
-                    estJ1 = new Array(preguntas.length).fill('pendiente');
-                    estJ2 = new Array(preguntas.length).fill('pendiente');
+                    preguntasJ1 = bancoA; preguntasJ2 = bancoB;
+                    estJ1 = new Array(25).fill('pendiente'); estJ2 = new Array(25).fill('pendiente');
                 } else {
                     client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'JOIN'}));
                 }
@@ -142,17 +169,17 @@
             client.on('message', (topic, message) => {
                 const d = JSON.parse(message.toString());
                 if(d.tipo === 'JOIN' && miRol === 'host') {
-                    client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'START', preguntas: preguntas}));
+                    client.publish("pasa/sala/" + salaID, JSON.stringify({tipo:'START', p1: preguntasJ1, p2: preguntasJ2}));
                     miTurno = true; empezar();
                 }
                 if(d.tipo === 'START' && miRol === 'guest') {
-                    preguntas = d.preguntas;
-                    estJ1 = new Array(preguntas.length).fill('pendiente');
-                    estJ2 = new Array(preguntas.length).fill('pendiente');
+                    preguntasJ1 = d.p1; preguntasJ2 = d.p2;
+                    estJ1 = new Array(25).fill('pendiente'); estJ2 = new Array(25).fill('pendiente');
                     miTurno = false; empezar();
                 }
                 if(d.tipo === 'ACCION') {
-                    if(d.player === 'host') { estJ1[d.idx] = d.res; } else { estJ2[d.idx] = d.res; }
+                    if(d.player === 'host') { estJ1[d.idx] = d.res; idxJ1 = d.nextIdx; } 
+                    else { estJ2[d.idx] = d.res; idxJ2 = d.nextIdx; }
                     
                     if(d.player !== miRol) {
                         if(d.res !== 'acierto') miTurno = true;
@@ -171,38 +198,37 @@
         }
 
         function dibujar() {
-            const j1EsActivo = (miRol === 'host' && miTurno) || (miRol === 'guest' && !miTurno);
-            document.getElementById('box-j1').className = j1EsActivo ? "rosco-box turno-activo" : "rosco-box turno-espera";
-            document.getElementById('box-j2').className = !j1EsActivo ? "rosco-box turno-activo" : "rosco-box turno-espera";
+            const j1Activo = (miRol === 'host' && miTurno) || (miRol === 'guest' && !miTurno);
+            document.getElementById('box-j1').className = j1Activo ? "rosco-box turno-activo" : "rosco-box turno-espera";
+            document.getElementById('box-j2').className = !j1Activo ? "rosco-box turno-activo" : "rosco-box turno-espera";
             
             const badge = document.getElementById('badge-turno');
-            badge.innerText = miTurno ? "TU TURNO" : "TURNO DEL RIVAL";
+            badge.innerText = miTurno ? "ES TU TURNO" : "TURNO RIVAL";
             badge.style.color = miTurno ? "var(--green)" : "var(--red)";
 
-            renderRosco('rosco1', estJ1, idxJ1, j1EsActivo);
-            renderRosco('rosco2', estJ2, idxJ2, !j1EsActivo);
+            renderRosco('rosco1', estJ1, idxJ1, j1Activo, preguntasJ1);
+            renderRosco('rosco2', estJ2, idxJ2, !j1Activo, preguntasJ2);
 
-            if(miTurno) {
-                const p = preguntas[miRol === 'host' ? idxJ1 : idxJ2];
-                document.getElementById('pregunta-txt').innerText = p.tipo + ": " + p.pregunta;
-                document.getElementById('inputs-zona').style.visibility = "visible";
-                document.getElementById('ans').focus();
-            } else {
-                document.getElementById('pregunta-txt').innerText = "El rival está pensando...";
-                document.getElementById('inputs-zona').style.visibility = "hidden";
-            }
+            // Mostrar pregunta actual (sea tuya o del rival)
+            let p;
+            if(j1Activo) p = preguntasJ1[idxJ1];
+            else p = preguntasJ2[idxJ2];
+            
+            document.getElementById('pregunta-txt').innerText = p.tipo + ": " + p.pregunta;
+            document.getElementById('inputs-zona').style.visibility = miTurno ? "visible" : "hidden";
+            if(miTurno) document.getElementById('ans').focus();
         }
 
-        function renderRosco(id, estados, activo, esSuTurno) {
+        function renderRosco(id, estados, activo, esSuTurno, listaP) {
             const c = document.getElementById(id); c.innerHTML = "";
             estados.forEach((e, i) => {
-                const ang = (i * (360/24)) - 90;
+                const ang = (i * (360/25)) - 90;
                 const rad = ang * Math.PI / 180;
                 const d = document.createElement('div');
                 d.className = `letra ${e} ${(esSuTurno && i===activo) ? 'activa' : ''}`;
                 d.style.left = (150 + 125 * Math.cos(rad)) + 'px';
                 d.style.top = (150 + 125 * Math.sin(rad)) + 'px';
-                d.innerText = preguntas[i].letra;
+                d.innerText = listaP[i].letra;
                 c.appendChild(d);
             });
         }
@@ -210,13 +236,15 @@
         function responder(tipo) {
             if(!miTurno) return;
             let pIdx = (miRol === 'host' ? idxJ1 : idxJ2);
+            let listaP = (miRol === 'host' ? preguntasJ1 : preguntasJ2);
+            let estados = (miRol === 'host' ? estJ1 : estJ2);
+            
             let res = 'pendiente';
-            const target = preguntas[pIdx].respuesta;
+            const target = listaP[pIdx].respuesta;
 
             if(tipo === 'ok') {
-                const u = document.getElementById('ans').value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const t = target.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                if(u === t) {
+                const u = document.getElementById('ans').value.trim(); // ORTOGRAFÍA ESTRICTA (No normalize)
+                if(u.toLowerCase() === target.toLowerCase()) {
                     res = 'acierto';
                     document.getElementById('msg-alerta').innerText = "¡CORRECTO!";
                 } else {
@@ -225,40 +253,27 @@
                     document.getElementById('msg-alerta').innerText = "ERROR: ERA " + target.toUpperCase();
                 }
             } else {
-                // PASAPALABRA
-                res = 'pendiente';
                 miTurno = false;
-                document.getElementById('msg-alerta').innerText = "HAS PASADO PALABRA";
+                document.getElementById('msg-alerta').innerText = "PASAPALABRA";
             }
 
-            // Guardar estado
-            if(miRol === 'host') estJ1[pIdx] = res; else estJ2[pIdx] = res;
+            // Guardar localmente
+            estados[pIdx] = res;
+            
+            // Avanzar índice
+            let original = pIdx;
+            let next = pIdx;
+            do { next = (next + 1) % 25; } while(estados[next] !== 'pendiente' && next !== original);
+            
+            if(miRol === 'host') idxJ1 = next; else idxJ2 = next;
 
-            // ENVIAR ACCIÓN
+            // Enviar
             client.publish("pasa/sala/" + salaID, JSON.stringify({
-                tipo: 'ACCION', player: miRol, idx: pIdx, res: res, target: target
+                tipo: 'ACCION', player: miRol, idx: pIdx, res: res, target: target, nextIdx: next
             }));
             
-            // AVANZAR SIEMPRE EL ÍNDICE (La clave de tu petición)
-            avanzarIndiceLocal();
-
             document.getElementById('ans').value = "";
             dibujar();
-        }
-
-        function avanzarIndiceLocal() {
-            if(miRol === 'host') {
-                // Buscamos la siguiente 'pendiente' empezando desde la actual + 1
-                let original = idxJ1;
-                do {
-                    idxJ1 = (idxJ1 + 1) % 24;
-                } while(estJ1[idxJ1] !== 'pendiente' && idxJ1 !== original);
-            } else {
-                let original = idxJ2;
-                do {
-                    idxJ2 = (idxJ2 + 1) % 24;
-                } while(estJ2[idxJ2] !== 'pendiente' && idxJ2 !== original);
-            }
         }
 
         document.getElementById('ans').addEventListener('keypress', (e) => { if(e.key==='Enter') responder('ok'); });
