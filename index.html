@@ -2,43 +2,33 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra Multiplayer - Rotativo</title>
+    <title>Pasapalabra Final</title>
     <style>
-        body { 
-            background-color: #050a1f; color: white; font-family: Arial, sans-serif; 
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px;
-        }
-        .titulo { font-size: 2.5rem; color: #ffcc00; text-shadow: 0 0 10px #ffcc00; margin-bottom: 20px; }
+        body { background-color: #050a1f; color: white; font-family: Arial; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .titulo { font-size: 3rem; color: #ffcc00; text-shadow: 0 0 10px #ffcc00; margin-bottom: 30px; }
         
         /* MENÚS */
-        .menu-box { text-align: center; background: #111b3d; padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; }
-        .btn { 
-            display: block; width: 200px; padding: 15px; margin: 10px auto; 
-            border-radius: 50px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem;
-        }
-        .btn-green { background: #2ecc71; color: white; }
-        .btn-blue { background: #3498db; color: white; }
+        .pantalla { text-align: center; background: #111b3d; padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 400px; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; font-size: 1.1rem; text-transform: uppercase; }
+        .btn-local { background: #2ecc71; color: white; }
+        .btn-online { background: #3498db; color: white; }
+        input.cod-input { width: 80%; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: center; font-size: 1.2rem; }
+
+        /* JUEGO */
+        #juego { display: none; width: 95%; }
+        .sala-tag { color: #ffcc00; font-size: 1.2rem; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        .flex-juego { display: flex; justify-content: space-around; gap: 20px; }
+        .rosco-box { display: flex; flex-direction: column; align-items: center; width: 450px; }
         
-        /* JUEGO: DOS ROSCOS */
-        #pantalla-juego { display: none; width: 100%; max-width: 1200px; }
-        .sala-header { color: #ffcc00; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; text-align: center; width: 100%; }
-        
-        .juego-flex { display: flex; justify-content: space-around; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
-        
-        .jugador-seccion { display: flex; flex-direction: column; align-items: center; width: 450px; }
-        .rosco-container { position: relative; width: 300px; height: 300px; margin-bottom: 20px; }
-        
-        .letra { 
-            position: absolute; width: 30px; height: 30px; background: #0044ff; 
-            border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-            font-weight: bold; font-size: 12px; border: 1px solid white; 
-        }
+        .rosco-container { position: relative; width: 320px; height: 320px; margin-bottom: 20px; }
+        .letra { position: absolute; width: 32px; height: 32px; background: #0044ff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; border: 1px solid white; }
         .letra.activa { box-shadow: 0 0 15px #ffcc00; border: 2px solid #ffcc00; }
         .letra.correcta { background: #28a745; }
         .letra.incorrecta { background: #dc3545; }
 
-        .panel-pregunta { background: #111b3d; padding: 20px; border-radius: 15px; width: 100%; text-align: center; border: 1px solid #2a3a6d; }
-        input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; text-align: center; }
+        .panel-pregunta { background: #111b3d; padding: 20px; border-radius: 15px; width: 100%; text-align: center; }
+        .input-ans { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; }
+        .btns-panel { display: flex; gap: 10px; }
         
         .oculto { display: none; }
     </style>
@@ -47,45 +37,42 @@
 
     <h1 class="titulo">PASAPALABRA</h1>
 
-    <div id="menu-principal" class="menu-box">
-        <button class="btn btn-green" onclick="iniciarModo('local')">MODO LOCAL</button>
-        <button class="btn btn-blue" onclick="mostrarMenuOnline()">MODO ONLINE</button>
+    <div id="m-inicio" class="pantalla">
+        <button class="btn btn-local" onclick="irLocal()">LOCAL</button>
+        <button class="btn btn-online" onclick="irOnlineMenu()">ONLINE</button>
     </div>
 
-    <div id="menu-online" class="menu-box oculto">
-        <button class="btn btn-blue" onclick="generarSala()">GENERAR CÓDIGO</button>
+    <div id="m-online" class="pantalla oculto">
+        <button class="btn btn-online" onclick="generarYEntrar()">GENERAR CÓDIGO</button>
         <p>— O —</p>
-        <input type="text" id="input-codigo" placeholder="Introduce código" maxlength="6" style="width:150px">
-        <button class="btn btn-green" onclick="unirseSala()">UNIRSE</button>
-        <button class="btn" style="background:gray" onclick="location.reload()">VOLVER</button>
+        <input type="text" id="join-cod" class="cod-input" placeholder="Código 6 cifras">
+        <button class="btn btn-local" onclick="unirse()">UNIRSE</button>
     </div>
 
-    <div id="pantalla-juego">
-        <div id="codigo-sala-display" class="sala-header"></div>
-        
-        <div class="juego-flex">
-            <div class="jugador-seccion" id="sec-j1">
+    <div id="juego">
+        <div id="info-sala" class="sala-tag"></div>
+        <div class="flex-juego">
+            <div class="rosco-box">
                 <h3 style="color:#2ecc71">JUGADOR 1</h3>
-                <div id="rosco-j1" class="rosco-container"></div>
+                <div id="rosco1" class="rosco-container"></div>
                 <div class="panel-pregunta">
-                    <div id="preg-j1"><b>CON LA A:</b> Cargando...</div>
-                    <input type="text" id="ans-j1" placeholder="Respuesta...">
-                    <div style="display:flex; gap:5px">
-                        <button class="btn btn-green" onclick="validar(1)">ENVIAR</button>
-                        <button class="btn btn-blue" style="background:#f1c40f; color:black" onclick="pasar(1)">PASO</button>
+                    <div id="preg1"><b>...</b></div>
+                    <input type="text" id="in1" class="input-ans">
+                    <div class="btns-panel">
+                        <button class="btn btn-local" onclick="comprobar(1)">ENVIAR</button>
+                        <button class="btn btn-online" style="background:#f1c40f; color:black" onclick="pasar(1)">PASO</button>
                     </div>
                 </div>
             </div>
-
-            <div class="jugador-seccion" id="sec-j2">
+            <div class="rosco-box">
                 <h3 style="color:#3498db">JUGADOR 2</h3>
-                <div id="rosco-j2" class="rosco-container"></div>
+                <div id="rosco2" class="rosco-container"></div>
                 <div class="panel-pregunta">
-                    <div id="preg-j2"><b>CON LA A:</b> Cargando...</div>
-                    <input type="text" id="ans-j2" placeholder="Respuesta...">
-                    <div style="display:flex; gap:5px">
-                        <button class="btn btn-green" onclick="validar(2)">ENVIAR</button>
-                        <button class="btn btn-blue" style="background:#f1c40f; color:black" onclick="pasar(2)">PASO</button>
+                    <div id="preg2"><b>...</b></div>
+                    <input type="text" id="in2" class="input-ans">
+                    <div class="btns-panel">
+                        <button class="btn btn-local" onclick="comprobar(2)">ENVIAR</button>
+                        <button class="btn btn-online" style="background:#f1c40f; color:black" onclick="pasar(2)">PASO</button>
                     </div>
                 </div>
             </div>
@@ -93,103 +80,94 @@
     </div>
 
     <script>
-        // Banco extendido para que las preguntas roten
-        const poolPreguntas = {
-            "A": [{p:"Relativo a las abejas", r:"apícola"}, {p:"Árbol que da bellotas", r:"alcornoque"}],
-            "B": [{p:"Instrumento para el viento", r:"veleta"}, {p:"Embarcación de vela", r:"balandra"}],
-            "C": [{p:"Cabeza de la ciudad", r:"capital"}, {p:"Vehículo de carga", r:"camión"}],
-            "D": [{p:"Número después del nueve", r:"diez"}, {p:"Animal marino inteligente", r:"delfín"}],
-            "E": [{p:"Relativo a las estrellas", r:"estelar"}, {p:"Lugar de elefantes", r:"elefantería"}],
-            // ... (Añadir el resto de letras siguiendo este patrón)
-            "Z": [{p:"Calzado para el pie", r:"zapato"}, {p:"Animal muy astuto", r:"zorro"}]
+        // BANCO DE PREGUNTAS ROTATIVO (Varias por letra)
+        const pool = {
+            "A": [{p:"Relativo a abejas", r:"apícola"}, {p:"Árbol de bellotas", r:"alcornoque"}],
+            "B": [{p:"Mide el viento", r:"veleta"}, {p:"Barco de vela", r:"balandra"}],
+            "C": [{p:"Cabeza de estado", r:"capital"}, {p:"Transporte grande", r:"camión"}],
+            "D": [{p:"Animal marino", r:"delfín"}, {p:"Número 10", r:"diez"}],
+            "E": [{p:"Lugar de elefantes", r:"elefantería"}, {p:"De las estrellas", r:"estelar"}],
+            "F": [{p:"Luz de barcos", r:"faro"}, {p:"Mover peso", r:"fuerza"}],
+            "G": [{p:"Pone huevos", r:"gallina"}, {p:"Felino", r:"gato"}],
+            "H": [{p:"Agua sólida", r:"hielo"}, {p:"Hace reír", r:"humorista"}],
+            "I": [{p:"Rodeada de agua", r:"isla"}, {p:"Vas a rezar", r:"iglesia"}],
+            "J": [{p:"Cuello largo", r:"jirafa"}, {p:"Dicta sentencia", r:"juez"}],
+            "L": [{p:"Da leche", r:"vaca"}, {p:"Vende libros", r:"librería"}],
+            "M": [{p:"Fruta roja", r:"manzana"}, {p:"Planeta rojo", r:"marte"}],
+            "N": [{p:"Cítrico", r:"naranja"}, {p:"Vehículo mar", r:"nave"}],
+            "Ñ": [{p:"Pocos años", r:"niño"}, {p:"Madera cortada", r:"leña"}],
+            "O": [{p:"Da lana", r:"oveja"}, {p:"Ave grande", r:"avestruz"}],
+            "P": [{p:"Tiene teclas", r:"piano"}, {p:"Cría caballo", r:"potro"}],
+            "Q": [{p:"Leche cuajada", r:"queso"}, {p:"Pared fina", r:"tabique"}],
+            "R": [{p:"Roedor", r:"ratón"}, {p:"Mide tiempo", r:"reloj"}],
+            "S": [{p:"Da calor", r:"sol"}, {p:"Para sentarse", r:"silla"}],
+            "T": [{p:"Hablar lejos", r:"teléfono"}, {p:"Tiene empleo", r:"trabajador"}],
+            "U": [{p:"Da vino", r:"uva"}, {p:"Un solo color", r:"unicolor"}],
+            "V": [{p:"Vive al lado", r:"vecino"}, {p:"Mucho calor", r:"verano"}],
+            "X": [{p:"Tejido vivo", r:"biopsia"}, {p:"Láminas madera", r:"xilófono"}],
+            "Y": [{p:"Barco lujo", r:"yate"}, {p:"Centro huevo", r:"yema"}],
+            "Z": [{p:"Cubre el pie", r:"zapato"}, {p:"Animal astuto", r:"zorro"}]
         };
 
-        const letras = ["A","B","C","D","E","Z"]; // Simplificado para el ejemplo, añadir todas
-        let estado = {
-            j1: { indice: 0, preguntas: [], aciertos: [] },
-            j2: { indice: 0, preguntas: [], aciertos: [] }
-        };
+        const abc = Object.keys(pool);
+        let j1 = { ind: 0, pregs: [] }, j2 = { ind: 0, pregs: [] };
 
-        function mostrarMenuOnline() {
-            document.getElementById('menu-principal').classList.add('oculto');
-            document.getElementById('menu-online').classList.remove('oculto');
-        }
+        function irOnlineMenu() { document.getElementById('m-inicio').classList.add('oculto'); document.getElementById('m-online').classList.remove('oculto'); }
+        function irLocal() { iniciar("MODO LOCAL"); }
+        function generarYEntrar() { iniciar("SALA: " + Math.floor(100000 + Math.random() * 900000)); }
+        function unirse() { let c = document.getElementById('join-cod').value; if(c) iniciar("SALA: " + c); }
 
-        function generarSala() {
-            const codigo = Math.floor(100000 + Math.random() * 900000);
-            iniciarJuego("SALA: " + codigo);
-        }
-
-        function unirseSala() {
-            const cod = document.getElementById('input-codigo').value;
-            if(cod.length < 4) return alert("Código inválido");
-            iniciarJuego("SALA: " + cod);
-        }
-
-        function iniciarModo(modo) {
-            iniciarJuego(modo === 'local' ? "MODO LOCAL" : "");
-        }
-
-        function iniciarJuego(textoHeader) {
-            document.getElementById('menu-principal').classList.add('oculto');
-            document.getElementById('menu-online').classList.add('oculto');
-            document.getElementById('pantalla-juego').style.display = 'block';
-            document.getElementById('codigo-sala-display').innerText = textoHeader;
+        function iniciar(txt) {
+            document.getElementById('m-inicio').classList.add('oculto');
+            document.getElementById('m-online').classList.add('oculto');
+            document.getElementById('juego').style.display = 'block';
+            document.getElementById('info-sala').innerText = txt;
             
-            // Cargar preguntas aleatorias para cada jugador
-            estado.j1.preguntas = letras.map(l => ({letra: l, ...poolPreguntas[l][Math.floor(Math.random() * poolPreguntas[l].length)]}));
-            estado.j2.preguntas = letras.map(l => ({letra: l, ...poolPreguntas[l][Math.floor(Math.random() * poolPreguntas[l].length)]}));
+            // Cargar preguntas aleatorias diferentes para cada uno
+            j1.pregs = abc.map(l => ({letra: l, ...pool[l][Math.floor(Math.random()*pool[l].length)]}));
+            j2.pregs = abc.map(l => ({letra: l, ...pool[l][Math.floor(Math.random()*pool[l].length)]}));
             
-            dibujarRosco(1);
-            dibujarRosco(2);
-            actualizarPregunta(1);
-            actualizarPregunta(2);
+            dibujar(1); dibujar(2);
+            upd(1); upd(2);
         }
 
-        function dibujarRosco(num) {
-            const container = document.getElementById('rosco-j'+num);
-            container.innerHTML = "";
-            const total = letras.length;
-            letras.forEach((l, i) => {
-                const div = document.createElement('div');
-                div.className = 'letra';
-                div.id = `L${num}-${i}`;
-                div.innerText = l;
-                const ang = (i * 360 / total) - 90;
-                const x = 130 * Math.cos(ang * Math.PI / 180);
-                const y = 130 * Math.sin(ang * Math.PI / 180);
-                div.style.left = `calc(50% + ${x}px - 15px)`;
-                div.style.top = `calc(50% + ${y}px - 15px)`;
-                container.appendChild(div);
+        function dibujar(n) {
+            let cont = document.getElementById('rosco' + n);
+            cont.innerHTML = "";
+            abc.forEach((l, i) => {
+                let d = document.createElement('div');
+                d.className = 'letra'; d.id = `L${n}-${i}`; d.innerText = l;
+                let ang = (i * 360 / abc.length) - 90;
+                let x = 140 * Math.cos(ang * Math.PI / 180);
+                let y = 140 * Math.sin(ang * Math.PI / 180);
+                d.style.left = `calc(50% + ${x}px - 16px)`; d.style.top = `calc(50% + ${y}px - 16px)`;
+                cont.appendChild(d);
             });
         }
 
-        function actualizarPregunta(num) {
-            const p = estado['j'+num];
-            const item = p.preguntas[p.indice];
-            document.getElementById(`preg-j${num}`).innerHTML = `<b>CON LA ${item.letra}:</b> ${item.p}`;
-            document.querySelectorAll(`#rosco-j${num} .letra`).forEach(el => el.classList.remove('activa'));
-            document.getElementById(`L${num}-${p.indice}`).classList.add('activa');
+        function upd(n) {
+            let p = (n === 1) ? j1 : j2;
+            let item = p.pregs[p.ind];
+            document.getElementById('preg'+n).innerHTML = `<b>CON LA ${item.letra}:</b> ${item.p}`;
+            document.querySelectorAll(`#rosco${n} .letra`).forEach(l => l.classList.remove('activa'));
+            document.getElementById(`L${n}-${p.ind}`).classList.add('activa');
         }
 
-        function validar(num) {
-            const p = estado['j'+num];
-            const input = document.getElementById(`ans-j${num}`);
-            const correcta = p.preguntas[p.indice].r.toLowerCase();
-            const el = document.getElementById(`L${num}-${p.indice}`);
-            
-            if(input.value.toLowerCase().trim() === correcta) el.classList.add('correcta');
-            else el.classList.add('incorrecta');
-            
-            input.value = "";
-            p.indice = (p.indice + 1) % letras.length;
-            actualizarPregunta(num);
+        function comprobar(n) {
+            let p = (n === 1) ? j1 : j2;
+            let val = document.getElementById('in'+n).value.toLowerCase().trim();
+            let correct = p.pregs[p.ind].r.toLowerCase();
+            let el = document.getElementById(`L${n}-${p.ind}`);
+            if(val === correct) el.classList.add('correcta'); else el.classList.add('incorrecta');
+            document.getElementById('in'+n).value = "";
+            p.ind = (p.ind + 1) % abc.length;
+            upd(n);
         }
 
-        function pasar(num) {
-            const p = estado['j'+num];
-            p.indice = (p.indice + 1) % letras.length;
-            actualizarPregunta(num);
+        function pasar(n) {
+            let p = (n === 1) ? j1 : j2;
+            p.ind = (p.ind + 1) % abc.length;
+            upd(n);
         }
     </script>
 </body>
