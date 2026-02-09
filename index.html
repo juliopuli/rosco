@@ -2,36 +2,34 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra Profesional</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pasapalabra Multiplayer</title>
     <style>
-        :root { --azul-oscuro: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; }
-        body { background: var(--azul-oscuro); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        :root { --azul-oscuro: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul-letra: #0044ff; }
+        body { background: var(--azul-oscuro); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .oculto { display: none !important; }
 
-        /* --- PANTALLAS --- */
+        /* Pantallas de Menú */
         .pantalla { text-align: center; background: var(--panel); padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
+        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; background: #fff; color: #000; }
         .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
         .btn-green { background: var(--verde); color: white; }
         .btn-blue { background: #3498db; color: white; }
 
-        /* --- LAYOUT JUEGO --- */
+        /* Layout del Juego */
         #juego { display: none; width: 100vw; height: 100vh; position: relative; }
-        .bloque-jugador { position: absolute; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .bloque-jugador { position: absolute; transition: all 0.6s ease-in-out; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-        /* Estado Activo (Grande) */
-        .activo { width: 600px; height: 600px; top: 50%; left: 50%; transform: translate(-50%, -55%); z-index: 10; background: rgba(17, 27, 61, 0.9); border-radius: 30px; border: 2px solid var(--oro); }
-        /* Estado Pequeño (Esquina) */
-        .peque { width: 200px; height: 200px; top: 20px; right: 20px; z-index: 5; opacity: 0.7; transform: scale(0.8); border: 1px solid #555; border-radius: 20px; }
+        .activo { width: 550px; height: 550px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; background: rgba(17, 27, 61, 0.9); border-radius: 50%; border: 3px solid var(--oro); }
+        .peque { width: 180px; height: 180px; top: 20px; right: 20px; z-index: 5; opacity: 0.8; transform: scale(0.9); border: 2px solid #555; border-radius: 50%; background: var(--panel); }
 
-        /* --- EL ROSCO (CORREGIDO) --- */
-        .rosco { position: relative; width: 400px; height: 400px; transition: 0.8s; }
+        .rosco { position: relative; width: 420px; height: 420px; }
         .peque .rosco { width: 140px; height: 140px; }
         
         .letra { 
-            position: absolute; width: 40px; height: 40px; background: #0044ff; 
+            position: absolute; width: 38px; height: 38px; background: var(--azul-letra); 
             border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 18px; border: 2px solid white; transition: 0.3s;
+            font-weight: bold; font-size: 18px; border: 2px solid white; color: white;
         }
         .peque .letra { width: 12px; height: 12px; font-size: 0; border-width: 1px; }
 
@@ -39,10 +37,9 @@
         .letra.bien { background: var(--verde); }
         .letra.mal { background: var(--rojo); }
 
-        /* --- CONTROLES --- */
-        .controles { width: 90%; text-align: center; margin-top: 20px; }
+        .controles { width: 80%; text-align: center; margin-top: 10px; }
         .peque .controles { display: none; }
-        .pregunta { font-size: 1.2rem; min-height: 60px; margin-bottom: 10px; }
+        .pregunta { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; min-height: 50px; }
         .botones-juego { display: flex; gap: 10px; }
     </style>
 </head>
@@ -50,7 +47,7 @@
 
     <div id="p-nombre" class="pantalla">
         <h1 style="color:var(--oro)">PASAPALABRA</h1>
-        <input type="text" id="nombre-input" placeholder="Escribe tu nombre">
+        <input type="text" id="nombre-input" placeholder="Tu nombre">
         <button class="btn btn-green" onclick="guardarNombre()">ENTRAR</button>
     </div>
 
@@ -63,83 +60,79 @@
 
     <div id="p-lobby" class="pantalla oculto">
         <h2>SALA: <span id="display-cod" style="color:var(--oro)">------</span></h2>
-        <div id="lista-nombres" style="margin:20px 0; text-align:left; background:rgba(0,0,0,0.2); padding:15px; border-radius:10px;">
+        <div id="lista-nombres" style="margin:20px 0; text-align:left; background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
             <div id="lobby-j1">1. Esperando...</div>
-            <div id="lobby-j2">2. Esperando...</div>
+            <div id="lobby-j2" style="margin-top:10px">2. Esperando...</div>
         </div>
-        <button id="btn-comenzar" class="btn btn-green oculto" onclick="hostEmpezar()">EMPEZAR PARTIDA</button>
-        <p id="wait-msg" class="oculto">Esperando al anfitrión...</p>
+        <button id="btn-comenzar" class="btn btn-green oculto" onclick="hostEmpezar()">EMPEZAR YA</button>
+        <p id="wait-msg" class="oculto">Esperando al host...</p>
     </div>
 
     <div id="juego">
         <div id="jugador1" class="bloque-jugador activo">
-            <h3 id="name1">PEPE</h3>
+            <h3 id="name1" style="color:var(--oro)">HOST</h3>
             <div id="rosco1" class="rosco"></div>
             <div class="controles">
                 <div id="preg1" class="pregunta">Cargando...</div>
-                <input type="text" id="resp1" placeholder="Tu respuesta...">
+                <input type="text" id="resp1" placeholder="Respuesta..." autocomplete="off">
                 <div class="botones-juego">
                     <button class="btn btn-green" onclick="enviar(1)">ENVIAR</button>
-                    <button class="btn" style="background:var(--oro)" onclick="pasar(1)">PASO</button>
+                    <button class="btn" style="background:var(--oro); color:black" onclick="pasar(1)">PASO</button>
                 </div>
             </div>
         </div>
 
         <div id="jugador2" class="bloque-jugador peque">
-            <h3 id="name2" style="font-size:0.8rem">RIVAL</h3>
+            <h3 id="name2">RIVAL</h3>
             <div id="rosco2" class="rosco"></div>
             <div class="controles">
                 <div id="preg2" class="pregunta">Cargando...</div>
-                <input type="text" id="resp2" placeholder="Tu respuesta...">
+                <input type="text" id="resp2" placeholder="Respuesta..." autocomplete="off">
                 <div class="botones-juego">
                     <button class="btn btn-green" onclick="enviar(2)">ENVIAR</button>
-                    <button class="btn" style="background:var(--oro)" onclick="pasar(2)">PASO</button>
+                    <button class="btn" style="background:var(--oro); color:black" onclick="pasar(2)">PASO</button>
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-    // --- DATOS (Imagen subida) ---
-    const letrasArr = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
-    const bancoA = [
+    // Banco de preguntas corregido
+    const banco = [
         {l:"A", p:"Relativo a las abejas", r:"apícola"},
-        {l:"B", p:"Mide dirección viento", r:"veleta"}, // Según tu imagen la B es veleta
-        {l:"C", p:"Vehículo grande mercancías", r:"camión"},
-        {l:"D", p:"Animal marino inteligente", r:"delfín"},
-        {l:"E", p:"Lugar cría elefantes", r:"elefantería"},
-        {l:"F", p:"Luz guía barcos", r:"faro"},
-        {l:"G", p:"Ave corral pone huevos", r:"gallina"},
-        {l:"H", p:"Agua sólida por frío", r:"hielo"},
-        {l:"I", p:"Porción tierra rodeada agua", r:"isla"},
-        {l:"J", p:"Animal cuello muy largo", r:"jirafa"},
-        {l:"L", p:"Líquido blanco vacas", r:"leche"},
+        {l:"B", p:"Mide la dirección del viento", r:"veleta"},
+        {l:"C", p:"Vehículo grande para mercancías", r:"camión"},
+        {l:"D", p:"Animal marino muy inteligente", r:"delfín"},
+        {l:"E", p:"Lugar donde se crían elefantes", r:"elefantería"},
+        {l:"F", p:"Luz que guía a los barcos", r:"faro"},
+        {l:"G", p:"Ave de corral que pone huevos", r:"gallina"},
+        {l:"H", p:"Agua sólida por el frío", r:"hielo"},
+        {l:"I", p:"Tierra rodeada de agua", r:"isla"},
+        {l:"J", p:"Animal de cuello muy largo", r:"jirafa"},
+        {l:"L", p:"Líquido blanco de la vaca", r:"leche"},
         {l:"M", p:"Fruta del manzano", r:"manzana"},
         {l:"N", p:"Fruta cítrica naranja", r:"naranja"},
-        {l:"Ñ", p:"Persona tiene pocos años", r:"niño"},
+        {l:"Ñ", p:"Persona de pocos años", r:"niño"},
         {l:"O", p:"Animal que da lana", r:"oveja"},
-        {l:"P", p:"Instrumento teclas", r:"piano"},
-        {l:"Q", p:"Alimento leche cuajada", r:"queso"},
-        {l:"R", p:"Mamífero roedor pequeño", r:"ratón"},
-        {l:"S", p:"Cuerpo celeste luz y calor", r:"sol"},
-        {l:"T", p:"Aparato hablar distancia", r:"teléfono"},
+        {l:"P", p:"Instrumento de teclas", r:"piano"},
+        {l:"Q", p:"Alimento de leche cuajada", r:"queso"},
+        {l:"R", p:"Pequeño roedor", r:"ratón"},
+        {l:"S", p:"Estrella que da calor", r:"sol"},
+        {l:"T", p:"Aparato para hablar lejos", r:"teléfono"},
         {l:"U", p:"Fruta del vino", r:"uva"},
-        {l:"V", p:"Persona vive mismo edificio", r:"vecino"},
-        {l:"X", p:"Examen tejido vivo", r:"biopsia"},
-        {l:"Y", p:"Embarcación lujo", r:"yate"},
-        {l:"Z", p:"Calzado cubre pie", r:"zapato"}
+        {l:"V", p:"Persona que vive cerca", r:"vecino"},
+        {l:"X", p:"Instrumento de láminas", r:"xilófono"},
+        {l:"Y", p:"Barco de lujo", r:"yate"},
+        {l:"Z", p:"Calzado del pie", r:"zapato"}
     ];
-    // Se usa el mismo banco para simplificar, pero el sistema está listo para dos
-    const bancoB = [...bancoA]; 
 
     let miNombre = "";
     let miRol = ""; 
     let salaID = "";
-    let turnoActual = 1;
-    let datosJuego = { j1: { pos: 0, res: [] }, j2: { pos: 0, res: [] } };
+    let localData = { turno: 1, j1: { pos: 0, res: Array(25).fill(0) }, j2: { pos: 0, res: Array(25).fill(0) } };
 
     function guardarNombre() {
-        miNombre = document.getElementById('nombre-input').value;
+        miNombre = document.getElementById('nombre-input').value.trim();
         if(!miNombre) return;
         document.getElementById('saludo').innerText = "HOLA, " + miNombre.toUpperCase();
         mostrar('p-menu');
@@ -147,42 +140,37 @@
 
     function crearSala() {
         miRol = "host";
-        salaID = Math.floor(100000 + Math.random() * 900000);
+        salaID = Math.floor(100 + Math.random() * 899); // Código corto para evitar errores
         document.getElementById('display-cod').innerText = salaID;
-        document.getElementById('lobby-j1').innerText = "1. " + miNombre + " (TÚ)";
-        
+        document.getElementById('lobby-j1').innerText = "1. " + miNombre + " (HOST)";
         localStorage.setItem('sala_' + salaID, JSON.stringify({host: miNombre, guest: null, status: 'esperando'}));
         mostrar('p-lobby');
-        window.addEventListener('storage', monitorizarSala);
+        window.addEventListener('storage', monitor);
     }
 
     function unirseSala() {
         miRol = "guest";
-        salaID = document.getElementById('join-codigo').value;
+        salaID = document.getElementById('join-codigo').value.trim();
         let data = JSON.parse(localStorage.getItem('sala_' + salaID));
-        if(!data) return alert("Sala no existe");
-
+        if(!data) return alert("Código no válido");
         data.guest = miNombre;
         localStorage.setItem('sala_' + salaID, JSON.stringify(data));
-        
         document.getElementById('display-cod').innerText = salaID;
         document.getElementById('lobby-j1').innerText = "1. " + data.host;
         document.getElementById('lobby-j2').innerText = "2. " + miNombre + " (TÚ)";
         document.getElementById('wait-msg').classList.remove('oculto');
         mostrar('p-lobby');
-        window.addEventListener('storage', monitorizarSala);
+        window.addEventListener('storage', monitor);
     }
 
-    function monitorizarSala(e) {
+    function monitor(e) {
         if(e.key !== 'sala_' + salaID) return;
         let data = JSON.parse(e.newValue);
-        
-        if(miRol === 'host' && data.guest) {
+        if(miRol === 'host' && data.guest && data.status === 'esperando') {
             document.getElementById('lobby-j2').innerText = "2. " + data.guest;
             document.getElementById('btn-comenzar').classList.remove('oculto');
         }
-        if(data.status === 'jugando') empezarPartidaUI(data);
-        if(data.status === 'actualizar') sincronizarJuego(data);
+        if(data.status === 'jugando' || data.status === 'update') sincronizar(data);
     }
 
     function hostEmpezar() {
@@ -192,121 +180,100 @@
         data.j1 = { pos: 0, res: Array(25).fill(0) };
         data.j2 = { pos: 0, res: Array(25).fill(0) };
         localStorage.setItem('sala_' + salaID, JSON.stringify(data));
-        empezarPartidaUI(data);
+        sincronizar(data);
     }
 
-    function empezarPartidaUI(data) {
-        mostrar('juego');
-        document.getElementById('juego').style.display = 'block';
-        document.getElementById('name1').innerText = data.host;
-        document.getElementById('name2').innerText = data.guest;
-        crearRoscoVisual('rosco1');
-        crearRoscoVisual('rosco2');
-        sincronizarJuego(data);
-    }
-
-    function crearRoscoVisual(id) {
-        const contenedor = document.getElementById(id);
-        contenedor.innerHTML = "";
-        const total = 25;
-        const radio = 160; 
-
-        letrasArr.forEach((letra, i) => {
-            const div = document.createElement('div');
-            div.className = 'letra';
-            div.id = id + '-' + i;
-            div.innerText = letra;
-
-            // MATEMÁTICAS DEL CÍRCULO (Aquí estaba el fallo de tu foto)
-            const angulo = (i * 360 / total) - 90;
-            const x = radio * Math.cos(angulo * Math.PI / 180);
-            const y = radio * Math.sin(angulo * Math.PI / 180);
-
-            div.style.left = `calc(50% + ${x}px - 20px)`;
-            div.style.top = `calc(50% + ${y}px - 20px)`;
-            contenedor.appendChild(div);
+    function crearRosco(id) {
+        const cont = document.getElementById(id);
+        cont.innerHTML = "";
+        const r = (id === 'rosco1') ? 180 : 60;
+        banco.forEach((obj, i) => {
+            const d = document.createElement('div');
+            d.className = 'letra';
+            d.id = id + '-' + i;
+            d.innerText = obj.l;
+            const ang = (i * 360 / 25) - 90;
+            const x = r * Math.cos(ang * Math.PI / 180);
+            const y = r * Math.sin(ang * Math.PI / 180);
+            const offset = (id === 'rosco1') ? 19 : 6;
+            d.style.left = `calc(50% + ${x}px - ${offset}px)`;
+            d.style.top = `calc(50% + ${y}px - ${offset}px)`;
+            cont.appendChild(d);
         });
     }
 
-    function sincronizarJuego(data) {
-        turnoActual = data.turno;
-        datosJuego.j1 = data.j1;
-        datosJuego.j2 = data.j2;
-
-        // Visual de turnos
+    function sincronizar(data) {
+        if(document.getElementById('juego').style.display !== 'block') {
+            mostrar(null);
+            document.getElementById('juego').style.display = 'block';
+            document.getElementById('name1').innerText = data.host;
+            document.getElementById('name2').innerText = data.guest;
+            crearRosco('rosco1');
+            crearRosco('rosco2');
+        }
+        localData = { turno: data.turno, j1: data.j1, j2: data.j2 };
+        
         const b1 = document.getElementById('jugador1');
         const b2 = document.getElementById('jugador2');
-        
-        if(turnoActual === 1) {
-            b1.className = "bloque-jugador activo";
-            b2.className = "bloque-jugador peque";
-            actualizarPregunta(1);
+        if(data.turno === 1) {
+            b1.className = "bloque-jugador activo"; b2.className = "bloque-jugador peque";
+            if(miRol === 'host') document.getElementById('resp1').focus();
         } else {
-            b1.className = "bloque-jugador peque";
-            b2.className = "bloque-jugador activo";
-            actualizarPregunta(2);
+            b1.className = "bloque-jugador peque"; b2.className = "bloque-jugador activo";
+            if(miRol === 'guest') document.getElementById('resp2').focus();
         }
-
-        actualizarColores(1, data.j1);
-        actualizarColores(2, data.j2);
-
-        // Bloqueo de inputs si no es tu turno
-        document.getElementById('resp1').disabled = (miRol === 'guest' || turnoActual !== 1);
-        document.getElementById('resp2').disabled = (miRol === 'host' || turnoActual !== 2);
+        actualizarLetras(1, data.j1);
+        actualizarLetras(2, data.j2);
+        
+        document.getElementById('resp1').disabled = (miRol !== 'host' || data.turno !== 1);
+        document.getElementById('resp2').disabled = (miRol !== 'guest' || data.turno !== 2);
     }
 
-    function actualizarColores(num, player) {
-        player.res.forEach((estado, i) => {
-            const el = document.getElementById(`rosco${num}-${i}`);
-            el.classList.remove('bien', 'mal', 'actual');
-            if(estado === 1) el.classList.add('bien');
-            if(estado === 2) el.classList.add('mal');
-            if(i === player.pos) el.classList.add('actual');
+    function actualizarLetras(n, p) {
+        document.getElementById('preg'+n).innerText = "CON LA " + banco[p.pos].l + ": " + banco[p.pos].p;
+        p.res.forEach((s, i) => {
+            const el = document.getElementById(`rosco${n}-${i}`);
+            el.className = 'letra' + (s===1?' bien':s===2?' mal':'') + (i===p.pos?' actual':'');
         });
     }
 
-    function actualizarPregunta(num) {
-        const player = (num === 1) ? datosJuego.j1 : datosJuego.j2;
-        const pData = bancoA[player.pos];
-        document.getElementById('preg'+num).innerText = `CON LA ${pData.l}: ${pData.p}`;
-    }
-
-    function enviar(num) {
-        const input = document.getElementById('resp'+num);
-        const resp = input.value.toLowerCase().trim();
-        const player = (num === 1) ? datosJuego.j1 : datosJuego.j2;
-        
-        if(resp === bancoA[player.pos].r) {
+    function enviar(n) {
+        const inp = document.getElementById('resp'+n);
+        const player = (n === 1) ? localData.j1 : localData.j2;
+        if(inp.value.toLowerCase().trim() === banco[player.pos].r) {
             player.res[player.pos] = 1;
         } else {
             player.res[player.pos] = 2;
-            turnoActual = (num === 1) ? 2 : 1;
+            localData.turno = (n === 1) ? 2 : 1;
         }
-        
-        subirCambios(player, num);
-        input.value = "";
-    }
-
-    function pasar(num) {
-        const player = (num === 1) ? datosJuego.j1 : datosJuego.j2;
-        turnoActual = (num === 1) ? 2 : 1;
-        subirCambios(player, num);
-    }
-
-    function subirCambios(player, num) {
         player.pos = (player.pos + 1) % 25;
-        let data = JSON.parse(localStorage.getItem('sala_' + salaID));
-        data.status = 'actualizar';
-        data.turno = turnoActual;
-        if(num === 1) data.j1 = player; else data.j2 = player;
-        localStorage.setItem('sala_' + salaID, JSON.stringify(data));
-        sincronizarJuego(data);
+        inp.value = "";
+        save();
+    }
+
+    function pasar(n) {
+        localData.turno = (n === 1) ? 2 : 1;
+        save();
+    }
+
+    function save() {
+        let d = JSON.parse(localStorage.getItem('sala_' + salaID));
+        d.status = 'update'; d.turno = localData.turno; d.j1 = localData.j1; d.j2 = localData.j2;
+        localStorage.setItem('sala_' + salaID, JSON.stringify(d));
+        sincronizar(d);
     }
 
     function mostrar(id) {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-        document.getElementById(id).classList.remove('oculto');
+        if(id) document.getElementById(id).classList.remove('oculto');
     }
+
+    document.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') {
+            if(localData.turno === 1 && miRol === 'host') enviar(1);
+            if(localData.turno === 2 && miRol === 'guest') enviar(2);
+        }
+    });
 </script>
 </body>
 </html>
