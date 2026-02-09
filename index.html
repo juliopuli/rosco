@@ -2,32 +2,37 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra Final</title>
+    <title>Pasapalabra Online - Corregido</title>
     <style>
-        body { background-color: #050a1f; color: white; font-family: Arial; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        body { background-color: #050a1f; color: white; font-family: 'Segoe UI', Arial; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
         .titulo { font-size: 3rem; color: #ffcc00; text-shadow: 0 0 10px #ffcc00; margin-bottom: 30px; }
         
-        /* MENÚS */
-        .pantalla { text-align: center; background: #111b3d; padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 400px; }
-        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; font-size: 1.1rem; text-transform: uppercase; }
+        /* PANTALLAS */
+        .pantalla { text-align: center; background: #111b3d; padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; font-size: 1.1rem; text-transform: uppercase; transition: 0.3s; }
         .btn-local { background: #2ecc71; color: white; }
         .btn-online { background: #3498db; color: white; }
-        input.cod-input { width: 80%; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: center; font-size: 1.2rem; }
+        .btn-espera { background: #f1c40f; color: #000; margin-top: 20px; }
+        
+        input.cod-input { width: 80%; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: center; font-size: 1.5rem; border: 2px solid #3498db; background: #0a142f; color: white; }
+
+        /* SALA DE ESPERA */
+        #codigo-grande { font-size: 4rem; color: #ffcc00; margin: 20px 0; letter-spacing: 5px; font-weight: bold; }
 
         /* JUEGO */
         #juego { display: none; width: 95%; }
-        .sala-tag { color: #ffcc00; font-size: 1.2rem; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        .sala-tag { color: #ffcc00; font-size: 1.2rem; margin-bottom: 20px; text-align: center; font-weight: bold; background: #111b3d; padding: 10px; border-radius: 10px; display: inline-block; }
         .flex-juego { display: flex; justify-content: space-around; gap: 20px; }
-        .rosco-box { display: flex; flex-direction: column; align-items: center; width: 450px; }
+        .rosco-box { display: flex; flex-direction: column; align-items: center; width: 480px; border: 1px solid #2a3a6d; padding: 20px; border-radius: 20px; background: rgba(17, 27, 61, 0.5); }
         
-        .rosco-container { position: relative; width: 320px; height: 320px; margin-bottom: 20px; }
-        .letra { position: absolute; width: 32px; height: 32px; background: #0044ff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; border: 1px solid white; }
-        .letra.activa { box-shadow: 0 0 15px #ffcc00; border: 2px solid #ffcc00; }
-        .letra.correcta { background: #28a745; }
-        .letra.incorrecta { background: #dc3545; }
+        .rosco-container { position: relative; width: 340px; height: 340px; margin-bottom: 20px; }
+        .letra { position: absolute; width: 34px; height: 34px; background: #0044ff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; border: 1px solid white; color: white; }
+        .letra.activa { box-shadow: 0 0 20px #ffcc00; border: 2px solid #ffcc00; transform: scale(1.1); }
+        .letra.correcta { background: #28a745; border-color: #fff; }
+        .letra.incorrecta { background: #dc3545; border-color: #fff; }
 
-        .panel-pregunta { background: #111b3d; padding: 20px; border-radius: 15px; width: 100%; text-align: center; }
-        .input-ans { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; }
+        .panel-pregunta { background: #111b3d; padding: 20px; border-radius: 15px; width: 90%; text-align: center; }
+        .input-ans { width: 85%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #2a3a6d; text-align: center; background: #050a1f; color: white; font-size: 1.1rem; }
         .btns-panel { display: flex; gap: 10px; }
         
         .oculto { display: none; }
@@ -38,26 +43,34 @@
     <h1 class="titulo">PASAPALABRA</h1>
 
     <div id="m-inicio" class="pantalla">
-        <button class="btn btn-local" onclick="irLocal()">LOCAL</button>
-        <button class="btn btn-online" onclick="irOnlineMenu()">ONLINE</button>
+        <button class="btn btn-local" onclick="irLocal()">MODO LOCAL</button>
+        <button class="btn btn-online" onclick="irOnlineMenu()">MODO ONLINE</button>
     </div>
 
     <div id="m-online" class="pantalla oculto">
-        <button class="btn btn-online" onclick="generarYEntrar()">GENERAR CÓDIGO</button>
-        <p>— O —</p>
-        <input type="text" id="join-cod" class="cod-input" placeholder="Código 6 cifras">
-        <button class="btn btn-local" onclick="unirse()">UNIRSE</button>
+        <button class="btn btn-online" onclick="prepararSala()">GENERAR CÓDIGO</button>
+        <p style="margin: 20px 0; color: #5c6da3;">— O —</p>
+        <input type="text" id="join-cod" class="cod-input" placeholder="CÓDIGO">
+        <button class="btn btn-local" onclick="unirse()">UNIRSE A SALA</button>
+        <button style="background:none; color:gray; border:none; cursor:pointer;" onclick="location.reload()">Volver</button>
+    </div>
+
+    <div id="m-lobby" class="pantalla oculto">
+        <h3>CÓDIGO DE TU SALA:</h3>
+        <div id="codigo-grande">000000</div>
+        <p>Pasa este código a tu rival para que se una.</p>
+        <button class="btn btn-espera" onclick="iniciarJuegoFinal()">EMPEZAR JUEGO</button>
     </div>
 
     <div id="juego">
-        <div id="info-sala" class="sala-tag"></div>
+        <center><div id="info-sala" class="sala-tag"></div></center>
         <div class="flex-juego">
             <div class="rosco-box">
                 <h3 style="color:#2ecc71">JUGADOR 1</h3>
                 <div id="rosco1" class="rosco-container"></div>
                 <div class="panel-pregunta">
-                    <div id="preg1"><b>...</b></div>
-                    <input type="text" id="in1" class="input-ans">
+                    <div id="preg1" style="min-height: 50px;"><b>CON LA A:</b> ...</div>
+                    <input type="text" id="in1" class="input-ans" placeholder="Escribe aquí...">
                     <div class="btns-panel">
                         <button class="btn btn-local" onclick="comprobar(1)">ENVIAR</button>
                         <button class="btn btn-online" style="background:#f1c40f; color:black" onclick="pasar(1)">PASO</button>
@@ -68,8 +81,8 @@
                 <h3 style="color:#3498db">JUGADOR 2</h3>
                 <div id="rosco2" class="rosco-container"></div>
                 <div class="panel-pregunta">
-                    <div id="preg2"><b>...</b></div>
-                    <input type="text" id="in2" class="input-ans">
+                    <div id="preg2" style="min-height: 50px;"><b>CON LA A:</b> ...</div>
+                    <input type="text" id="in2" class="input-ans" placeholder="Escribe aquí...">
                     <div class="btns-panel">
                         <button class="btn btn-local" onclick="comprobar(2)">ENVIAR</button>
                         <button class="btn btn-online" style="background:#f1c40f; color:black" onclick="pasar(2)">PASO</button>
@@ -80,50 +93,68 @@
     </div>
 
     <script>
-        // BANCO DE PREGUNTAS ROTATIVO (Varias por letra)
         const pool = {
             "A": [{p:"Relativo a abejas", r:"apícola"}, {p:"Árbol de bellotas", r:"alcornoque"}],
             "B": [{p:"Mide el viento", r:"veleta"}, {p:"Barco de vela", r:"balandra"}],
-            "C": [{p:"Cabeza de estado", r:"capital"}, {p:"Transporte grande", r:"camión"}],
+            "C": [{p:"Cabeza de ciudad", r:"capital"}, {p:"Vehículo de carga", r:"camión"}],
             "D": [{p:"Animal marino", r:"delfín"}, {p:"Número 10", r:"diez"}],
             "E": [{p:"Lugar de elefantes", r:"elefantería"}, {p:"De las estrellas", r:"estelar"}],
             "F": [{p:"Luz de barcos", r:"faro"}, {p:"Mover peso", r:"fuerza"}],
-            "G": [{p:"Pone huevos", r:"gallina"}, {p:"Felino", r:"gato"}],
-            "H": [{p:"Agua sólida", r:"hielo"}, {p:"Hace reír", r:"humorista"}],
-            "I": [{p:"Rodeada de agua", r:"isla"}, {p:"Vas a rezar", r:"iglesia"}],
-            "J": [{p:"Cuello largo", r:"jirafa"}, {p:"Dicta sentencia", r:"juez"}],
-            "L": [{p:"Da leche", r:"vaca"}, {p:"Vende libros", r:"librería"}],
+            "G": [{p:"Pone huevos", r:"gallina"}, {p:"Felino que maúlla", r:"gato"}],
+            "H": [{p:"Agua sólida", r:"hielo"}, {p:"Persona graciosa", r:"humorista"}],
+            "I": [{p:"Tierra con agua", r:"isla"}, {p:"Lugar de rezo", r:"iglesia"}],
+            "J": [{p:"Cuello largo", r:"jirafa"}, {p:"Persona que juzga", r:"juez"}],
+            "L": [{p:"Líquido blanco", r:"leche"}, {p:"Vende libros", r:"librería"}],
             "M": [{p:"Fruta roja", r:"manzana"}, {p:"Planeta rojo", r:"marte"}],
-            "N": [{p:"Cítrico", r:"naranja"}, {p:"Vehículo mar", r:"nave"}],
+            "N": [{p:"Cítrico naranja", r:"naranja"}, {p:"Vehículo espacial", r:"nave"}],
             "Ñ": [{p:"Pocos años", r:"niño"}, {p:"Madera cortada", r:"leña"}],
-            "O": [{p:"Da lana", r:"oveja"}, {p:"Ave grande", r:"avestruz"}],
-            "P": [{p:"Tiene teclas", r:"piano"}, {p:"Cría caballo", r:"potro"}],
-            "Q": [{p:"Leche cuajada", r:"queso"}, {p:"Pared fina", r:"tabique"}],
-            "R": [{p:"Roedor", r:"ratón"}, {p:"Mide tiempo", r:"reloj"}],
-            "S": [{p:"Da calor", r:"sol"}, {p:"Para sentarse", r:"silla"}],
-            "T": [{p:"Hablar lejos", r:"teléfono"}, {p:"Tiene empleo", r:"trabajador"}],
-            "U": [{p:"Da vino", r:"uva"}, {p:"Un solo color", r:"unicolor"}],
-            "V": [{p:"Vive al lado", r:"vecino"}, {p:"Mucho calor", r:"verano"}],
-            "X": [{p:"Tejido vivo", r:"biopsia"}, {p:"Láminas madera", r:"xilófono"}],
-            "Y": [{p:"Barco lujo", r:"yate"}, {p:"Centro huevo", r:"yema"}],
+            "O": [{p:"Animal con lana", r:"oveja"}, {p:"Ave corredora", r:"avestruz"}],
+            "P": [{p:"Tiene teclas", r:"piano"}, {p:"Cría de caballo", r:"potro"}],
+            "Q": [{p:"Leche cuajada", r:"queso"}, {p:"Pared delgada", r:"tabique"}],
+            "R": [{p:"Roedor pequeño", r:"ratón"}, {p:"Mide el tiempo", r:"reloj"}],
+            "S": [{p:"Estrella solar", r:"sol"}, {p:"Para sentarse", r:"silla"}],
+            "T": [{p:"Hablar lejos", r:"teléfono"}, {p:"Que trabaja", r:"trabajador"}],
+            "U": [{p:"Para hacer vino", r:"uva"}, {p:"De un solo color", r:"unicolor"}],
+            "V": [{p:"Vive cerca", r:"vecino"}, {p:"Mes caluroso", r:"verano"}],
+            "X": [{p:"Tejido vivo", r:"biopsia"}, {p:"Instrumento láminas", r:"xilófono"}],
+            "Y": [{p:"Barco lujo", r:"yate"}, {p:"Centro del huevo", r:"yema"}],
             "Z": [{p:"Cubre el pie", r:"zapato"}, {p:"Animal astuto", r:"zorro"}]
         };
 
         const abc = Object.keys(pool);
         let j1 = { ind: 0, pregs: [] }, j2 = { ind: 0, pregs: [] };
+        let salaActual = "";
 
-        function irOnlineMenu() { document.getElementById('m-inicio').classList.add('oculto'); document.getElementById('m-online').classList.remove('oculto'); }
-        function irLocal() { iniciar("MODO LOCAL"); }
-        function generarYEntrar() { iniciar("SALA: " + Math.floor(100000 + Math.random() * 900000)); }
-        function unirse() { let c = document.getElementById('join-cod').value; if(c) iniciar("SALA: " + c); }
+        function irOnlineMenu() { 
+            ocultarTodo(); 
+            document.getElementById('m-online').classList.remove('oculto'); 
+        }
 
-        function iniciar(txt) {
-            document.getElementById('m-inicio').classList.add('oculto');
-            document.getElementById('m-online').classList.add('oculto');
+        function prepararSala() {
+            salaActual = Math.floor(100000 + Math.random() * 900000);
+            ocultarTodo();
+            document.getElementById('m-lobby').classList.remove('oculto');
+            document.getElementById('codigo-grande').innerText = salaActual;
+        }
+
+        function unirse() {
+            let c = document.getElementById('join-cod').value;
+            if(c.length < 4) return alert("Código incorrecto");
+            salaActual = c;
+            iniciarJuegoFinal();
+        }
+
+        function irLocal() {
+            salaActual = "LOCAL";
+            iniciarJuegoFinal();
+        }
+
+        function iniciarJuegoFinal() {
+            ocultarTodo();
             document.getElementById('juego').style.display = 'block';
-            document.getElementById('info-sala').innerText = txt;
+            document.getElementById('info-sala').innerText = salaActual === "LOCAL" ? "MODO LOCAL" : "SALA: " + salaActual;
             
-            // Cargar preguntas aleatorias diferentes para cada uno
+            // Rotación de preguntas: cada vez que inicia, elige una distinta del pool
             j1.pregs = abc.map(l => ({letra: l, ...pool[l][Math.floor(Math.random()*pool[l].length)]}));
             j2.pregs = abc.map(l => ({letra: l, ...pool[l][Math.floor(Math.random()*pool[l].length)]}));
             
@@ -138,9 +169,9 @@
                 let d = document.createElement('div');
                 d.className = 'letra'; d.id = `L${n}-${i}`; d.innerText = l;
                 let ang = (i * 360 / abc.length) - 90;
-                let x = 140 * Math.cos(ang * Math.PI / 180);
-                let y = 140 * Math.sin(ang * Math.PI / 180);
-                d.style.left = `calc(50% + ${x}px - 16px)`; d.style.top = `calc(50% + ${y}px - 16px)`;
+                let x = 150 * Math.cos(ang * Math.PI / 180);
+                let y = 150 * Math.sin(ang * Math.PI / 180);
+                d.style.left = `calc(50% + ${x}px - 17px)`; d.style.top = `calc(50% + ${y}px - 17px)`;
                 cont.appendChild(d);
             });
         }
@@ -155,11 +186,12 @@
 
         function comprobar(n) {
             let p = (n === 1) ? j1 : j2;
-            let val = document.getElementById('in'+n).value.toLowerCase().trim();
+            let input = document.getElementById('in'+n);
+            let val = input.value.toLowerCase().trim();
             let correct = p.pregs[p.ind].r.toLowerCase();
             let el = document.getElementById(`L${n}-${p.ind}`);
             if(val === correct) el.classList.add('correcta'); else el.classList.add('incorrecta');
-            document.getElementById('in'+n).value = "";
+            input.value = "";
             p.ind = (p.ind + 1) % abc.length;
             upd(n);
         }
@@ -168,6 +200,13 @@
             let p = (n === 1) ? j1 : j2;
             p.ind = (p.ind + 1) % abc.length;
             upd(n);
+        }
+
+        function ocultarTodo() {
+            document.getElementById('m-inicio').classList.add('oculto');
+            document.getElementById('m-online').classList.add('oculto');
+            document.getElementById('m-lobby').classList.add('oculto');
+            document.getElementById('juego').style.display = 'none';
         }
     </script>
 </body>
