@@ -2,479 +2,311 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra Final Fix</title>
+    <title>Pasapalabra Profesional</title>
     <style>
-        body { 
-            background-color: #050a1f; color: white; font-family: 'Segoe UI', sans-serif; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            min-height: 100vh; margin: 0; overflow: hidden;
-        }
-
-        /* --- UI GENERAL --- */
-        .pantalla { 
-            text-align: center; background: #111b3d; padding: 30px; 
-            border-radius: 20px; border: 1px solid #2a3a6d; width: 400px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative; z-index: 100;
-        }
+        :root { --azul-oscuro: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; }
+        body { background: var(--azul-oscuro); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .oculto { display: none !important; }
-        
-        .titulo { color: #ffcc00; font-size: 2.5rem; text-shadow: 0 0 10px #ffcc00; margin-bottom: 20px; }
-        .btn { 
-            display: block; width: 100%; padding: 15px; margin: 10px 0; 
-            border-radius: 50px; border: none; font-weight: bold; cursor: pointer; 
-            font-size: 1rem; text-transform: uppercase; transition: 0.2s;
-        }
-        .btn-green { background: #2ecc71; color: white; }
+
+        /* --- PANTALLAS --- */
+        .pantalla { text-align: center; background: var(--panel); padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
+        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-green { background: var(--verde); color: white; }
         .btn-blue { background: #3498db; color: white; }
+
+        /* --- LAYOUT JUEGO --- */
+        #juego { display: none; width: 100vw; height: 100vh; position: relative; }
+        .bloque-jugador { position: absolute; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        /* Estado Activo (Grande) */
+        .activo { width: 600px; height: 600px; top: 50%; left: 50%; transform: translate(-50%, -55%); z-index: 10; background: rgba(17, 27, 61, 0.9); border-radius: 30px; border: 2px solid var(--oro); }
+        /* Estado Pequeño (Esquina) */
+        .peque { width: 200px; height: 200px; top: 20px; right: 20px; z-index: 5; opacity: 0.7; transform: scale(0.8); border: 1px solid #555; border-radius: 20px; }
+
+        /* --- EL ROSCO (CORREGIDO) --- */
+        .rosco { position: relative; width: 400px; height: 400px; transition: 0.8s; }
+        .peque .rosco { width: 140px; height: 140px; }
         
-        input { 
-            width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; 
-            text-align: center; font-size: 1.1rem; 
-        }
-
-        /* --- JUEGO --- */
-        #juego { display: none; width: 100%; height: 100vh; position: relative; overflow: hidden; }
-        
-        /* CONTENEDOR DE CADA JUGADOR */
-        .bloque-jugador {
-            position: absolute;
-            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            display: flex; flex-direction: column; align-items: center;
-            background: rgba(17, 27, 61, 0.8);
-            border-radius: 20px;
-        }
-
-        /* ESTADO: ES MI TURNO (Grande y Centrado) */
-        .modo-grande {
-            width: 500px; height: 500px;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 50;
-            border: 2px solid #ffcc00;
-            box-shadow: 0 0 50px rgba(255, 204, 0, 0.2);
-        }
-        
-        /* ESTADO: ESPERANDO (Pequeño y Esquina) */
-        .modo-peque {
-            width: 200px; height: 200px;
-            top: 20px;
-            z-index: 10;
-            transform: scale(0.7);
-            border: 1px solid #555;
-            opacity: 0.8;
-        }
-        /* Posiciones de las esquinas */
-        .pos-izquierda { left: 20px; } /* Cuando J2 está activo, J1 va aquí */
-        .pos-derecha { right: 20px; }  /* Cuando J1 está activo, J2 va aquí */
-
-        /* ROSCO VISUAL */
-        .rosco { position: relative; margin: 0 auto; transition: all 0.8s; }
-        .modo-grande .rosco { width: 360px; height: 360px; margin-top: 20px; }
-        .modo-peque .rosco { width: 180px; height: 180px; margin-top: 10px; }
-
         .letra { 
-            position: absolute; border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-            font-weight: bold; border: 1px solid white; color: white; transition: all 0.5s;
+            position: absolute; width: 40px; height: 40px; background: #0044ff; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; font-size: 18px; border: 2px solid white; transition: 0.3s;
         }
+        .peque .letra { width: 12px; height: 12px; font-size: 0; border-width: 1px; }
 
-        /* Estilos Letras Grande */
-        .modo-grande .letra { width: 34px; height: 34px; font-size: 16px; background: #0044ff; }
-        .modo-grande .letra.activa { background: #ffcc00; color: black; transform: scale(1.3); box-shadow: 0 0 15px #ffcc00; }
-        
-        /* Estilos Letras Pequeño */
-        .modo-peque .letra { width: 18px; height: 18px; font-size: 0px; background: #0044ff; border: none; } /* Sin texto para que se vea limpio */
-        .modo-peque .letra.activa { border: 2px solid #ffcc00; transform: scale(1.5); }
+        .letra.actual { background: var(--oro); color: black; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
+        .letra.bien { background: var(--verde); }
+        .letra.mal { background: var(--rojo); }
 
-        .letra.correcta { background: #28a745 !important; }
-        .letra.incorrecta { background: #dc3545 !important; }
-
-        /* PANELES DE CONTROL */
-        .panel-control { width: 100%; text-align: center; margin-top: auto; padding-bottom: 20px; }
-        .modo-peque .panel-control { display: none; } /* Ocultar input si es pequeño */
-        
-        .nombre-jugador { font-weight: bold; font-size: 1.5rem; margin-top: 10px; color: #fff; text-shadow: 2px 2px 0 #000; }
-        .modo-peque .nombre-jugador { font-size: 1rem; }
-
-        .pregunta-box { min-height: 50px; font-size: 1.1rem; padding: 0 20px; margin-bottom: 10px; }
-        
-        /* Estado bloqueado (cuando no es tu turno) */
-        .bloqueado { opacity: 0.5; pointer-events: none; }
+        /* --- CONTROLES --- */
+        .controles { width: 90%; text-align: center; margin-top: 20px; }
+        .peque .controles { display: none; }
+        .pregunta { font-size: 1.2rem; min-height: 60px; margin-bottom: 10px; }
+        .botones-juego { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
 
     <div id="p-nombre" class="pantalla">
-        <h1 class="titulo">BIENVENIDO</h1>
-        <input type="text" id="mi-nombre" placeholder="Tu Nombre">
-        <button class="btn btn-green" onclick="irMenu()">ENTRAR</button>
+        <h1 style="color:var(--oro)">PASAPALABRA</h1>
+        <input type="text" id="nombre-input" placeholder="Escribe tu nombre">
+        <button class="btn btn-green" onclick="guardarNombre()">ENTRAR</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
-        <h1 class="titulo">PASAPALABRA</h1>
-        <h3 id="saludo" style="color:#3498db">Hola</h3>
-        <button class="btn btn-green" onclick="setupLocal()">JUGAR LOCAL (2 Personas)</button>
-        <button class="btn btn-blue" onclick="irOnlineMenu()">JUGAR ONLINE</button>
-    </div>
-
-    <div id="p-online" class="pantalla oculto">
-        <h2>MODO ONLINE</h2>
-        <button class="btn btn-blue" onclick="crearSala()">GENERAR CÓDIGO</button>
-        <p>— O —</p>
-        <input type="text" id="cod-join" placeholder="Código">
-        <button class="btn btn-green" onclick="unirseSala()">UNIRSE</button>
-        <button class="btn" onclick="volverMenu()">VOLVER</button>
+        <h2 id="saludo"></h2>
+        <button class="btn btn-blue" onclick="crearSala()">CREAR SALA ONLINE</button>
+        <input type="text" id="join-codigo" placeholder="Código de sala">
+        <button class="btn btn-green" onclick="unirseSala()">UNIRSE A SALA</button>
     </div>
 
     <div id="p-lobby" class="pantalla oculto">
-        <h3>CÓDIGO SALA:</h3>
-        <h1 id="lobby-cod" style="font-size:3rem; color:#ffcc00">---</h1>
-        <div id="lista-jugadores" style="text-align:left; margin:20px 0; background:rgba(0,0,0,0.2); padding:10px;">
-            <div id="lbl-j1">1. Esperando...</div>
-            <div id="lbl-j2">2. Esperando...</div>
+        <h2>SALA: <span id="display-cod" style="color:var(--oro)">------</span></h2>
+        <div id="lista-nombres" style="margin:20px 0; text-align:left; background:rgba(0,0,0,0.2); padding:15px; border-radius:10px;">
+            <div id="lobby-j1">1. Esperando...</div>
+            <div id="lobby-j2">2. Esperando...</div>
         </div>
-        <button id="btn-start" class="btn btn-green oculto" onclick="hostStart()">¡EMPEZAR YA!</button>
-        <div id="msg-wait" class="oculto">Esperando al anfitrión...</div>
+        <button id="btn-comenzar" class="btn btn-green oculto" onclick="hostEmpezar()">EMPEZAR PARTIDA</button>
+        <p id="wait-msg" class="oculto">Esperando al anfitrión...</p>
     </div>
 
     <div id="juego">
-        
-        <div id="bloque-j1" class="bloque-jugador">
-            <div class="nombre-jugador" id="name-j1">JUGADOR 1</div>
+        <div id="jugador1" class="bloque-jugador activo">
+            <h3 id="name1">PEPE</h3>
             <div id="rosco1" class="rosco"></div>
-            
-            <div class="panel-control">
-                <div id="preg1" class="pregunta-box">...</div>
-                <input type="text" id="inp1" placeholder="Respuesta" autocomplete="off">
-                <div style="display:flex; justify-content:center; gap:10px;">
-                    <button class="btn btn-green" style="width:auto" onclick="enviar(1)">ENVIAR</button>
-                    <button class="btn btn-blue" style="width:auto; background:#f1c40f; color:black" onclick="pasar(1)">PASO</button>
+            <div class="controles">
+                <div id="preg1" class="pregunta">Cargando...</div>
+                <input type="text" id="resp1" placeholder="Tu respuesta...">
+                <div class="botones-juego">
+                    <button class="btn btn-green" onclick="enviar(1)">ENVIAR</button>
+                    <button class="btn" style="background:var(--oro)" onclick="pasar(1)">PASO</button>
                 </div>
             </div>
         </div>
 
-        <div id="bloque-j2" class="bloque-jugador">
-            <div class="nombre-jugador" id="name-j2">JUGADOR 2</div>
+        <div id="jugador2" class="bloque-jugador peque">
+            <h3 id="name2" style="font-size:0.8rem">RIVAL</h3>
             <div id="rosco2" class="rosco"></div>
-            
-            <div class="panel-control">
-                <div id="preg2" class="pregunta-box">...</div>
-                <input type="text" id="inp2" placeholder="Respuesta" autocomplete="off">
-                <div style="display:flex; justify-content:center; gap:10px;">
-                    <button class="btn btn-green" style="width:auto" onclick="enviar(2)">ENVIAR</button>
-                    <button class="btn btn-blue" style="width:auto; background:#f1c40f; color:black" onclick="pasar(2)">PASO</button>
+            <div class="controles">
+                <div id="preg2" class="pregunta">Cargando...</div>
+                <input type="text" id="resp2" placeholder="Tu respuesta...">
+                <div class="botones-juego">
+                    <button class="btn btn-green" onclick="enviar(2)">ENVIAR</button>
+                    <button class="btn" style="background:var(--oro)" onclick="pasar(2)">PASO</button>
                 </div>
             </div>
         </div>
-
     </div>
 
-    <script>
-        /* --- ESTADO GLOBAL --- */
-        let state = {
-            modo: 'local', // 'local' o 'online'
-            miRol: null,   // 'host' o 'guest' (solo online)
-            codigo: null,
-            turno: 1,      // 1 o 2
-            nombres: { 1: "J1", 2: "J2" },
-            j1: { ind: 0, res: [] }, // res: 0=pendiente, 1=bien, 2=mal
-            j2: { ind: 0, res: [] }
-        };
+<script>
+    // --- DATOS (Imagen subida) ---
+    const letrasArr = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
+    const bancoA = [
+        {l:"A", p:"Relativo a las abejas", r:"apícola"},
+        {l:"B", p:"Mide dirección viento", r:"veleta"}, // Según tu imagen la B es veleta
+        {l:"C", p:"Vehículo grande mercancías", r:"camión"},
+        {l:"D", p:"Animal marino inteligente", r:"delfín"},
+        {l:"E", p:"Lugar cría elefantes", r:"elefantería"},
+        {l:"F", p:"Luz guía barcos", r:"faro"},
+        {l:"G", p:"Ave corral pone huevos", r:"gallina"},
+        {l:"H", p:"Agua sólida por frío", r:"hielo"},
+        {l:"I", p:"Porción tierra rodeada agua", r:"isla"},
+        {l:"J", p:"Animal cuello muy largo", r:"jirafa"},
+        {l:"L", p:"Líquido blanco vacas", r:"leche"},
+        {l:"M", p:"Fruta del manzano", r:"manzana"},
+        {l:"N", p:"Fruta cítrica naranja", r:"naranja"},
+        {l:"Ñ", p:"Persona tiene pocos años", r:"niño"},
+        {l:"O", p:"Animal que da lana", r:"oveja"},
+        {l:"P", p:"Instrumento teclas", r:"piano"},
+        {l:"Q", p:"Alimento leche cuajada", r:"queso"},
+        {l:"R", p:"Mamífero roedor pequeño", r:"ratón"},
+        {l:"S", p:"Cuerpo celeste luz y calor", r:"sol"},
+        {l:"T", p:"Aparato hablar distancia", r:"teléfono"},
+        {l:"U", p:"Fruta del vino", r:"uva"},
+        {l:"V", p:"Persona vive mismo edificio", r:"vecino"},
+        {l:"X", p:"Examen tejido vivo", r:"biopsia"},
+        {l:"Y", p:"Embarcación lujo", r:"yate"},
+        {l:"Z", p:"Calzado cubre pie", r:"zapato"}
+    ];
+    // Se usa el mismo banco para simplificar, pero el sistema está listo para dos
+    const bancoB = [...bancoA]; 
 
-        const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        // Banco simplificado para ejemplo
-        const pool = letras.map(l => ({l:l, p:`Pregunta de prueba con la ${l}`, r:"a"})); 
+    let miNombre = "";
+    let miRol = ""; 
+    let salaID = "";
+    let turnoActual = 1;
+    let datosJuego = { j1: { pos: 0, res: [] }, j2: { pos: 0, res: [] } };
 
-        /* --- NAVEGACIÓN --- */
-        function irMenu() {
-            state.nombres[1] = document.getElementById('mi-nombre').value || "Jugador 1";
-            document.getElementById('saludo').innerText = "Hola, " + state.nombres[1];
-            verPantalla('p-menu');
+    function guardarNombre() {
+        miNombre = document.getElementById('nombre-input').value;
+        if(!miNombre) return;
+        document.getElementById('saludo').innerText = "HOLA, " + miNombre.toUpperCase();
+        mostrar('p-menu');
+    }
+
+    function crearSala() {
+        miRol = "host";
+        salaID = Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('display-cod').innerText = salaID;
+        document.getElementById('lobby-j1').innerText = "1. " + miNombre + " (TÚ)";
+        
+        localStorage.setItem('sala_' + salaID, JSON.stringify({host: miNombre, guest: null, status: 'esperando'}));
+        mostrar('p-lobby');
+        window.addEventListener('storage', monitorizarSala);
+    }
+
+    function unirseSala() {
+        miRol = "guest";
+        salaID = document.getElementById('join-codigo').value;
+        let data = JSON.parse(localStorage.getItem('sala_' + salaID));
+        if(!data) return alert("Sala no existe");
+
+        data.guest = miNombre;
+        localStorage.setItem('sala_' + salaID, JSON.stringify(data));
+        
+        document.getElementById('display-cod').innerText = salaID;
+        document.getElementById('lobby-j1').innerText = "1. " + data.host;
+        document.getElementById('lobby-j2').innerText = "2. " + miNombre + " (TÚ)";
+        document.getElementById('wait-msg').classList.remove('oculto');
+        mostrar('p-lobby');
+        window.addEventListener('storage', monitorizarSala);
+    }
+
+    function monitorizarSala(e) {
+        if(e.key !== 'sala_' + salaID) return;
+        let data = JSON.parse(e.newValue);
+        
+        if(miRol === 'host' && data.guest) {
+            document.getElementById('lobby-j2').innerText = "2. " + data.guest;
+            document.getElementById('btn-comenzar').classList.remove('oculto');
         }
-        function verPantalla(id) {
-            document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-            if(id) document.getElementById(id).classList.remove('oculto');
-        }
-        function volverMenu() { verPantalla('p-menu'); }
-        function irOnlineMenu() { verPantalla('p-online'); }
+        if(data.status === 'jugando') empezarPartidaUI(data);
+        if(data.status === 'actualizar') sincronizarJuego(data);
+    }
 
-        /* --- MODO LOCAL --- */
-        function setupLocal() {
-            state.modo = 'local';
-            state.nombres[2] = "Jugador 2"; // En local el J2 es genérico o se podría pedir
-            iniciarJuegoUI();
-        }
+    function hostEmpezar() {
+        let data = JSON.parse(localStorage.getItem('sala_' + salaID));
+        data.status = 'jugando';
+        data.turno = 1;
+        data.j1 = { pos: 0, res: Array(25).fill(0) };
+        data.j2 = { pos: 0, res: Array(25).fill(0) };
+        localStorage.setItem('sala_' + salaID, JSON.stringify(data));
+        empezarPartidaUI(data);
+    }
 
-        /* --- MODO ONLINE (SIMULADO) --- */
-        function crearSala() {
-            state.modo = 'online';
-            state.miRol = 'host';
-            state.codigo = Math.floor(1000 + Math.random() * 9000);
-            
-            // Guardar estado inicial en LS
-            syncSave({ status: 'waiting', host: state.nombres[1], guest: null });
-            
-            document.getElementById('lobby-cod').innerText = state.codigo;
-            document.getElementById('lbl-j1').innerText = "1. " + state.nombres[1];
-            document.getElementById('lbl-j2').innerText = "2. Esperando...";
-            document.getElementById('btn-start').classList.add('oculto');
-            document.getElementById('msg-wait').classList.add('oculto');
-            
-            verPantalla('p-lobby');
-            window.addEventListener('storage', checkStorage);
-        }
+    function empezarPartidaUI(data) {
+        mostrar('juego');
+        document.getElementById('juego').style.display = 'block';
+        document.getElementById('name1').innerText = data.host;
+        document.getElementById('name2').innerText = data.guest;
+        crearRoscoVisual('rosco1');
+        crearRoscoVisual('rosco2');
+        sincronizarJuego(data);
+    }
 
-        function unirseSala() {
-            const code = document.getElementById('cod-join').value;
-            const raw = localStorage.getItem('pspl_' + code);
-            if(!raw) return alert("Sala no existe");
-            
-            state.modo = 'online';
-            state.miRol = 'guest';
-            state.codigo = code;
-            state.nombres[2] = state.nombres[1]; // Mi nombre pasa a ser el J2 localmente para enviar
-            
-            // Actualizar sala con mi nombre
-            let data = JSON.parse(raw);
-            data.guest = state.nombres[1]; // Yo soy el guest
-            state.nombres[1] = data.host;  // El J1 es el host
-            state.nombres[2] = data.guest; // El J2 soy yo
+    function crearRoscoVisual(id) {
+        const contenedor = document.getElementById(id);
+        contenedor.innerHTML = "";
+        const total = 25;
+        const radio = 160; 
 
-            syncSave(data); // Notificar al host
-            
-            document.getElementById('lobby-cod').innerText = state.codigo;
-            document.getElementById('lbl-j1').innerText = "1. " + state.nombres[1];
-            document.getElementById('lbl-j2').innerText = "2. " + state.nombres[2];
-            document.getElementById('msg-wait').classList.remove('oculto');
-            
-            verPantalla('p-lobby');
-            window.addEventListener('storage', checkStorage);
-        }
+        letrasArr.forEach((letra, i) => {
+            const div = document.createElement('div');
+            div.className = 'letra';
+            div.id = id + '-' + i;
+            div.innerText = letra;
 
-        function syncSave(data) {
-            // Mezclamos datos actuales con nuevos
-            let current = JSON.parse(localStorage.getItem('pspl_' + state.codigo) || "{}");
-            let merged = { ...current, ...data };
-            localStorage.setItem('pspl_' + state.codigo, JSON.stringify(merged));
-        }
+            // MATEMÁTICAS DEL CÍRCULO (Aquí estaba el fallo de tu foto)
+            const angulo = (i * 360 / total) - 90;
+            const x = radio * Math.cos(angulo * Math.PI / 180);
+            const y = radio * Math.sin(angulo * Math.PI / 180);
 
-        function checkStorage(e) {
-            if(e.key !== 'pspl_' + state.codigo) return;
-            const data = JSON.parse(e.newValue);
-            
-            // Lógica HOST en Lobby
-            if(state.miRol === 'host' && data.guest && data.status === 'waiting') {
-                state.nombres[2] = data.guest;
-                document.getElementById('lbl-j2').innerText = "2. " + data.guest;
-                document.getElementById('btn-start').classList.remove('oculto');
-            }
+            div.style.left = `calc(50% + ${x}px - 20px)`;
+            div.style.top = `calc(50% + ${y}px - 20px)`;
+            contenedor.appendChild(div);
+        });
+    }
 
-            // Lógica INICIO DE JUEGO
-            if(data.status === 'playing') {
-                // Actualizar estado local con datos de la nube
-                if(data.turno) state.turno = data.turno;
-                if(data.j1) state.j1 = data.j1;
-                if(data.j2) state.j2 = data.j2;
-                
-                // Si soy guest, aseguro nombres
-                if(state.miRol === 'guest') {
-                    state.nombres[1] = data.host;
-                    state.nombres[2] = data.guest;
-                }
-                
-                // Si aún no he entrado visualmente al juego
-                if(document.getElementById('juego').style.display === 'none') {
-                    iniciarJuegoUI();
-                } else {
-                    // Si ya estoy jugando, solo renderizo cambios
-                    renderizarTablero();
-                }
-            }
-        }
+    function sincronizarJuego(data) {
+        turnoActual = data.turno;
+        datosJuego.j1 = data.j1;
+        datosJuego.j2 = data.j2;
 
-        function hostStart() {
-            // Inicializar datos de juego
-            let gameData = {
-                status: 'playing',
-                host: state.nombres[1],
-                guest: state.nombres[2],
-                turno: 1,
-                j1: { ind: 0, res: Array(26).fill(0) },
-                j2: { ind: 0, res: Array(26).fill(0) }
-            };
-            syncSave(gameData);
-            // El propio evento storage disparará mi inicio o lo forzamos:
-            state.j1.res = Array(26).fill(0);
-            state.j2.res = Array(26).fill(0);
-            iniciarJuegoUI();
-        }
-
-        /* --- MOTOR DEL JUEGO --- */
-        function iniciarJuegoUI() {
-            verPantalla(null); // Ocultar todas las pantallas menú
-            document.getElementById('juego').style.display = 'block';
-            
-            document.getElementById('name-j1').innerText = state.nombres[1];
-            document.getElementById('name-j2').innerText = state.nombres[2];
-            
-            crearRoscoHTML(1);
-            crearRoscoHTML(2);
-            renderizarTablero();
+        // Visual de turnos
+        const b1 = document.getElementById('jugador1');
+        const b2 = document.getElementById('jugador2');
+        
+        if(turnoActual === 1) {
+            b1.className = "bloque-jugador activo";
+            b2.className = "bloque-jugador peque";
+            actualizarPregunta(1);
+        } else {
+            b1.className = "bloque-jugador peque";
+            b2.className = "bloque-jugador activo";
+            actualizarPregunta(2);
         }
 
-        function crearRoscoHTML(num) {
-            const el = document.getElementById('rosco'+num);
-            el.innerHTML = "";
-            letras.forEach((l, i) => {
-                const div = document.createElement('div');
-                div.className = 'letra';
-                div.id = `L${num}-${i}`;
-                div.innerText = l;
-                // Posicionamiento circular
-                const ang = (i * 360 / 26) - 90;
-                // Radio relativo al tamaño del contenedor CSS
-                // Usamos porcentajes para que escale bien (Grande/Pequeño)
-                const rad = 42; // % del contenedor
-                const x = rad * Math.cos(ang * Math.PI/180);
-                const y = rad * Math.sin(ang * Math.PI/180);
-                div.style.left = `calc(50% + ${x}% - 10%)`; // -10% es la mitad del ancho aprox de la letra
-                div.style.top = `calc(50% + ${y}% - 10%)`;
-                div.style.width = "20%";
-                div.style.height = "20%";
-                
-                el.appendChild(div);
-            });
-        }
+        actualizarColores(1, data.j1);
+        actualizarColores(2, data.j2);
 
-        function renderizarTablero() {
-            // 1. GESTIÓN DE TURNOS Y POSICIONES
-            const b1 = document.getElementById('bloque-j1');
-            const b2 = document.getElementById('bloque-j2');
-            
-            // Limpiar clases
-            b1.className = "bloque-jugador";
-            b2.className = "bloque-jugador";
+        // Bloqueo de inputs si no es tu turno
+        document.getElementById('resp1').disabled = (miRol === 'guest' || turnoActual !== 1);
+        document.getElementById('resp2').disabled = (miRol === 'host' || turnoActual !== 2);
+    }
 
-            if (state.turno === 1) {
-                b1.classList.add('modo-grande');
-                b2.classList.add('modo-peque', 'pos-derecha');
-                document.getElementById('inp1').focus();
-            } else {
-                b2.classList.add('modo-grande');
-                b1.classList.add('modo-peque', 'pos-izquierda');
-                document.getElementById('inp2').focus();
-            }
+    function actualizarColores(num, player) {
+        player.res.forEach((estado, i) => {
+            const el = document.getElementById(`rosco${num}-${i}`);
+            el.classList.remove('bien', 'mal', 'actual');
+            if(estado === 1) el.classList.add('bien');
+            if(estado === 2) el.classList.add('mal');
+            if(i === player.pos) el.classList.add('actual');
+        });
+    }
 
-            // 2. BLOQUEO DE INPUTS (SEGURIDAD ONLINE)
-            if(state.modo === 'online') {
-                const soyJ1 = state.miRol === 'host';
-                const soyJ2 = state.miRol === 'guest';
-                
-                // Bloquear J1 si no soy J1 o no es turno 1
-                const input1 = document.getElementById('inp1');
-                if (!soyJ1 || state.turno !== 1) {
-                    input1.disabled = true;
-                    input1.placeholder = (state.turno === 1) ? "Turno del rival..." : "Esperando...";
-                } else {
-                    input1.disabled = false;
-                    input1.placeholder = "Tu respuesta...";
-                    input1.focus();
-                }
+    function actualizarPregunta(num) {
+        const player = (num === 1) ? datosJuego.j1 : datosJuego.j2;
+        const pData = bancoA[player.pos];
+        document.getElementById('preg'+num).innerText = `CON LA ${pData.l}: ${pData.p}`;
+    }
 
-                // Bloquear J2 si no soy J2 o no es turno 2
-                const input2 = document.getElementById('inp2');
-                if (!soyJ2 || state.turno !== 2) {
-                    input2.disabled = true;
-                    input2.placeholder = (state.turno === 2) ? "Turno del rival..." : "Esperando...";
-                } else {
-                    input2.disabled = false;
-                    input2.placeholder = "Tu respuesta...";
-                    input2.focus();
-                }
-            } else {
-                // MODO LOCAL: Solo deshabilitar el que no toca
-                document.getElementById('inp1').disabled = (state.turno !== 1);
-                document.getElementById('inp2').disabled = (state.turno !== 2);
-            }
-
-            // 3. ACTUALIZAR PREGUNTAS Y COLORES
-            updateRosco(1);
-            updateRosco(2);
-        }
-
-        function updateRosco(n) {
-            const data = (n === 1) ? state.j1 : state.j2;
-            
-            // Texto Pregunta
-            const item = pool[data.ind];
-            if(item) {
-                document.getElementById('preg'+n).innerHTML = `<b>CON LA ${item.l}:</b> ${item.p}`;
-            } else {
-                document.getElementById('preg'+n).innerHTML = "¡FIN DEL JUEGO!";
-            }
-
-            // Colores
-            const resArray = data.res || [];
-            resArray.forEach((val, i) => {
-                const el = document.getElementById(`L${n}-${i}`);
-                el.classList.remove('activa', 'correcta', 'incorrecta');
-                if (i === data.ind) el.classList.add('activa');
-                if (val === 1) el.classList.add('correcta');
-                if (val === 2) el.classList.add('incorrecta');
-            });
-        }
-
-        /* --- ACCIONES --- */
-        function enviar(n) {
-            // Verificar si tengo permiso
-            if(state.modo === 'online') {
-                if(n === 1 && state.miRol !== 'host') return;
-                if(n === 2 && state.miRol !== 'guest') return;
-            }
-
-            const input = document.getElementById('inp'+n);
-            const val = input.value.toLowerCase().trim();
-            const data = (n === 1) ? state.j1 : state.j2;
-            const correct = pool[data.ind].r;
-
-            // Lógica Acierto/Fallo
-            if(val === correct) {
-                data.res[data.ind] = 1; // Correcto
-                // Si acierta, NO cambia turno, sigue jugando
-            } else {
-                data.res[data.ind] = 2; // Fallo
-                state.turno = (state.turno === 1) ? 2 : 1; // Cambia turno
-            }
-            
-            data.ind++;
-            input.value = "";
-
-            // Guardar y renderizar
-            if(state.modo === 'online') {
-                syncSave({ turno: state.turno, j1: state.j1, j2: state.j2 });
-            }
-            renderizarTablero();
-        }
-
-        function pasar(n) {
-            if(state.modo === 'online') {
-                if(n === 1 && state.miRol !== 'host') return;
-                if(n === 2 && state.miRol !== 'guest') return;
-            }
-
-            const data = (n === 1) ? state.j1 : state.j2;
-            data.ind++; // Avanza letra
-            state.turno = (state.turno === 1) ? 2 : 1; // Cambia turno obligatoriamente
-
-            if(state.modo === 'online') {
-                syncSave({ turno: state.turno, j1: state.j1, j2: state.j2 });
-            }
-            renderizarTablero();
+    function enviar(num) {
+        const input = document.getElementById('resp'+num);
+        const resp = input.value.toLowerCase().trim();
+        const player = (num === 1) ? datosJuego.j1 : datosJuego.j2;
+        
+        if(resp === bancoA[player.pos].r) {
+            player.res[player.pos] = 1;
+        } else {
+            player.res[player.pos] = 2;
+            turnoActual = (num === 1) ? 2 : 1;
         }
         
-        // Enter key listeners
-        document.getElementById('inp1').addEventListener('keyup', (e)=>{if(e.key==='Enter') enviar(1)});
-        document.getElementById('inp2').addEventListener('keyup', (e)=>{if(e.key==='Enter') enviar(2)});
+        subirCambios(player, num);
+        input.value = "";
+    }
 
-    </script>
+    function pasar(num) {
+        const player = (num === 1) ? datosJuego.j1 : datosJuego.j2;
+        turnoActual = (num === 1) ? 2 : 1;
+        subirCambios(player, num);
+    }
+
+    function subirCambios(player, num) {
+        player.pos = (player.pos + 1) % 25;
+        let data = JSON.parse(localStorage.getItem('sala_' + salaID));
+        data.status = 'actualizar';
+        data.turno = turnoActual;
+        if(num === 1) data.j1 = player; else data.j2 = player;
+        localStorage.setItem('sala_' + salaID, JSON.stringify(data));
+        sincronizarJuego(data);
+    }
+
+    function mostrar(id) {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById(id).classList.remove('oculto');
+    }
+</script>
 </body>
 </html>
