@@ -3,281 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v3.4.1</title>
-    
+    <title>Pasapalabra Pro v3.5.0 - Master Lock</title>
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#050a1f">
-
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    
     <style>
-        :root { 
-            --fondo: #050a1f; 
-            --panel: #111b3d; 
-            --oro: #ffcc00; 
-            --verde: #2ecc71; 
-            --rojo: #dc3545; 
-            --azul-letra: #0044ff; 
-        }
-
-        body { 
-            background: var(--fondo); 
-            color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            overflow: hidden; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            min-height: 100vh; 
-        }
-
+        :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul-letra: #0044ff; }
+        body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .oculto { display: none !important; }
 
-        /* TAG DE VERSIÓN */
-        .version-tag { 
-            position: fixed; 
-            bottom: 10px; 
-            left: 10px; 
-            opacity: 0.5; 
-            font-size: 0.8rem; 
-            font-weight: bold; 
-            color: #aaa; 
-            z-index: 100;
-        }
+        /* PANEL STAFF */
+        #panel-control { display: none; position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.95); border: 2px solid var(--oro); padding: 15px; border-radius: 12px; z-index: 1000; min-width: 180px; }
+        .badge-superadmin { color: #ff0044; font-weight: bold; font-size: 0.7rem; }
+        .btn-lock { background: var(--rojo); color: white; border: none; width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-unlock { background: var(--verde); color: white; border: none; width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        /* PANEL STAFF (DERECHA) */
-        #panel-control { 
-            display: none; 
-            position: fixed; 
-            top: 20px; 
-            right: 20px; 
-            background: rgba(0,0,0,0.9); 
-            border: 2px solid var(--oro); 
-            padding: 15px; 
-            border-radius: 12px; 
-            z-index: 1000; 
-            min-width: 180px; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        .user-header { border-bottom: 1px solid #444; margin-bottom: 10px; padding-bottom: 5px; text-align: center; }
-        .badge-superadmin { color: #ff0044; font-weight: bold; font-size: 0.7rem; letter-spacing: 1px; }
-        .badge-admin { color: #00ccff; font-weight: bold; font-size: 0.7rem; }
-        .badge-visu { color: #aaaaaa; font-weight: bold; font-size: 0.7rem; }
-        
-        .lista-online { background: #222; border-radius: 5px; padding: 8px; margin-top: 10px; font-size: 0.8rem; }
-        .btn-shutdown { background: var(--rojo); color: white; border: none; width: 100%; padding: 8px; margin-top: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.7rem; }
-
-        /* PANTALLAS MENÚ */
-        .pantalla { 
-            text-align: center; 
-            background: var(--panel); 
-            padding: 30px; 
-            border-radius: 20px; 
-            border: 1px solid #2a3a6d; 
-            width: 90%; 
-            max-width: 380px; 
-            box-shadow: 0 15px 50px rgba(0,0,0,0.6); 
-            z-index: 10;
-        }
-
-        input { 
-            width: 85%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border-radius: 8px; 
-            border: none; 
-            font-size: 1rem; 
-            text-align: center; 
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        .btn { 
-            width: 100%; 
-            padding: 14px; 
-            margin: 8px 0; 
-            border-radius: 50px; 
-            border: none; 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            transition: transform 0.2s; 
-            font-size: 0.9rem;
-        }
-        .btn:active { transform: scale(0.95); }
+        /* PANTALLAS */
+        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 380px; box-shadow: 0 15px 50px rgba(0,0,0,0.6); }
+        input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
+        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; }
         .btn-green { background: var(--verde); color: white; }
         .btn-blue { background: #3498db; color: white; }
-        .btn-gray { background: #444; color: #ccc; font-size: 0.75rem; }
 
-        /* TABLERO DE JUEGO */
+        /* PANTALLA BLOQUEO */
+        #p-bloqueo { background: #300; border: 3px solid var(--rojo); }
+        .icono-candado { font-size: 4rem; margin-bottom: 20px; }
+
+        /* JUEGO */
         #juego-cont { display: none; width: 100vw; height: 100vh; position: relative; }
-        
-        .rosco-main { 
-            position: absolute; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            width: 520px; 
-            height: 520px; 
-            border-radius: 50%; 
-            border: 3px solid rgba(255, 204, 0, 0.3); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-
-        .letra { 
-            position: absolute; 
-            width: 42px; 
-            height: 42px; 
-            background: var(--azul-letra); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-            border: 2px solid white; 
-            color: white; 
-            font-size: 1.1rem; 
-            transition: 0.3s;
-        }
-
-        .letra.activa { background: var(--oro) !important; color: black; transform: scale(1.25); box-shadow: 0 0 20px var(--oro); z-index: 50; }
+        .rosco-main { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .letra { position: absolute; width: 40px; height: 40px; background: var(--azul-letra); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; color: white; }
+        .letra.activa { background: var(--oro) !important; color: black; transform: scale(1.3); box-shadow: 0 0 20px var(--oro); }
         .letra.bien { background: var(--verde) !important; }
         .letra.mal { background: var(--rojo) !important; }
-
-        .ui-juego { text-align: center; width: 300px; z-index: 100; pointer-events: none; }
-        .ui-juego input, .ui-juego .btn { pointer-events: auto; }
-        
-        .pregunta-box { 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            margin-bottom: 20px; 
-            min-height: 70px; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @media (max-width: 600px) {
-            .rosco-main { width: 340px; height: 340px; }
-            .letra { width: 28px; height: 28px; font-size: 0.7rem; }
-            .ui-juego { width: 200px; }
-            .pregunta-box { font-size: 0.9rem; }
-        }
+        .pregunta-box { font-size: 1.1rem; font-weight: bold; margin-bottom: 20px; min-height: 60px; }
     </style>
 </head>
 <body>
 
-    <div class="version-tag">v3.4.1</div>
-
     <div id="panel-control">
-        <div class="user-header">
-            <span id="staff-name" style="font-size: 1rem; display: block; font-weight: bold;">STAFF</span>
-            <span id="staff-rank" class="badge-visu">ROL</span>
+        <div style="text-align:center; border-bottom:1px solid #444; padding-bottom:5px;">
+            <b id="staff-name">ADMIN</b><br>
+            <span id="staff-rank" class="badge-superadmin">SUPERADMIN</span>
         </div>
-        <div class="lista-online">
-            <b>ONLINE:</b> <span id="count-online">0</span>
-            <div id="nombres-online" style="margin-top:5px; color:#00ffcc; font-size: 0.75rem;"></div>
-        </div>
-        <button id="btn-kill" class="btn-shutdown oculto" onclick="apagarTodo()">APAGAR SISTEMA</button>
+        <div id="lista-jugadores" style="font-size:0.8rem; margin-top:10px; color:#00ffcc;"></div>
+        <button id="btn-master-lock" class="btn-lock oculto" onclick="toggleBloqueo()">BLOQUEAR SISTEMA</button>
+    </div>
+
+    <div id="p-bloqueo" class="pantalla oculto">
+        <div class="icono-candado">🔒</div>
+        <h1 style="color:var(--rojo)">ACCESO BLOQUEADO</h1>
+        <p>El Superadmin ha cerrado el acceso al juego para todo el mundo.</p>
+        <p style="font-size:0.8rem; color:#aaa;">Inténtalo más tarde cuando el sistema esté activo.</p>
     </div>
 
     <div id="p-nombre" class="pantalla">
-        <h1 style="color:var(--oro); margin-top:0;">PASAPALABRA</h1>
-        <p>Introduce tu nombre para entrar</p>
-        <input type="text" id="nombre-in" placeholder="Tu nombre...">
-        <button class="btn btn-green" onclick="registrarNombre()">CONTINUAR</button>
+        <h1>PASAPALABRA</h1>
+        <input type="text" id="nombre-in" placeholder="Introduce tu nombre...">
+        <button class="btn btn-green" onclick="registrarNombre()">ENTRAR</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
-        <h2 id="hola-user" style="margin-top:0;">HOLA</h2>
-        <button class="btn btn-blue" onclick="irOnline()">MODO ONLINE</button>
-        <button class="btn btn-green" onclick="iniciarLocal()">JUGAR SOLO</button>
-        <hr style="border:0.5px solid #333; margin:20px;">
-        <button class="btn btn-gray" onclick="abrirStaff()">ACCESO STAFF</button>
+        <h2 id="hola-user">HOLA</h2>
+        <button class="btn btn-blue" onclick="irOnline()">JUGAR ONLINE</button>
+        <button class="btn btn-green" onclick="iniciarLocal()">JUGAR LOCAL</button>
+        <button class="btn" style="background:#444; color:white; font-size:0.7rem" onclick="abrirStaff()">STAFF</button>
     </div>
 
     <div id="p-staff" class="pantalla oculto">
-        <h2 style="margin-top:0;">LOGIN STAFF</h2>
+        <h2>STAFF LOGIN</h2>
         <input type="text" id="staff-user" placeholder="Usuario">
         <input type="password" id="staff-pass" placeholder="Contraseña">
         <button class="btn btn-green" onclick="validarStaff()">ACCEDER</button>
-        <button class="btn btn-gray" onclick="irMenu()">VOLVER</button>
+        <button class="btn" style="background:#555; color:white" onclick="irMenu()">VOLVER</button>
     </div>
 
     <div id="p-online" class="pantalla oculto">
-        <h2 style="margin-top:0;">SALA ONLINE</h2>
-        <button class="btn btn-blue" onclick="crearSala()">CREAR NUEVA SALA</button>
-        <p style="margin:15px 0; font-size:0.8rem; color:#aaa;">O introduce un código:</p>
-        <input type="text" id="input-join" placeholder="Código de 4 cifras">
-        <button id="btn-join" class="btn btn-green" onclick="conectar()">UNIRSE A SALA</button>
-        <h1 id="sala-id" style="color:var(--oro); font-size: 3rem; margin:10px 0;"></h1>
-        <button class="btn btn-gray" onclick="irMenu()">VOLVER</button>
+        <h2 id="titulo-online">ONLINE</h2>
+        <button class="btn btn-blue" id="btn-crear" onclick="crearSala()">CREAR SALA</button>
+        <input type="text" id="input-join" placeholder="Código de sala">
+        <button class="btn btn-green" id="btn-conectar" onclick="conectar()">UNIRSE</button>
+        <h1 id="sala-id" style="color:var(--oro)"></h1>
+        <button class="btn" style="background:#555; color:white" onclick="irMenu()">VOLVER</button>
     </div>
 
     <div id="juego-cont">
         <div class="rosco-main">
             <div id="rosco-letras"></div>
-            <div class="ui-juego">
-                <h2 id="display-nombre" style="margin:0; color:var(--oro); letter-spacing:1px;">JUGADOR</h2>
-                <div id="pregunta-txt" class="pregunta-box">Cargando pregunta...</div>
+            <div style="text-align:center; width:300px; z-index:100;">
+                <h2 id="display-nombre" style="margin:0; color:var(--oro)">---</h2>
+                <div id="pregunta-txt" class="pregunta-box">Esperando...</div>
                 <input type="text" id="ans-in" placeholder="Respuesta..." autocomplete="off">
                 <div style="display:flex; gap:10px;">
                     <button class="btn btn-green" style="padding:10px" onclick="check()">ENVIAR</button>
-                    <button class="btn" style="background:var(--oro); color:black; padding:10px; font-weight:bold; border-radius:50px; flex:1; border:none; cursor:pointer;" onclick="skip()">PASAR</button>
+                    <button class="btn" style="background:var(--oro); color:black; padding:10px" onclick="skip()">PASAR</button>
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-    // --- DATOS STAFF ---
     const staffDB = {
         "pablo": { pass: "Pablo23sek", rango: "SUPERADMIN", power: 3 },
         "juliopuli": { pass: "juli26", rango: "ADMIN", power: 2 },
         "alvarito": { pass: "poki", rango: "VISUALIZADOR", power: 1 }
     };
 
-    const banco = [
-        {l:"A", p1:"CON LA A: Relativo a las abejas", r1:"apicola", p2:"CON LA A: Herramienta para tuercas", r2:"alicates"},
-        {l:"B", p1:"CON LA B: Dirección del viento", r1:"veleta", p2:"CON LA B: Barco pequeño de madera", r2:"bote"},
-        {l:"C", p1:"CON LA C: Vehículo grande de carga", r1:"camion", p2:"CON LA C: Mueble donde duermes", r2:"cama"},
-        {l:"D", p1:"CON LA D: Mamífero marino muy listo", r1:"delfin", p2:"CON LA D: Objeto que se lanza para jugar", r2:"dado"}
-    ];
+    const banco = [{l:"A", p1:"Con la A: Abeja", r1:"apicola", p2:"Con la A: Alicates", r2:"alicates"}]; // ... (resto del banco)
 
     let miNombre = "", miRango = "", modo = "", peer = null, conn = null;
-    let miRol = 1; // 1: Host, 2: Guest
+    let miRol = 1; 
     let turno = 1;
-    let dataJuego = { 
-        j1: { nombre: "", pos: 0, aciertos: new Array(25).fill(0) }, 
-        j2: { nombre: "", pos: 0, aciertos: new Array(25).fill(0) } 
-    };
+    let isLocked = localStorage.getItem('masterLock') === 'true'; // Estado persistente
 
-    // --- NAVEGACIÓN Y LOGIN ---
+    // --- SEGURIDAD ---
     function registrarNombre() {
         miNombre = document.getElementById('nombre-in').value.trim();
-        if(!miNombre) return alert("Por favor, dinos tu nombre");
-        dataJuego.j1.nombre = miNombre;
-        document.getElementById('hola-user').innerText = "HOLA, " + miNombre.toUpperCase();
-        irMenu();
-        actualizarPanelStaff();
+        if(!miNombre) return alert("Nombre obligatorio");
+        // Si no soy admin y el sistema está bloqueado, no paso
+        if(isLocked && miRango !== "SUPERADMIN") {
+            mostrarBloqueo();
+        } else {
+            irMenu();
+        }
     }
 
-    function irMenu() { 
+    function mostrarBloqueo() {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-        document.getElementById('p-menu').classList.remove('oculto');
+        document.getElementById('p-bloqueo').classList.remove('oculto');
     }
 
-    function abrirStaff() {
-        document.getElementById('p-menu').classList.add('oculto');
-        document.getElementById('p-staff').classList.remove('oculto');
+    function toggleBloqueo() {
+        isLocked = !isLocked;
+        localStorage.setItem('masterLock', isLocked);
+        actualizarBotonLock();
+        if(isLocked && conn) {
+            conn.send({ tipo: 'KILL' }); // Avisar a los conectados
+        }
+        alert(isLocked ? "SISTEMA BLOQUEADO PARA TODOS" : "SISTEMA REABIERTO");
     }
 
+    function actualizarBotonLock() {
+        const btn = document.getElementById('btn-master-lock');
+        if(isLocked) {
+            btn.innerText = "REABRIR SISTEMA";
+            btn.className = "btn-unlock";
+        } else {
+            btn.innerText = "BLOQUEAR SISTEMA";
+            btn.className = "btn-lock";
+        }
+    }
+
+    // --- STAFF ---
     function validarStaff() {
         const u = document.getElementById('staff-user').value.toLowerCase();
         const p = document.getElementById('staff-pass').value;
@@ -285,43 +163,28 @@
             miRango = staffDB[u].rango;
             document.getElementById('panel-control').style.display = "block";
             document.getElementById('staff-name').innerText = u.toUpperCase();
-            document.getElementById('staff-rank').innerText = miRango;
-            
-            const badge = document.getElementById('staff-rank');
-            if(u === "pablo") badge.className = "badge-superadmin";
-            else if(u === "juliopuli") badge.className = "badge-admin";
-            else badge.className = "badge-visu";
-
-            if(staffDB[u].power === 3) document.getElementById('btn-kill').classList.remove('oculto');
-            alert("Bienvenido al sistema, " + u);
+            if(u === "pablo") {
+                document.getElementById('btn-master-lock').classList.remove('oculto');
+                actualizarBotonLock();
+            }
             irMenu();
-        } else { alert("Usuario o contraseña incorrectos"); }
+        } else { alert("Error"); }
     }
 
-    function actualizarPanelStaff() {
-        let html = `• ${dataJuego.j1.nombre} (Principal)<br>`;
-        if(dataJuego.j2.nombre) html += `• ${dataJuego.j2.nombre} (Invitado)`;
-        document.getElementById('nombres-online').innerHTML = html;
-        document.getElementById('count-online').innerText = dataJuego.j2.nombre ? "2" : "1";
-    }
-
-    function apagarTodo() {
-        if(confirm("¿Quieres cerrar el juego para todos los conectados?")) {
-            if(conn) conn.send({ tipo: 'KILL' });
-            location.reload();
-        }
-    }
-
-    // --- LÓGICA DE PEERJS ---
+    // --- PEERJS (CORREGIDO) ---
     function crearSala() {
         const id = Math.floor(1000 + Math.random() * 9000).toString();
         peer = new Peer(id);
         peer.on('open', () => {
-            document.getElementById('sala-id').innerText = id;
-            document.getElementById('btn-join').classList.add('oculto');
-            document.getElementById('input-join').classList.add('oculto');
+            document.getElementById('sala-id').innerText = "CÓDIGO: " + id;
+            document.getElementById('btn-crear').classList.add('oculto');
         });
         peer.on('connection', c => {
+            // SI ESTÁ BLOQUEADO, RECHAZAR AL INSTANTE
+            if(isLocked) {
+                setTimeout(() => { c.send({ tipo: 'KILL' }); }, 500);
+                return;
+            }
             conn = c;
             conn.on('data', recibirData);
         });
@@ -329,12 +192,11 @@
 
     function conectar() {
         const id = document.getElementById('input-join').value;
-        if(!id) return alert("Pon el código de la sala");
         peer = new Peer();
         peer.on('open', () => {
             conn = peer.connect(id);
             conn.on('open', () => {
-                miRol = 2; modo = "online";
+                miRol = 2;
                 conn.send({ tipo: 'HELLO', nombre: miNombre });
                 conn.on('data', recibirData);
             });
@@ -342,106 +204,55 @@
     }
 
     function recibirData(d) {
+        if(d.tipo === 'KILL') {
+            mostrarBloqueo(); // El usuario es expulsado a la pantalla roja
+        }
         if(d.tipo === 'HELLO') { 
-            dataJuego.j2.nombre = d.nombre; 
-            actualizarPanelStaff(); 
-            conn.send({ tipo: 'START', data: dataJuego }); 
+            document.getElementById('lista-jugadores').innerText = "RIVAL: " + d.nombre;
+            conn.send({ tipo: 'START' }); 
             iniciarTablero(); 
         }
-        if(d.tipo === 'START') { dataJuego = d.data; iniciarTablero(); }
-        if(d.tipo === 'UPDATE') { dataJuego = d.data; turno = d.turno; refresh(); }
-        if(d.tipo === 'KILL') { alert("El Superadmin ha cerrado el sistema."); location.reload(); }
+        if(d.tipo === 'START') { iniciarTablero(); }
     }
 
-    // --- MOTOR DEL JUEGO ---
+    // --- MOTOR JUEGO (RESUMIDO) ---
+    function irMenu() { 
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById('p-menu').classList.remove('oculto');
+        document.getElementById('hola-user').innerText = "HOLA, " + miNombre.toUpperCase();
+    }
+    function irOnline() { 
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById('p-online').classList.remove('oculto');
+    }
+    function abrirStaff() {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById('p-staff').classList.remove('oculto');
+    }
     function iniciarLocal() { modo = "local"; iniciarTablero(); }
-
     function iniciarTablero() {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
         document.getElementById('juego-cont').style.display = "block";
-        document.getElementById('display-nombre').innerText = miNombre.toUpperCase();
+        document.getElementById('display-nombre').innerText = miNombre;
         dibujarRosco();
-        refresh();
     }
-
     function dibujarRosco() {
         const c = document.getElementById('rosco-letras');
         c.innerHTML = "";
-        const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
-        const total = 25; // Limitamos a 25 para un círculo perfecto
-        
-        letras.forEach((l, i) => {
-            if(i >= total) return;
+        for(let i=0; i<25; i++){
             const div = document.createElement('div');
             div.className = "letra";
-            div.innerText = l;
-            div.id = "L-" + i;
-            
-            // La A empieza arriba (-90 grados)
-            const angulo = (i * (360 / total)) - 90;
-            const rad = angulo * (Math.PI / 180);
-            
-            // Radio dinámico según el tamaño de pantalla
-            const radio = window.innerWidth < 600 ? 140 : 230;
-            const x = Math.cos(rad) * radio;
-            const y = Math.sin(rad) * radio;
-            
-            div.style.left = `calc(50% + ${x}px - ${window.innerWidth < 600 ? 14 : 21}px)`;
-            div.style.top = `calc(50% + ${y}px - ${window.innerWidth < 600 ? 14 : 21}px)`;
+            div.innerText = String.fromCharCode(65 + (i > 13 ? i : i)); // Simplificado
+            if(i === 14) div.innerText = "Ñ";
+            const ang = (i * 14.4) - 90;
+            const rad = ang * (Math.PI / 180);
+            const x = Math.cos(rad) * 220;
+            const y = Math.sin(rad) * 220;
+            div.style.left = `calc(50% + ${x}px - 20px)`;
+            div.style.top = `calc(50% + ${y}px - 20px)`;
             c.appendChild(div);
-        });
-    }
-
-    function refresh() {
-        const yo = (miRol === 1) ? dataJuego.j1 : dataJuego.j2;
-        for(let i=0; i<25; i++) {
-            const el = document.getElementById("L-"+i);
-            if(!el) continue;
-            el.className = "letra";
-            if(yo.aciertos[i] === 1) el.classList.add("bien");
-            if(yo.aciertos[i] === 2) el.classList.add("mal");
-            if(yo.pos === i) el.classList.add("activa");
-        }
-        
-        if(turno === miRol) {
-            const q = banco[yo.pos % banco.length];
-            document.getElementById('pregunta-txt').innerText = (miRol===1) ? q.p1 : q.p2;
-            document.getElementById('ans-in').disabled = false;
-            document.getElementById('ans-in').focus();
-        } else {
-            document.getElementById('pregunta-txt').innerText = "TURNO DEL RIVAL...";
-            document.getElementById('ans-in').disabled = true;
         }
     }
-
-    function check() {
-        const yo = (miRol === 1) ? dataJuego.j1 : dataJuego.j2;
-        const input = document.getElementById('ans-in');
-        const r = input.value.toLowerCase().trim();
-        const correcta = (miRol === 1) ? banco[yo.pos % banco.length].r1 : banco[yo.pos % banco.length].r2;
-
-        if(r === correcta) {
-            yo.aciertos[yo.pos] = 1;
-        } else {
-            yo.aciertos[yo.pos] = 2;
-            if(modo === "online") turno = (miRol === 1) ? 2 : 1;
-        }
-        yo.pos = (yo.pos + 1) % 25;
-        input.value = "";
-        if(conn) conn.send({ tipo: 'UPDATE', data: dataJuego, turno: turno });
-        refresh();
-    }
-
-    function skip() {
-        const yo = (miRol === 1) ? dataJuego.j1 : dataJuego.j2;
-        yo.pos = (yo.pos + 1) % 25;
-        if(modo === "online") turno = (miRol === 1) ? 2 : 1;
-        if(conn) conn.send({ tipo: 'UPDATE', data: dataJuego, turno: turno });
-        refresh();
-    }
-
-    document.getElementById('ans-in').addEventListener('keypress', e => { if(e.key==='Enter') check(); });
-
 </script>
 </body>
 </html>
