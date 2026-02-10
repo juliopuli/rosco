@@ -2,197 +2,249 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra v3.2.0 - Security Update</title>
+    <title>Pasapalabra v3.3.0 - Full Fix</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul-letra: #0044ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .oculto { display: none !important; }
 
-        /* VERSIÓN */
+        /* VERSIÓN ABAJO IZQUIERDA */
         .version-tag { position: fixed; bottom: 10px; left: 10px; opacity: 0.6; font-size: 0.9rem; font-weight: bold; color: #aaa; z-index: 200; }
 
-        /* PANEL ADMIN MEJORADO */
-        #panel-admin { display: none; position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.9); border: 2px solid var(--oro); padding: 20px; border-radius: 10px; z-index: 1000; min-width: 220px; text-align: center; box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); }
+        /* PANEL ADMIN (TOP RIGHT) */
+        #panel-admin { display: none; position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.9); border: 2px solid var(--oro); padding: 20px; border-radius: 10px; z-index: 1000; min-width: 220px; text-align: center; }
         #admin-titulo { color: var(--oro); font-weight: bold; font-size: 1.1rem; margin: 0; text-transform: uppercase; }
         #admin-rol { color: #00f2ff; font-size: 0.7rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; border-bottom: 1px solid #555; }
-        
         .contador-box { background: #222; padding: 10px; border-radius: 5px; margin: 10px 0; border: 1px solid #444; }
         .num-grande { font-size: 1.8rem; color: var(--verde); font-weight: bold; }
         #admin-lista { text-align: left; font-size: 0.85rem; color: #ddd; max-height: 150px; overflow-y: auto; }
-        
-        .btn-kill { background: var(--rojo); color: white; border: none; padding: 8px; border-radius: 5px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-kill { background: var(--rojo); color: white; border: none; padding: 10px; border-radius: 5px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* Pantallas */
+        /* VENTANAS */
         .pantalla { text-align: center; background: var(--panel); padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 10; }
-        input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; outline: none; background: #eee; }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; outline: none; }
+        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; font-size: 1rem; }
         .btn-blue { background: #3498db; color: white; }
         .btn-purple { background: #9b59b6; color: white; }
         .btn-green { background: var(--verde); color: white; }
 
-        /* Juego */
+        /* EL JUEGO */
         #tablero-juego { display: none; width: 100vw; height: 100vh; position: relative; }
         .jugador-main { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 550px; height: 550px; border-radius: 50%; border: 3px solid var(--oro); display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(17, 27, 61, 0.95); }
-        .letra { position: absolute; width: 38px; height: 38px; background: var(--azul-letra); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 18px; z-index: 10; }
-        .actual { background: var(--oro) !important; color: black; box-shadow: 0 0 20px var(--oro); transform: scale(1.3); }
-        .bien { background: var(--verde) !important; } .mal { background: var(--rojo) !important; }
+        .rosco-container { position: relative; width: 100%; height: 100%; }
+        .letra { position: absolute; width: 38px; height: 38px; background: var(--azul-letra); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 18px; z-index: 10; color: white; }
+        .actual { background: var(--oro) !important; color: black; box-shadow: 0 0 20px var(--oro); transform: scale(1.3); z-index: 20; }
+        .bien { background: var(--verde) !important; }
+        .mal { background: var(--rojo) !important; }
+        
+        .centro-mando { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 70%; }
+        .pregunta { font-size: 1.1rem; min-height: 50px; margin-bottom: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="version-tag">v3.2.0</div>
+    <div class="version-tag">v3.3.0</div>
 
     <div id="panel-admin">
-        <p id="admin-titulo">NOMBRE</p>
+        <p id="admin-titulo">USER</p>
         <p id="admin-rol">RANGO</p>
         <div class="contador-box">
-            <span style="font-size:0.7rem;">JUGADORES ONLINE</span><br>
+            <span style="font-size:0.7rem;">JUGADORES</span><br>
             <span id="contador-jugadores" class="num-grande">0</span>
         </div>
         <div id="admin-lista"></div>
         <button id="btn-shutdown" class="btn-kill oculto" onclick="apagarJuego()">APAGAR JUEGO</button>
     </div>
 
-    <div id="pantalla-login" class="pantalla oculto">
-        <h2 style="color:var(--oro)">ACCESO RESTRINGIDO</h2>
-        <input type="text" id="login-user" placeholder="Usuario">
-        <input type="password" id="login-pass" placeholder="Contraseña">
-        <button class="btn btn-green" onclick="validarLogin()">ENTRAR</button>
-        <button class="btn" style="background:#555; color:white" onclick="volverAModos()">CANCELAR</button>
-    </div>
-
     <div id="pantalla-nombre" class="pantalla">
         <h1>PASAPALABRA</h1>
-        <input type="text" id="input-nombre" placeholder="Tu Nombre">
+        <p>Introduce tu nombre para entrar</p>
+        <input type="text" id="input-nombre" placeholder="Tu nombre aquí...">
         <button class="btn btn-green" onclick="irAModos()">CONTINUAR</button>
     </div>
 
     <div id="pantalla-modos" class="pantalla oculto">
         <h2 id="saludo-titulo">HOLA</h2>
-        <button class="btn btn-purple" onclick="modoSolo()">JUGAR SOLO</button>
+        <button class="btn btn-purple" onclick="modoSolo()">JUGAR SOLO (LOCAL)</button>
         <button class="btn btn-blue" onclick="irAOnline()">JUGAR ONLINE</button>
-        <hr style="border:0.5px solid #333; margin:20px;">
-        <button class="btn" style="background:#333; color:white; font-size:0.8rem" onclick="abrirLogin()">¿ERES ADMIN?</button>
+        <hr style="border: 0.5px solid #333; margin: 20px;">
+        <p style="font-size:0.8rem">Acceso Staff:</p>
+        <button class="btn" style="background:#222; color:#777; font-size:0.7rem" onclick="mostrarLogin()">LOGIN ADMIN</button>
+    </div>
+
+    <div id="pantalla-login" class="pantalla oculto">
+        <h2>STAFF LOGIN</h2>
+        <input type="text" id="login-user" placeholder="Usuario">
+        <input type="password" id="login-pass" placeholder="Contraseña">
+        <button class="btn btn-green" onclick="validarLogin()">ENTRAR</button>
+        <button class="btn" style="background:#555; color:white" onclick="volverAModos()">VOLVER</button>
     </div>
 
     <div id="pantalla-online-opciones" class="pantalla oculto">
-        <h2>ONLINE</h2>
-        <button class="btn btn-blue" onclick="pantallaGenerar()">CREAR PARTIDA</button>
-        <button class="btn btn-green" onclick="pantallaUnirse()">UNIRSE A PARTIDA</button>
+        <h2>MODO ONLINE</h2>
+        <button class="btn btn-blue" onclick="pantallaGenerar()">GENERAR CÓDIGO (HOST)</button>
+        <button class="btn btn-green" onclick="pantallaUnirse()">UNIRSE A CÓDIGO</button>
         <button class="btn" style="background:#555; color:white" onclick="volverAModos()">ATRÁS</button>
     </div>
 
     <div id="pantalla-host" class="pantalla oculto">
-        <h3>CÓDIGO:</h3>
-        <h1 id="codigo-mostrado" style="font-size: 3rem; background:rgba(0,0,0,0.3)">...</h1>
-        <p>Esperando rival...</p>
+        <h3>CÓDIGO DE SALA:</h3>
+        <h1 id="codigo-mostrado" style="font-size: 3rem; color:var(--oro)">...</h1>
+        <p id="estado-host">Esperando conexión de un rival...</p>
     </div>
 
     <div id="pantalla-guest" class="pantalla oculto">
-        <input type="text" id="input-codigo" placeholder="Código de 6 cifras" maxlength="6">
-        <button class="btn btn-green" onclick="conectarHost()">ENTRAR</button>
+        <h3>UNIRSE A PARTIDA</h3>
+        <input type="text" id="input-codigo" placeholder="Escribe el código">
+        <button class="btn btn-green" onclick="conectarHost()">CONECTAR</button>
+        <p id="estado-guest" style="color:yellow"></p>
     </div>
 
     <div id="tablero-juego">
         <div class="jugador-main">
-            <div id="rosco-yo" style="position:relative; width:100%; height:100%"></div>
-            <div style="position:absolute; text-align:center; width:70%">
-                <h2 id="mi-nick">YO</h2>
-                <div id="pregunta-texto" style="font-weight:bold; margin-bottom:15px">Cargando...</div>
-                <input type="text" id="respuesta-input" placeholder="Escribe aquí...">
+            <div id="rosco-yo" class="rosco-container"></div>
+            <div class="centro-mando">
+                <h2 id="mi-nick" style="margin:0; color:var(--oro)">YO</h2>
+                <div id="pregunta-texto" class="pregunta">Cargando pregunta...</div>
+                <input type="text" id="respuesta-input" placeholder="Respuesta..." autocomplete="off">
+                <br>
+                <button class="btn" style="background:var(--verde); color:white; width:40%; padding:10px" onclick="enviarRespuesta()">ENVIAR</button>
+                <button class="btn" style="background:var(--oro); color:black; width:40%; padding:10px" onclick="pasarPalabra()">PASAR</button>
             </div>
         </div>
     </div>
 
 <script>
-    // BASE DE DATOS DE USUARIOS
+    // --- CONFIGURACIÓN Y PREGUNTAS ---
     const usuarios = {
-        "pablo": { pass: "Pablo23sek", rango: "SUPERADMIN", puedeApagar: true },
-        "juliopuli": { pass: "juli26", rango: "ADMIN", puedeApagar: false },
-        "alvarito": { pass: "poki", rango: "VISUALIZADOR", puedeApagar: false }
+        "pablo": { pass: "Pablo23sek", rango: "SUPERADMIN", kill: true },
+        "juliopuli": { pass: "juli26", rango: "ADMIN", kill: false },
+        "alvarito": { pass: "poki", rango: "VISUALIZADOR", kill: false }
     };
 
     const banco = [
         {l:"A", p1:"Relativo a abejas", r1:"apicola", p2:"Herramienta tuercas", r2:"alicates"},
         {l:"B", p1:"Viento dirección", r1:"veleta", p2:"Barco madera", r2:"bote"},
         {l:"C", p1:"Vehículo carga", r1:"camion", p2:"Donde duermes", r2:"cama"},
-        // ... (Para ahorrar espacio uso 3, pero el sistema soporta las 25)
+        {l:"D", p1:"Animal marino", r1:"delfin", p2:"Día semana", r2:"domingo"},
+        {l:"E", p1:"Hijo elefante", r1:"elefante", p2:"Animal pinchos", r2:"erizo"},
+        {l:"F", p1:"Luz barcos", r1:"faro", p2:"Planta bonita", r2:"flor"},
+        {l:"G", p1:"Ave corral", r1:"gallina", p2:"Animal maulla", r2:"gato"},
+        {l:"H", p1:"Agua fria", r1:"hielo", p2:"Parte brazo", r2:"hombro"},
+        {l:"I", p1:"Tierra mar", r1:"isla", p2:"Casa nieve", r2:"iglu"},
+        {l:"J", p1:"Cuello largo", r1:"jirafa", p2:"Para jugar", r2:"juguete"},
+        {l:"L", p1:"Líquido blanco", r1:"leche", p2:"Sale noche", r2:"luna"},
+        {l:"M", p1:"Fruta roja", r1:"manzana", p2:"Día martes", r2:"martes"},
+        {l:"N", p1:"Fruta naranja", r1:"naranja", p2:"Color noche", r2:"negro"},
+        {l:"Ñ", p1:"Hijo pequeño", r1:"niño", p2:"Ave grande", r2:"ñandu"},
+        {l:"O", p1:"Animal lana", r1:"oveja", p2:"Para oír", r2:"oido"},
+        {l:"P", p1:"Para tocar", r1:"piano", p2:"Ladra", r2:"perro"},
+        {l:"Q", p1:"Comida raton", r1:"queso", p2:"Número 15", r2:"quince"},
+        {l:"R", p1:"Roedor", r1:"raton", p2:"Color sangre", r2:"rojo"},
+        {l:"S", p1:"Astro rey", r1:"sol", p2:"Para sentarse", r2:"silla"},
+        {l:"T", p1:"Llamar", r1:"telefono", p2:"Animal rayas", r2:"tigre"},
+        {l:"U", p1:"Fruta uva", r1:"uva", p2:"Número 1", r2:"uno"},
+        {l:"V", p1:"Lado casa", r1:"vecino", p2:"Color hierba", r2:"verde"},
+        {l:"X", p1:"Instrumento", r1:"xilofono", p2:"Rayos médicos", r2:"rayos x"},
+        {l:"Y", p1:"Barco caro", r1:"yate", p2:"Centro huevo", r2:"yema"},
+        {l:"Z", p1:"Calzado", r1:"zapato", p2:"Caballo rayas", r2:"cebra"}
     ];
 
     let nombre = "", modo = "", miRol = 1, turnoActual = 1, peer = null, conn = null;
-    let estado = { j1: { pos:0, aciertos:new Array(25).fill(0), nombre:"" }, j2: { pos:0, aciertos:new Array(25).fill(0), nombre:"" } };
+    let isAdminLogueado = false;
+    let estado = { 
+        j1: { pos: 0, aciertos: new Array(25).fill(0), nombre: "" },
+        j2: { pos: 0, aciertos: new Array(25).fill(0), nombre: "" } 
+    };
 
-    function abrirLogin() {
-        document.getElementById('pantalla-modos').classList.add('oculto');
-        document.getElementById('pantalla-login').classList.remove('oculto');
+    // --- NAVEGACIÓN ---
+    function ocultarTodo() {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById('tablero-juego').style.display = 'none';
     }
 
+    function irAModos() {
+        nombre = document.getElementById('input-nombre').value.trim();
+        if(!nombre) return alert("Ponte un nombre primero");
+        estado.j1.nombre = nombre;
+        document.getElementById('saludo-titulo').innerText = "HOLA, " + nombre.toUpperCase();
+        ocultarTodo();
+        document.getElementById('pantalla-modos').classList.remove('oculto');
+        actualizarListaAdmin(); // Que cuente ya
+    }
+
+    function mostrarLogin() { ocultarTodo(); document.getElementById('pantalla-login').classList.remove('oculto'); }
+    function volverAModos() { ocultarTodo(); document.getElementById('pantalla-modos').classList.remove('oculto'); }
+    function irAOnline() { ocultarTodo(); document.getElementById('pantalla-online-opciones').classList.remove('oculto'); }
+
+    // --- SISTEMA ADMIN ---
     function validarLogin() {
         const u = document.getElementById('login-user').value.toLowerCase();
         const p = document.getElementById('login-pass').value;
-
-        if (usuarios[u] && usuarios[u].pass === p) {
-            const userObj = usuarios[u];
-            alert(`Acceso concedido como ${userObj.rango}`);
-            
-            // Configurar Panel
+        if(usuarios[u] && usuarios[u].pass === p) {
+            isAdminLogueado = true;
             document.getElementById('panel-admin').style.display = 'block';
             document.getElementById('admin-titulo').innerText = u.toUpperCase();
-            document.getElementById('admin-rol').innerText = userObj.rango;
-            
-            if (userObj.puedeApagar) {
-                document.getElementById('btn-shutdown').classList.remove('oculto');
-            }
+            document.getElementById('admin-rol').innerText = usuarios[u].rango;
+            if(usuarios[u].kill) document.getElementById('btn-shutdown').classList.remove('oculto');
+            alert("Acceso concedido");
+            actualizarListaAdmin();
+            volverAModos();
+        } else { alert("Error de credenciales"); }
+    }
 
-            if (userObj.rango === "VISUALIZADOR") {
-                document.getElementById('pantalla-login').classList.add('oculto');
-                // El visualizador solo se queda mirando el panel de la derecha
-            } else {
-                volverAModos();
-            }
-        } else {
-            alert("Usuario o contraseña incorrectos");
-        }
+    function actualizarListaAdmin() {
+        if(!isAdminLogueado) return;
+        let count = 0;
+        let html = "";
+        if(estado.j1.nombre) { count++; html += `<div>• ${estado.j1.nombre}</div>`; }
+        if(estado.j2.nombre) { count++; html += `<div>• ${estado.j2.nombre}</div>`; }
+        document.getElementById('contador-jugadores').innerText = count;
+        document.getElementById('admin-lista').innerHTML = html;
     }
 
     function apagarJuego() {
-        if(confirm("¿Seguro que quieres cerrar el juego para todos?")) {
-            if(conn) conn.send({ tipo: 'SHUTDOWN' });
+        if(confirm("¿APAGAR EL JUEGO PARA TODOS?")) {
+            if(conn) conn.send({tipo:'KILL'});
             location.reload();
         }
     }
 
-    // --- LÓGICA DE NAVEGACIÓN Y PEERJS (Igual que v3.1.0 pero con SHUTDOWN) ---
-    function irAModos() {
-        nombre = document.getElementById('input-nombre').value;
-        if(!nombre) return alert("Dime tu nombre");
-        estado.j1.nombre = nombre;
-        document.getElementById('saludo-titulo').innerText = "HOLA, " + nombre.toUpperCase();
-        document.getElementById('pantalla-nombre').classList.add('oculto');
-        document.getElementById('pantalla-modos').classList.remove('oculto');
-    }
-
-    function volverAModos() {
-        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-        document.getElementById('pantalla-modos').classList.remove('oculto');
-    }
-
-    function irAOnline() {
-        document.getElementById('pantalla-modos').classList.add('oculto');
-        document.getElementById('pantalla-online-opciones').classList.remove('oculto');
+    // --- LÓGICA DE JUEGO ---
+    function modoSolo() {
+        modo = 'solo'; miRol = 1; turnoActual = 1;
+        iniciarJuegoUI();
     }
 
     function pantallaGenerar() {
+        modo = 'online'; miRol = 1;
         const id = Math.floor(100000 + Math.random() * 900000).toString();
         peer = new Peer(id);
-        document.getElementById('codigo-mostrado').innerText = id;
-        document.getElementById('pantalla-online-opciones').classList.add('oculto');
-        document.getElementById('pantalla-host').classList.remove('oculto');
-        
+        peer.on('open', () => {
+            document.getElementById('codigo-mostrado').innerText = id;
+            ocultarTodo(); document.getElementById('pantalla-host').classList.remove('oculto');
+        });
         peer.on('connection', c => {
             conn = c;
             conn.on('data', manejarData);
+        });
+    }
+
+    function pantallaUnirse() {
+        ocultarTodo(); document.getElementById('pantalla-guest').classList.remove('oculto');
+    }
+
+    function conectarHost() {
+        const cod = document.getElementById('input-codigo').value;
+        peer = new Peer();
+        peer.on('open', () => {
+            conn = peer.connect(cod);
+            conn.on('open', () => {
+                miRol = 2; modo = 'online';
+                conn.send({tipo:'SALUDO', nombre: nombre});
+                conn.on('data', manejarData);
+            });
         });
     }
 
@@ -200,32 +252,99 @@
         if(data.tipo === 'SALUDO') {
             estado.j2.nombre = data.nombre;
             actualizarListaAdmin();
-            conn.send({ tipo: 'START', estado: estado });
-            iniciarJuego();
+            conn.send({tipo:'START', estado: estado});
+            iniciarJuegoUI();
         }
-        if(data.tipo === 'SHUTDOWN') {
-            alert("Un Administrador ha cerrado el juego.");
+        if(data.tipo === 'START') {
+            estado = data.estado;
+            iniciarJuegoUI();
+        }
+        if(data.tipo === 'UPDATE') {
+            estado = data.estado;
+            turnoActual = data.turno;
+            actualizarTablero();
+        }
+        if(data.tipo === 'KILL') {
+            alert("El Superadmin ha cerrado el juego.");
             location.reload();
         }
-        // ... resto de lógica de sincronización ...
     }
 
-    function actualizarListaAdmin() {
-        const lista = document.getElementById('admin-lista');
-        let html = `<div>• ${estado.j1.nombre}</div>`;
-        if(estado.j2.nombre) html += `<div>• ${estado.j2.nombre}</div>`;
-        lista.innerHTML = html;
-        document.getElementById('contador-jugadores').innerText = (estado.j2.nombre ? 2 : 1);
-    }
-
-    function iniciarJuego() {
-        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+    function iniciarJuegoUI() {
+        ocultarTodo();
         document.getElementById('tablero-juego').style.display = 'block';
-        document.getElementById('mi-nick').innerText = nombre;
-        // Dibujar rosco y lógica de preguntas igual que antes...
+        document.getElementById('mi-nick').innerText = (miRol === 1) ? estado.j1.nombre : estado.j2.nombre;
+        crearRosco();
+        actualizarTablero();
     }
 
-    // (Aquí iría el resto del código de dibujo del rosco de la v3.1.0)
+    function crearRosco() {
+        const cont = document.getElementById('rosco-yo');
+        cont.innerHTML = "";
+        banco.forEach((obj, i) => {
+            let div = document.createElement('div');
+            div.innerText = obj.l;
+            div.className = 'letra';
+            div.id = `letra-${i}`;
+            let ang = (i * 360 / 25) - 90;
+            let rad = ang * (Math.PI / 180);
+            let x = Math.cos(rad) * 230;
+            let y = Math.sin(rad) * 230;
+            div.style.left = `calc(50% + ${x}px - 19px)`; 
+            div.style.top = `calc(50% + ${y}px - 19px)`;
+            cont.appendChild(div);
+        });
+    }
+
+    function actualizarTablero() {
+        let misDatos = (miRol === 1) ? estado.j1 : estado.j2;
+        // Pintar colores
+        for(let i=0; i<25; i++) {
+            let el = document.getElementById(`letra-${i}`);
+            el.className = 'letra';
+            if(misDatos.aciertos[i] === 1) el.classList.add('bien');
+            if(misDatos.aciertos[i] === 2) el.classList.add('mal');
+            if(i === misDatos.pos) el.classList.add('actual');
+        }
+
+        if(turnoActual === miRol) {
+            let q = banco[misDatos.pos];
+            document.getElementById('pregunta-texto').innerText = `CON LA ${q.l}: ${(miRol===1)?q.p1:q.p2}`;
+            document.getElementById('respuesta-input').disabled = false;
+            document.getElementById('respuesta-input').focus();
+        } else {
+            document.getElementById('pregunta-texto').innerText = "TURNO DEL RIVAL...";
+            document.getElementById('respuesta-input').disabled = true;
+        }
+    }
+
+    function enviarRespuesta() {
+        let misDatos = (miRol === 1) ? estado.j1 : estado.j2;
+        let input = document.getElementById('respuesta-input');
+        let txt = input.value.toLowerCase().trim();
+        let correcta = (miRol === 1) ? banco[misDatos.pos].r1 : banco[misDatos.pos].r2;
+
+        if(txt === correcta) {
+            misDatos.aciertos[misDatos.pos] = 1;
+        } else {
+            misDatos.aciertos[misDatos.pos] = 2;
+            if(modo === 'online') turnoActual = (miRol === 1) ? 2 : 1;
+        }
+        misDatos.pos = (misDatos.pos + 1) % 25;
+        input.value = "";
+        if(modo === 'online') conn.send({tipo:'UPDATE', estado: estado, turno: turnoActual});
+        actualizarTablero();
+    }
+
+    function pasarPalabra() {
+        let misDatos = (miRol === 1) ? estado.j1 : estado.j2;
+        misDatos.pos = (misDatos.pos + 1) % 25;
+        if(modo === 'online') {
+            turnoActual = (miRol === 1) ? 2 : 1;
+            conn.send({tipo:'UPDATE', estado: estado, turno: turnoActual});
+        }
+        actualizarTablero();
+    }
 </script>
 </body>
 </html>
