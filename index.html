@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v3.8.0</title>
+    <title>Pasapalabra Pro v3.9.0</title>
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -19,11 +19,7 @@
         .btn-green { background: var(--verde); color: white; }
         .btn-red { background: var(--rojo); color: white; }
         .btn-blue { background: #3498db; color: white; }
-
-        /* INDICADOR DE ESTADO INVISIBLE (Solo para saber si está bloqueado) */
-        .dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 50%; }
-        .dot-red { background: var(--rojo); box-shadow: 0 0 5px var(--rojo); }
-        .dot-green { background: var(--verde); }
+        .btn-staff { background: #444; color: #aaa; font-size: 0.7rem; margin-top: 20px; }
 
         /* PANEL STAFF FLOTANTE */
         #panel-staff { display: none; position: fixed; top: 15px; right: 15px; background: rgba(0,0,0,0.95); border: 2px solid var(--oro); padding: 15px; border-radius: 15px; z-index: 1000; min-width: 180px; text-align: center; }
@@ -39,37 +35,39 @@
     </div>
 
     <div id="p-entrada" class="pantalla">
-        <div id="dot-status" class="dot"></div>
         <h1 style="color:var(--oro); margin-bottom:5px;">PASAPALABRA</h1>
-        <p id="instruccion">Introduce tu nombre</p>
-        
-        <input type="text" id="nombre-input" placeholder="Nombre...">
-        
-        <div id="box-staff" class="oculto">
-            <input type="text" id="user-staff" placeholder="Usuario Staff">
-            <input type="password" id="pass-staff" placeholder="Contraseña">
-        </div>
-
-        <button id="btn-principal" class="btn btn-green" onclick="controlAcceso()">ENTRAR</button>
+        <p>Introduce tu nombre para jugar</p>
+        <input type="text" id="nombre-input" placeholder="Tu nombre...">
+        <button class="btn btn-green" onclick="validarEntradaNormal()">ENTRAR</button>
     </div>
 
-    <div id="p-denegado" class="pantalla oculto" style="border-color:var(--rojo);">
+    <div id="p-denegado" class="pantalla oculto">
         <h1 style="color:var(--rojo); font-size: 3rem;">🔒</h1>
-        <h2 style="color:var(--rojo);">ACCESO BLOQUEADO</h2>
-        <p>El sistema está cerrado actualmente por el Superadmin.</p>
-        <button class="btn btn-blue" onclick="location.reload()">VOLVER A INTENTAR</button>
+        <h2 style="color:var(--rojo);">SISTEMA BLOQUEADO</h2>
+        <p>Acceso denegado por el Superadmin.</p>
+        <button class="btn btn-staff" onclick="pedirCodigoStaff()">ACCESO STAFF</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
         <h2 id="msg-bienvenida">HOLA</h2>
-        <button class="btn btn-blue" onclick="alert('Iniciando Online...')">MODO ONLINE</button>
-        <button class="btn btn-green" onclick="alert('Iniciando Local...')">MODO LOCAL</button>
-        <button class="btn" style="background:#444;" onclick="location.reload()">CERRAR SESIÓN</button>
+        <button class="btn btn-blue" onclick="alert('Modo Online...')">MODO ONLINE</button>
+        <button class="btn btn-green" onclick="alert('Modo Local...')">MODO LOCAL</button>
+        
+        <button class="btn btn-staff" onclick="pedirCodigoStaff()">ACCESO STAFF</button>
+    </div>
+
+    <div id="p-login-staff" class="pantalla oculto">
+        <h2 style="color:var(--oro)">LOGIN STAFF</h2>
+        <div id="box-auth-staff">
+            <input type="text" id="user-staff" placeholder="Usuario">
+            <input type="password" id="pass-staff" placeholder="Contraseña">
+            <button class="btn btn-green" onclick="verificarCredenciales()">ACCEDER</button>
+        </div>
+        <button class="btn btn-staff" onclick="location.reload()">VOLVER</button>
     </div>
 
 <script>
-    // --- CONFIGURACIÓN SEGURA ---
-    const LLAVE_MAESTRA = "Pablo23sek"; // El código que pones en el nombre
+    const CODIGO_MAESTRO = "Pablo23sek";
     const staffDB = {
         "pablo": { pass: "Pablo23sek", rango: "SUPERADMIN", super: true },
         "juliopuli": { pass: "juli26", rango: "ADMIN", super: false },
@@ -77,74 +75,65 @@
     };
 
     let bloqueado = localStorage.getItem('lockPasapalabra') === 'true';
+    let miNombre = "";
 
-    // Inicializar punto de estado
-    if(bloqueado) document.getElementById('dot-status').className = "dot dot-red";
-    else document.getElementById('dot-status').className = "dot dot-green";
-
-    function controlAcceso() {
-        const nombre = document.getElementById('nombre-input').value.trim();
-
-        // 1. ¿ES LA LLAVE PARA STAFF?
-        if (nombre === LLAVE_MAESTRA) {
-            abrirLoginStaff();
-            return;
-        }
-
-        // 2. ¿ESTÁ BLOQUEADO EL JUEGO?
-        if (bloqueado) {
+    function validarEntradaNormal() {
+        const n = document.getElementById('nombre-input').value.trim();
+        if(n.length < 2) return alert("Nombre no válido");
+        
+        if(bloqueado) {
             document.getElementById('p-entrada').classList.add('oculto');
             document.getElementById('p-denegado').classList.remove('oculto');
-            return;
+        } else {
+            miNombre = n;
+            irMenu();
         }
-
-        // 3. ENTRADA NORMAL
-        if (nombre.length < 2) return alert("Escribe un nombre real");
-        irAlMenu(nombre);
     }
 
-    function abrirLoginStaff() {
-        document.getElementById('nombre-input').classList.add('oculto');
-        document.getElementById('box-staff').classList.remove('oculto');
-        document.getElementById('instruccion').innerText = "ÁREA RESTRINGIDA";
-        document.getElementById('btn-principal').innerText = "VERIFICAR";
-        document.getElementById('btn-principal').onclick = loginStaff;
+    function irMenu() {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById('p-menu').classList.remove('oculto');
+        document.getElementById('msg-bienvenida').innerText = "HOLA, " + miNombre.toUpperCase();
     }
 
-    function loginStaff() {
+    function pedirCodigoStaff() {
+        const codigo = prompt("Introduce el CÓDIGO STAFF para continuar:");
+        if(codigo === CODIGO_MAESTRO) {
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+            document.getElementById('p-login-staff').classList.remove('oculto');
+        } else if(codigo !== null) {
+            alert("Código incorrecto.");
+        }
+    }
+
+    function verificarCredenciales() {
         const u = document.getElementById('user-staff').value.toLowerCase();
         const p = document.getElementById('pass-staff').value;
 
-        if (staffDB[u] && staffDB[u].pass === p) {
+        if(staffDB[u] && staffDB[u].pass === p) {
+            miNombre = u.toUpperCase();
+            
             // Mostrar Panel Admin
             document.getElementById('panel-staff').style.display = "block";
-            document.getElementById('st-name').innerText = u.toUpperCase();
+            document.getElementById('st-name').innerText = miNombre;
             document.getElementById('st-range').innerText = staffDB[u].rango;
             
-            // Configurar botón según si es Pablo o no
             const btn = document.getElementById('btn-admin-action');
-            if (staffDB[u].super) {
+            if(staffDB[u].super) {
                 btn.classList.remove('oculto');
-                btn.innerText = bloqueado ? "🔓 REABRIR JUEGO" : "🔒 BLOQUEAR TODO";
+                btn.innerText = bloqueado ? "🔓 ABRIR JUEGO" : "🔒 CERRAR JUEGO";
                 btn.className = bloqueado ? "btn-green" : "btn-red";
                 btn.onclick = () => {
                     bloqueado = !bloqueado;
                     localStorage.setItem('lockPasapalabra', bloqueado);
-                    alert(bloqueado ? "SISTEMA CERRADO" : "SISTEMA ABIERTO");
+                    alert(bloqueado ? "Juego Bloqueado" : "Juego Abierto");
                     location.reload();
                 };
             }
-            irAlMenu(u.toUpperCase());
+            irMenu();
         } else {
-            alert("Credenciales incorrectas");
-            location.reload();
+            alert("Usuario o Contraseña incorrectos.");
         }
-    }
-
-    function irAlMenu(nombre) {
-        document.getElementById('p-entrada').classList.add('oculto');
-        document.getElementById('p-menu').classList.remove('oculto');
-        document.getElementById('msg-bienvenida').innerText = "HOLA, " + nombre;
     }
 </script>
 </body>
