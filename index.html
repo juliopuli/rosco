@@ -2,278 +2,259 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Multiplayer</title>
+    <title>Pasapalabra Pro - Online & Local</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --azul-oscuro: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul-letra: #0044ff; }
-        body { background: var(--azul-oscuro); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        :root { --azul: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; }
+        body { background: var(--azul); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
         .oculto { display: none !important; }
-
-        /* Pantallas de Menú */
+        
+        /* Menús */
         .pantalla { text-align: center; background: var(--panel); padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; background: #fff; color: #000; }
+        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
         .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
         .btn-green { background: var(--verde); color: white; }
         .btn-blue { background: #3498db; color: white; }
+        .btn-purple { background: #9b59b6; color: white; }
 
-        /* Layout del Juego */
-        #juego { display: none; width: 100vw; height: 100vh; position: relative; }
-        .bloque-jugador { position: absolute; transition: all 0.6s ease-in-out; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* Juego */
+        #escenario { display: none; width: 100vw; height: 100vh; position: relative; }
+        .bloque { position: absolute; transition: all 0.8s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; }
+        .activo { width: 550px; height: 550px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; border: 3px solid var(--oro); background: rgba(17,27,61,0.9); }
+        .espera { width: 200px; height: 200px; top: 20px; right: 20px; z-index: 5; opacity: 0.7; transform: scale(0.8); border: 2px solid #444; }
 
-        .activo { width: 550px; height: 550px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; background: rgba(17, 27, 61, 0.9); border-radius: 50%; border: 3px solid var(--oro); }
-        .peque { width: 180px; height: 180px; top: 20px; right: 20px; z-index: 5; opacity: 0.8; transform: scale(0.9); border: 2px solid #555; border-radius: 50%; background: var(--panel); }
+        /* Rosco */
+        .rosco { position: relative; width: 400px; height: 400px; }
+        .espera .rosco { width: 140px; height: 140px; }
+        .letra { position: absolute; width: 40px; height: 40px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; }
+        .espera .letra { width: 12px; height: 12px; font-size: 0; border-width: 1px; }
+        .bien { background: var(--verde) !important; }
+        .mal { background: var(--rojo) !important; }
+        .actual { background: var(--oro) !important; color: black; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
 
-        .rosco { position: relative; width: 420px; height: 420px; }
-        .peque .rosco { width: 140px; height: 140px; }
-        
-        .letra { 
-            position: absolute; width: 38px; height: 38px; background: var(--azul-letra); 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 18px; border: 2px solid white; color: white;
-        }
-        .peque .letra { width: 12px; height: 12px; font-size: 0; border-width: 1px; }
-
-        .letra.actual { background: var(--oro); color: black; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
-        .letra.bien { background: var(--verde); }
-        .letra.mal { background: var(--rojo); }
-
-        .controles { width: 80%; text-align: center; margin-top: 10px; }
-        .peque .controles { display: none; }
-        .pregunta { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; min-height: 50px; }
-        .botones-juego { display: flex; gap: 10px; }
+        .pregunta-box { width: 80%; text-align: center; margin-top: 10px; }
+        .espera .pregunta-box { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="p-nombre" class="pantalla">
+    <div id="p-init" class="pantalla">
         <h1 style="color:var(--oro)">PASAPALABRA</h1>
-        <input type="text" id="nombre-input" placeholder="Tu nombre">
-        <button class="btn btn-green" onclick="guardarNombre()">ENTRAR</button>
+        <input type="text" id="nick" placeholder="Tu Nombre">
+        <button class="btn btn-purple" onclick="modoLocal()">MODO LOCAL (2 Jugadores)</button>
+        <button class="btn btn-blue" onclick="mostrarOnline()">MODO ONLINE (Real)</button>
     </div>
 
-    <div id="p-menu" class="pantalla oculto">
-        <h2 id="saludo"></h2>
-        <button class="btn btn-blue" onclick="crearSala()">CREAR SALA ONLINE</button>
-        <input type="text" id="join-codigo" placeholder="Código de sala">
-        <button class="btn btn-green" onclick="unirseSala()">UNIRSE A SALA</button>
+    <div id="p-online" class="pantalla oculto">
+        <h2>ONLINE REAL</h2>
+        <button class="btn btn-blue" onclick="crearPartida()">CREAR PARTIDA</button>
+        <p>O únete con código de 6 cifras:</p>
+        <input type="text" id="cod-input" placeholder="000000" maxlength="6">
+        <button class="btn btn-green" onclick="unirsePartida()">UNIRSE</button>
+        <button class="btn" onclick="location.reload()">VOLVER</button>
     </div>
 
     <div id="p-lobby" class="pantalla oculto">
-        <h2>SALA: <span id="display-cod" style="color:var(--oro)">------</span></h2>
-        <div id="lista-nombres" style="margin:20px 0; text-align:left; background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
-            <div id="lobby-j1">1. Esperando...</div>
-            <div id="lobby-j2" style="margin-top:10px">2. Esperando...</div>
-        </div>
-        <button id="btn-comenzar" class="btn btn-green oculto" onclick="hostEmpezar()">EMPEZAR YA</button>
-        <p id="wait-msg" class="oculto">Esperando al host...</p>
+        <h3>CÓDIGO DE SALA:</h3>
+        <h1 id="sala-id" style="color:var(--oro); letter-spacing: 5px;">------</h1>
+        <p id="status-lobby">Esperando al oponente...</p>
+        <button id="start-btn" class="btn btn-green oculto" onclick="iniciar()">EMPEZAR</button>
     </div>
 
-    <div id="juego">
-        <div id="jugador1" class="bloque-jugador activo">
-            <h3 id="name1" style="color:var(--oro)">HOST</h3>
-            <div id="rosco1" class="rosco"></div>
-            <div class="controles">
-                <div id="preg1" class="pregunta">Cargando...</div>
-                <input type="text" id="resp1" placeholder="Respuesta..." autocomplete="off">
-                <div class="botones-juego">
-                    <button class="btn btn-green" onclick="enviar(1)">ENVIAR</button>
-                    <button class="btn" style="background:var(--oro); color:black" onclick="pasar(1)">PASO</button>
+    <div id="escenario">
+        <div id="j1-box" class="bloque activo">
+            <h3 id="n1">JUGADOR 1</h3>
+            <div id="r1" class="rosco"></div>
+            <div class="pregunta-box">
+                <p id="q1" style="font-weight:bold; height:40px;">Cargando...</p>
+                <input type="text" id="ans1" placeholder="Tu respuesta...">
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-green" onclick="validar(1)">ENVIAR</button>
+                    <button class="btn" style="background:var(--oro)" onclick="pasapalabra(1)">PASO</button>
                 </div>
             </div>
         </div>
 
-        <div id="jugador2" class="bloque-jugador peque">
-            <h3 id="name2">RIVAL</h3>
-            <div id="rosco2" class="rosco"></div>
-            <div class="controles">
-                <div id="preg2" class="pregunta">Cargando...</div>
-                <input type="text" id="resp2" placeholder="Respuesta..." autocomplete="off">
-                <div class="botones-juego">
-                    <button class="btn btn-green" onclick="enviar(2)">ENVIAR</button>
-                    <button class="btn" style="background:var(--oro); color:black" onclick="pasar(2)">PASO</button>
+        <div id="j2-box" class="bloque espera">
+            <h3 id="n2" style="font-size:0.8rem">JUGADOR 2</h3>
+            <div id="r2" class="rosco"></div>
+            <div class="pregunta-box">
+                <p id="q2" style="font-weight:bold; height:40px;">Esperando...</p>
+                <input type="text" id="ans2" placeholder="Tu respuesta...">
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-green" onclick="validar(2)">ENVIAR</button>
+                    <button class="btn" style="background:var(--oro)" onclick="pasapalabra(2)">PASO</button>
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-    // Banco de preguntas corregido
+    const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
     const banco = [
         {l:"A", p:"Relativo a las abejas", r:"apícola"},
-        {l:"B", p:"Mide la dirección del viento", r:"veleta"},
-        {l:"C", p:"Vehículo grande para mercancías", r:"camión"},
-        {l:"D", p:"Animal marino muy inteligente", r:"delfín"},
-        {l:"E", p:"Lugar donde se crían elefantes", r:"elefantería"},
-        {l:"F", p:"Luz que guía a los barcos", r:"faro"},
-        {l:"G", p:"Ave de corral que pone huevos", r:"gallina"},
-        {l:"H", p:"Agua sólida por el frío", r:"hielo"},
-        {l:"I", p:"Tierra rodeada de agua", r:"isla"},
-        {l:"J", p:"Animal de cuello muy largo", r:"jirafa"},
-        {l:"L", p:"Líquido blanco de la vaca", r:"leche"},
-        {l:"M", p:"Fruta del manzano", r:"manzana"},
-        {l:"N", p:"Fruta cítrica naranja", r:"naranja"},
-        {l:"Ñ", p:"Persona de pocos años", r:"niño"},
-        {l:"O", p:"Animal que da lana", r:"oveja"},
-        {l:"P", p:"Instrumento de teclas", r:"piano"},
-        {l:"Q", p:"Alimento de leche cuajada", r:"queso"},
-        {l:"R", p:"Pequeño roedor", r:"ratón"},
-        {l:"S", p:"Estrella que da calor", r:"sol"},
-        {l:"T", p:"Aparato para hablar lejos", r:"teléfono"},
+        {l:"B", p:"Mide dirección viento", r:"veleta"},
+        {l:"C", p:"Vehículo grande", r:"camión"},
+        {l:"D", p:"Animal marino listo", r:"delfín"},
+        {l:"E", p:"Cría de elefantes", r:"elefantería"},
+        {l:"F", p:"Luz guía barcos", r:"faro"},
+        {l:"G", p:"Pone huevos", r:"gallina"},
+        {l:"H", p:"Agua sólida", r:"hielo"},
+        {l:"I", p:"Tierra en el mar", r:"isla"},
+        {l:"J", p:"Cuello largo", r:"jirafa"},
+        {l:"L", p:"Blanca y de vaca", r:"leche"},
+        {l:"M", p:"Fruta roja/verde", r:"manzana"},
+        {l:"N", p:"Cítrico naranja", r:"naranja"},
+        {l:"Ñ", p:"Tiene pocos años", r:"niño"},
+        {l:"O", p:"Da lana", r:"oveja"},
+        {l:"P", p:"Teclas blancas/negras", r:"piano"},
+        {l:"Q", p:"Leche cuajada", r:"queso"},
+        {l:"R", p:"Roedor pequeño", r:"ratón"},
+        {l:"S", p:"Luz y calor", r:"sol"},
+        {l:"T", p:"Hablar a distancia", r:"teléfono"},
         {l:"U", p:"Fruta del vino", r:"uva"},
-        {l:"V", p:"Persona que vive cerca", r:"vecino"},
-        {l:"X", p:"Instrumento de láminas", r:"xilófono"},
-        {l:"Y", p:"Barco de lujo", r:"yate"},
-        {l:"Z", p:"Calzado del pie", r:"zapato"}
+        {l:"V", p:"Vive cerca", r:"vecino"},
+        {l:"X", p:"Examen tejido", r:"biopsia"},
+        {l:"Y", p:"Barco lujoso", r:"yate"},
+        {l:"Z", p:"Cubre el pie", r:"zapato"}
     ];
 
-    let miNombre = "";
-    let miRol = ""; 
-    let salaID = "";
-    let localData = { turno: 1, j1: { pos: 0, res: Array(25).fill(0) }, j2: { pos: 0, res: Array(25).fill(0) } };
-
-    function guardarNombre() {
-        miNombre = document.getElementById('nombre-input').value.trim();
-        if(!miNombre) return;
-        document.getElementById('saludo').innerText = "HOLA, " + miNombre.toUpperCase();
-        mostrar('p-menu');
-    }
-
-    function crearSala() {
-        miRol = "host";
-        salaID = Math.floor(100 + Math.random() * 899); // Código corto para evitar errores
-        document.getElementById('display-cod').innerText = salaID;
-        document.getElementById('lobby-j1').innerText = "1. " + miNombre + " (HOST)";
-        localStorage.setItem('sala_' + salaID, JSON.stringify({host: miNombre, guest: null, status: 'esperando'}));
-        mostrar('p-lobby');
-        window.addEventListener('storage', monitor);
-    }
-
-    function unirseSala() {
-        miRol = "guest";
-        salaID = document.getElementById('join-codigo').value.trim();
-        let data = JSON.parse(localStorage.getItem('sala_' + salaID));
-        if(!data) return alert("Código no válido");
-        data.guest = miNombre;
-        localStorage.setItem('sala_' + salaID, JSON.stringify(data));
-        document.getElementById('display-cod').innerText = salaID;
-        document.getElementById('lobby-j1').innerText = "1. " + data.host;
-        document.getElementById('lobby-j2').innerText = "2. " + miNombre + " (TÚ)";
-        document.getElementById('wait-msg').classList.remove('oculto');
-        mostrar('p-lobby');
-        window.addEventListener('storage', monitor);
-    }
-
-    function monitor(e) {
-        if(e.key !== 'sala_' + salaID) return;
-        let data = JSON.parse(e.newValue);
-        if(miRol === 'host' && data.guest && data.status === 'esperando') {
-            document.getElementById('lobby-j2').innerText = "2. " + data.guest;
-            document.getElementById('btn-comenzar').classList.remove('oculto');
-        }
-        if(data.status === 'jugando' || data.status === 'update') sincronizar(data);
-    }
-
-    function hostEmpezar() {
-        let data = JSON.parse(localStorage.getItem('sala_' + salaID));
-        data.status = 'jugando';
-        data.turno = 1;
-        data.j1 = { pos: 0, res: Array(25).fill(0) };
-        data.j2 = { pos: 0, res: Array(25).fill(0) };
-        localStorage.setItem('sala_' + salaID, JSON.stringify(data));
-        sincronizar(data);
-    }
-
-    function crearRosco(id) {
-        const cont = document.getElementById(id);
-        cont.innerHTML = "";
-        const r = (id === 'rosco1') ? 180 : 60;
-        banco.forEach((obj, i) => {
-            const d = document.createElement('div');
-            d.className = 'letra';
-            d.id = id + '-' + i;
-            d.innerText = obj.l;
-            const ang = (i * 360 / 25) - 90;
-            const x = r * Math.cos(ang * Math.PI / 180);
-            const y = r * Math.sin(ang * Math.PI / 180);
-            const offset = (id === 'rosco1') ? 19 : 6;
-            d.style.left = `calc(50% + ${x}px - ${offset}px)`;
-            d.style.top = `calc(50% + ${y}px - ${offset}px)`;
-            cont.appendChild(d);
-        });
-    }
-
-    function sincronizar(data) {
-        if(document.getElementById('juego').style.display !== 'block') {
-            mostrar(null);
-            document.getElementById('juego').style.display = 'block';
-            document.getElementById('name1').innerText = data.host;
-            document.getElementById('name2').innerText = data.guest;
-            crearRosco('rosco1');
-            crearRosco('rosco2');
-        }
-        localData = { turno: data.turno, j1: data.j1, j2: data.j2 };
-        
-        const b1 = document.getElementById('jugador1');
-        const b2 = document.getElementById('jugador2');
-        if(data.turno === 1) {
-            b1.className = "bloque-jugador activo"; b2.className = "bloque-jugador peque";
-            if(miRol === 'host') document.getElementById('resp1').focus();
-        } else {
-            b1.className = "bloque-jugador peque"; b2.className = "bloque-jugador activo";
-            if(miRol === 'guest') document.getElementById('resp2').focus();
-        }
-        actualizarLetras(1, data.j1);
-        actualizarLetras(2, data.j2);
-        
-        document.getElementById('resp1').disabled = (miRol !== 'host' || data.turno !== 1);
-        document.getElementById('resp2').disabled = (miRol !== 'guest' || data.turno !== 2);
-    }
-
-    function actualizarLetras(n, p) {
-        document.getElementById('preg'+n).innerText = "CON LA " + banco[p.pos].l + ": " + banco[p.pos].p;
-        p.res.forEach((s, i) => {
-            const el = document.getElementById(`rosco${n}-${i}`);
-            el.className = 'letra' + (s===1?' bien':s===2?' mal':'') + (i===p.pos?' actual':'');
-        });
-    }
-
-    function enviar(n) {
-        const inp = document.getElementById('resp'+n);
-        const player = (n === 1) ? localData.j1 : localData.j2;
-        if(inp.value.toLowerCase().trim() === banco[player.pos].r) {
-            player.res[player.pos] = 1;
-        } else {
-            player.res[player.pos] = 2;
-            localData.turno = (n === 1) ? 2 : 1;
-        }
-        player.pos = (player.pos + 1) % 25;
-        inp.value = "";
-        save();
-    }
-
-    function pasar(n) {
-        localData.turno = (n === 1) ? 2 : 1;
-        save();
-    }
-
-    function save() {
-        let d = JSON.parse(localStorage.getItem('sala_' + salaID));
-        d.status = 'update'; d.turno = localData.turno; d.j1 = localData.j1; d.j2 = localData.j2;
-        localStorage.setItem('sala_' + salaID, JSON.stringify(d));
-        sincronizar(d);
-    }
+    let peer, conn, miNombre, miTurno = 1, modo = "local";
+    let gameData = {
+        j1: { pos: 0, res: Array(25).fill(0) },
+        j2: { pos: 0, res: Array(25).fill(0) },
+        turno: 1
+    };
 
     function mostrar(id) {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
         if(id) document.getElementById(id).classList.remove('oculto');
     }
 
-    document.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') {
-            if(localData.turno === 1 && miRol === 'host') enviar(1);
-            if(localData.turno === 2 && miRol === 'guest') enviar(2);
+    function modoLocal() {
+        miNombre = document.getElementById('nick').value || "Jugador 1";
+        modo = "local";
+        iniciar();
+    }
+
+    function mostrarOnline() {
+        miNombre = document.getElementById('nick').value || "Anónimo";
+        mostrar('p-online');
+    }
+
+    function crearPartida() {
+        modo = "online";
+        const id6 = Math.floor(100000 + Math.random() * 900000).toString();
+        peer = new Peer(id6);
+        peer.on('open', id => {
+            document.getElementById('sala-id').innerText = id;
+            mostrar('p-lobby');
+        });
+        peer.on('connection', c => {
+            conn = c;
+            configurarConexion();
+            document.getElementById('status-lobby').innerText = "¡Oponente Conectado!";
+            document.getElementById('start-btn').classList.remove('oculto');
+        });
+    }
+
+    function unirsePartida() {
+        modo = "online";
+        const id = document.getElementById('cod-input').value;
+        if(id.length !== 6) return alert("Código de 6 cifras");
+        peer = new Peer();
+        peer.on('open', () => {
+            conn = peer.connect(id);
+            configurarConexion();
+            mostrar('p-lobby');
+            document.getElementById('status-lobby').innerText = "Conectando...";
+        });
+    }
+
+    function configurarConexion() {
+        conn.on('open', () => {
+            conn.send({tipo: 'JOIN', nombre: miNombre});
+        });
+        conn.on('data', data => {
+            if(data.tipo === 'JOIN') { document.getElementById('n2').innerText = data.nombre; }
+            if(data.tipo === 'START') { gameData = data.state; iniciarUI(); }
+            if(data.tipo === 'SYNC') { gameData = data.state; syncUI(); }
+        });
+    }
+
+    function iniciar() {
+        if(modo === "online" && conn) conn.send({tipo: 'START', state: gameData});
+        iniciarUI();
+    }
+
+    function iniciarUI() {
+        mostrar(null);
+        document.getElementById('escenario').style.display = 'block';
+        dibujarRosco('r1');
+        dibujarRosco('r2');
+        syncUI();
+    }
+
+    function dibujarRosco(id) {
+        const r = document.getElementById(id);
+        const radio = id === 'r1' ? 180 : 60;
+        letras.forEach((l, i) => {
+            const div = document.createElement('div');
+            div.className = 'letra';
+            div.innerText = l;
+            div.id = `${id}-${i}`;
+            const ang = (i * 360 / 25) - 90;
+            const x = radio * Math.cos(ang * Math.PI / 180);
+            const y = radio * Math.sin(ang * Math.PI / 180);
+            div.style.left = `calc(50% + ${x}px - ${id==='r1'?20:6}px)`;
+            div.style.top = `calc(50% + ${y}px - ${id==='r1'?20:6}px)`;
+            r.appendChild(div);
+        });
+    }
+
+    function syncUI() {
+        const j1Box = document.getElementById('j1-box');
+        const j2Box = document.getElementById('j2-box');
+        
+        if(gameData.turno === 1) { j1Box.className="bloque activo"; j2Box.className="bloque espera"; }
+        else { j1Box.className="bloque espera"; j2Box.className="bloque activo"; }
+
+        actualizarRosco(1, gameData.j1);
+        actualizarRosco(2, gameData.j2);
+    }
+
+    function actualizarRosco(n, player) {
+        const pDef = banco[player.pos];
+        document.getElementById(`q${n}`).innerText = `CON LA ${pDef.l}: ${pDef.p}`;
+        player.res.forEach((r, i) => {
+            const el = document.getElementById(`r${n}-${i}`);
+            el.className = 'letra' + (r===1?' bien':r===2?' mal':'') + (i===player.pos?' actual':'');
+        });
+    }
+
+    function validar(n) {
+        const player = n === 1 ? gameData.j1 : gameData.j2;
+        const input = document.getElementById(`ans${n}`);
+        if(input.value.toLowerCase().trim() === banco[player.pos].r) {
+            player.res[player.pos] = 1;
+        } else {
+            player.res[player.pos] = 2;
+            gameData.turno = n === 1 ? 2 : 1;
         }
-    });
+        player.pos = (player.pos + 1) % 25;
+        input.value = "";
+        finalizarTurno();
+    }
+
+    function pasapalabra(n) {
+        gameData.turno = n === 1 ? 2 : 1;
+        finalizarTurno();
+    }
+
+    function finalizarTurno() {
+        if(modo === "online" && conn) conn.send({tipo: 'SYNC', state: gameData});
+        syncUI();
+    }
 </script>
 </body>
 </html>
