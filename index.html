@@ -2,259 +2,431 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pasapalabra Pro - Online & Local</title>
+    <title>Pasapalabra Final</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --azul: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; }
-        body { background: var(--azul); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul-letra: #0044ff; }
+        body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .oculto { display: none !important; }
+
+        /* Estilo de las Ventanas (Menús) */
+        .pantalla { text-align: center; background: var(--panel); padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); position: relative; z-index: 100; }
+        h1, h2 { color: var(--oro); margin-top: 0; }
         
-        /* Menús */
-        .pantalla { text-align: center; background: var(--panel); padding: 40px; border-radius: 20px; border: 1px solid #2a3a6d; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        input { width: 80%; padding: 15px; margin: 15px 0; border-radius: 10px; border: none; font-size: 1.1rem; text-align: center; outline: none; }
+        
+        .btn { width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem; transition: 0.2s; }
+        .btn:hover { transform: scale(1.02); }
         .btn-green { background: var(--verde); color: white; }
         .btn-blue { background: #3498db; color: white; }
         .btn-purple { background: #9b59b6; color: white; }
+        .btn-orange { background: #e67e22; color: white; }
 
-        /* Juego */
-        #escenario { display: none; width: 100vw; height: 100vh; position: relative; }
-        .bloque { position: absolute; transition: all 0.8s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; }
-        .activo { width: 550px; height: 550px; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; border: 3px solid var(--oro); background: rgba(17,27,61,0.9); }
-        .espera { width: 200px; height: 200px; top: 20px; right: 20px; z-index: 5; opacity: 0.7; transform: scale(0.8); border: 2px solid #444; }
+        /* Estilo del Juego */
+        #tablero-juego { display: none; width: 100vw; height: 100vh; position: relative; }
+        
+        /* Jugador Principal (Grande) */
+        .jugador-main { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 550px; height: 550px; border-radius: 50%; border: 3px solid var(--oro); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.5s; background: rgba(17, 27, 61, 0.95); }
+        
+        /* Jugador Rival (Pequeño - Solo en modo Online) */
+        .jugador-rival { position: absolute; top: 20px; right: 20px; width: 180px; height: 180px; border-radius: 50%; border: 2px solid #555; transform: scale(0.8); opacity: 0.8; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--panel); transition: all 0.5s; }
 
-        /* Rosco */
-        .rosco { position: relative; width: 400px; height: 400px; }
-        .espera .rosco { width: 140px; height: 140px; }
-        .letra { position: absolute; width: 40px; height: 40px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; }
-        .espera .letra { width: 12px; height: 12px; font-size: 0; border-width: 1px; }
-        .bien { background: var(--verde) !important; }
-        .mal { background: var(--rojo) !important; }
-        .actual { background: var(--oro) !important; color: black; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
+        /* El Rosco */
+        .rosco-container { position: relative; width: 100%; height: 100%; }
+        
+        .letra { position: absolute; width: 38px; height: 38px; background: var(--azul-letra); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 18px; z-index: 10; }
+        
+        /* Ajuste para el rival pequeño */
+        .jugador-rival .letra { width: 12px; height: 12px; font-size: 0; border: 1px solid #ccc; }
 
-        .pregunta-box { width: 80%; text-align: center; margin-top: 10px; }
-        .espera .pregunta-box { display: none; }
+        /* Estados de colores */
+        .bien { background: var(--verde) !important; border-color: white; }
+        .mal { background: var(--rojo) !important; border-color: white; }
+        .actual { background: var(--oro) !important; color: black; box-shadow: 0 0 20px var(--oro); transform: scale(1.3); z-index: 20; }
+
+        /* Controles dentro del rosco */
+        .centro-mando { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 70%; }
+        .jugador-rival .centro-mando { display: none; } /* Ocultar controles del rival */
+
+        .pregunta { font-size: 1.2rem; min-height: 60px; margin-bottom: 10px; font-weight: bold; text-shadow: 1px 1px 2px black; }
+        .btn-juego { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; }
+
     </style>
 </head>
 <body>
 
-    <div id="p-init" class="pantalla">
-        <h1 style="color:var(--oro)">PASAPALABRA</h1>
-        <input type="text" id="nick" placeholder="Tu Nombre">
-        <button class="btn btn-purple" onclick="modoLocal()">MODO LOCAL (2 Jugadores)</button>
-        <button class="btn btn-blue" onclick="mostrarOnline()">MODO ONLINE (Real)</button>
+    <div id="pantalla-nombre" class="pantalla">
+        <h1>PASAPALABRA</h1>
+        <p>Introduce tu nombre para empezar</p>
+        <input type="text" id="input-nombre" placeholder="Nombre de usuario">
+        <button class="btn btn-green" onclick="irAModos()">CONTINUAR</button>
     </div>
 
-    <div id="p-online" class="pantalla oculto">
-        <h2>ONLINE REAL</h2>
-        <button class="btn btn-blue" onclick="crearPartida()">CREAR PARTIDA</button>
-        <p>O únete con código de 6 cifras:</p>
-        <input type="text" id="cod-input" placeholder="000000" maxlength="6">
-        <button class="btn btn-green" onclick="unirsePartida()">UNIRSE</button>
-        <button class="btn" onclick="location.reload()">VOLVER</button>
+    <div id="pantalla-modos" class="pantalla oculto">
+        <h2 id="saludo-titulo">HOLA</h2>
+        <p>¿Cómo quieres jugar?</p>
+        <button class="btn btn-purple" onclick="modoSolo()">JUGAR SOLO (LOCAL)</button>
+        <button class="btn btn-blue" onclick="irAOnline()">JUGAR ONLINE (2 JUGADORES)</button>
     </div>
 
-    <div id="p-lobby" class="pantalla oculto">
-        <h3>CÓDIGO DE SALA:</h3>
-        <h1 id="sala-id" style="color:var(--oro); letter-spacing: 5px;">------</h1>
-        <p id="status-lobby">Esperando al oponente...</p>
-        <button id="start-btn" class="btn btn-green oculto" onclick="iniciar()">EMPEZAR</button>
+    <div id="pantalla-online-opciones" class="pantalla oculto">
+        <h2>ONLINE</h2>
+        <button class="btn btn-orange" onclick="pantallaGenerar()">GENERAR CÓDIGO (HOST)</button>
+        <button class="btn btn-green" onclick="pantallaUnirse()">UNIRSE CON CÓDIGO</button>
+        <br><br>
+        <button class="btn" style="background:#555; color:white" onclick="volverAModos()">ATRÁS</button>
     </div>
 
-    <div id="escenario">
-        <div id="j1-box" class="bloque activo">
-            <h3 id="n1">JUGADOR 1</h3>
-            <div id="r1" class="rosco"></div>
-            <div class="pregunta-box">
-                <p id="q1" style="font-weight:bold; height:40px;">Cargando...</p>
-                <input type="text" id="ans1" placeholder="Tu respuesta...">
-                <div style="display:flex; gap:10px;">
-                    <button class="btn btn-green" onclick="validar(1)">ENVIAR</button>
-                    <button class="btn" style="background:var(--oro)" onclick="pasapalabra(1)">PASO</button>
-                </div>
+    <div id="pantalla-host" class="pantalla oculto">
+        <h3>TU CÓDIGO DE SALA:</h3>
+        <h1 id="codigo-mostrado" style="font-size: 3rem; letter-spacing: 5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">...</h1>
+        <p>Comparte este código con tu amigo.</p>
+        <p id="estado-host" style="color: yellow; font-style: italic;">Esperando conexión...</p>
+    </div>
+
+    <div id="pantalla-guest" class="pantalla oculto">
+        <h3>INTRODUCE EL CÓDIGO:</h3>
+        <input type="text" id="input-codigo" placeholder="Ej: 123456" maxlength="6">
+        <button class="btn btn-green" onclick="conectarHost()">ENTRAR A LA SALA</button>
+        <p id="estado-guest" style="color: yellow; font-style: italic;"></p>
+        <button class="btn" style="background:#555; color:white" onclick="volverAOnline()">ATRÁS</button>
+    </div>
+
+    <div id="tablero-juego">
+        <div id="jugador-yo" class="jugador-main">
+            <div id="rosco-yo" class="rosco-container"></div>
+            <div class="centro-mando">
+                <h2 id="mi-nick" style="margin:0; color:var(--oro)">YO</h2>
+                <div id="pregunta-texto" class="pregunta">Cargando...</div>
+                <input type="text" id="respuesta-input" placeholder="Respuesta..." autocomplete="off">
+                <br>
+                <button class="btn-juego" style="background:var(--verde); color:white" onclick="enviarRespuesta()">ENVIAR</button>
+                <button class="btn-juego" style="background:var(--oro); color:black" onclick="pasarPalabra()">PASAPALABRA</button>
             </div>
         </div>
 
-        <div id="j2-box" class="bloque espera">
-            <h3 id="n2" style="font-size:0.8rem">JUGADOR 2</h3>
-            <div id="r2" class="rosco"></div>
-            <div class="pregunta-box">
-                <p id="q2" style="font-weight:bold; height:40px;">Esperando...</p>
-                <input type="text" id="ans2" placeholder="Tu respuesta...">
-                <div style="display:flex; gap:10px;">
-                    <button class="btn btn-green" onclick="validar(2)">ENVIAR</button>
-                    <button class="btn" style="background:var(--oro)" onclick="pasapalabra(2)">PASO</button>
-                </div>
-            </div>
+        <div id="jugador-rival" class="jugador-rival oculto">
+            <h3 id="rival-nick" style="color:white; margin-top: -30px; position:absolute;">RIVAL</h3>
+            <div id="rosco-rival" class="rosco-container"></div>
         </div>
     </div>
 
 <script>
-    const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
-    const banco = [
-        {l:"A", p:"Relativo a las abejas", r:"apícola"},
-        {l:"B", p:"Mide dirección viento", r:"veleta"},
-        {l:"C", p:"Vehículo grande", r:"camión"},
-        {l:"D", p:"Animal marino listo", r:"delfín"},
-        {l:"E", p:"Cría de elefantes", r:"elefantería"},
-        {l:"F", p:"Luz guía barcos", r:"faro"},
-        {l:"G", p:"Pone huevos", r:"gallina"},
-        {l:"H", p:"Agua sólida", r:"hielo"},
-        {l:"I", p:"Tierra en el mar", r:"isla"},
-        {l:"J", p:"Cuello largo", r:"jirafa"},
-        {l:"L", p:"Blanca y de vaca", r:"leche"},
-        {l:"M", p:"Fruta roja/verde", r:"manzana"},
-        {l:"N", p:"Cítrico naranja", r:"naranja"},
-        {l:"Ñ", p:"Tiene pocos años", r:"niño"},
-        {l:"O", p:"Da lana", r:"oveja"},
-        {l:"P", p:"Teclas blancas/negras", r:"piano"},
-        {l:"Q", p:"Leche cuajada", r:"queso"},
-        {l:"R", p:"Roedor pequeño", r:"ratón"},
-        {l:"S", p:"Luz y calor", r:"sol"},
-        {l:"T", p:"Hablar a distancia", r:"teléfono"},
-        {l:"U", p:"Fruta del vino", r:"uva"},
-        {l:"V", p:"Vive cerca", r:"vecino"},
-        {l:"X", p:"Examen tejido", r:"biopsia"},
-        {l:"Y", p:"Barco lujoso", r:"yate"},
-        {l:"Z", p:"Cubre el pie", r:"zapato"}
+    /* --- DATOS Y VARIABLES --- */
+    const bancoPreguntas = [
+        {l:"A", p:"Relativo a las abejas", r:"apícola"}, {l:"B", p:"Mide la dirección del viento", r:"veleta"},
+        {l:"C", p:"Vehículo grande de carga", r:"camión"}, {l:"D", p:"Animal marino inteligente", r:"delfín"},
+        {l:"E", p:"Cría de elefantes", r:"elefantería"}, {l:"F", p:"Luz que guía a los barcos", r:"faro"},
+        {l:"G", p:"Ave de corral", r:"gallina"}, {l:"H", p:"Agua sólida", r:"hielo"},
+        {l:"I", p:"Tierra rodeada de agua", r:"isla"}, {l:"J", p:"Animal de cuello largo", r:"jirafa"},
+        {l:"L", p:"Líquido blanco de vaca", r:"leche"}, {l:"M", p:"Fruta del manzano", r:"manzana"},
+        {l:"N", p:"Fruta cítrica", r:"naranja"}, {l:"Ñ", p:"Niño pequeño", r:"niño"},
+        {l:"O", p:"Animal que da lana", r:"oveja"}, {l:"P", p:"Instrumento de teclas", r:"piano"},
+        {l:"Q", p:"Derivado de la leche", r:"queso"}, {l:"R", p:"Pequeño roedor", r:"ratón"},
+        {l:"S", p:"Astro rey", r:"sol"}, {l:"T", p:"Hablar a distancia", r:"teléfono"},
+        {l:"U", p:"Fruta de la vid", r:"uva"}, {l:"V", p:"Vive al lado", r:"vecino"},
+        {l:"X", p:"Instrumento musical", r:"xilófono"}, {l:"Y", p:"Barco de lujo", r:"yate"},
+        {l:"Z", p:"Calzado", r:"zapato"}
     ];
 
-    let peer, conn, miNombre, miTurno = 1, modo = "local";
-    let gameData = {
-        j1: { pos: 0, res: Array(25).fill(0) },
-        j2: { pos: 0, res: Array(25).fill(0) },
-        turno: 1
+    let nombre = "";
+    let modo = ""; // 'solo' o 'online'
+    let peer = null;
+    let conn = null;
+    let turnoActual = 1; // 1 = Yo (o Host), 2 = Rival
+    let miRol = 1; // 1 si soy Host/Solo, 2 si soy Guest
+    
+    // Estado del juego
+    let estado = {
+        j1: { pos: 0, aciertos: [], nombre: "" },
+        j2: { pos: 0, aciertos: [], nombre: "" }
     };
+    // Inicializar arrays de respuesta (0:sin responder, 1:bien, 2:mal)
+    estado.j1.aciertos = new Array(25).fill(0);
+    estado.j2.aciertos = new Array(25).fill(0);
 
-    function mostrar(id) {
+    /* --- NAVEGACIÓN DE PANTALLAS --- */
+    function ocultarTodo() {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-        if(id) document.getElementById(id).classList.remove('oculto');
+        document.getElementById('tablero-juego').style.display = 'none';
     }
 
-    function modoLocal() {
-        miNombre = document.getElementById('nick').value || "Jugador 1";
-        modo = "local";
-        iniciar();
+    function irAModos() {
+        nombre = document.getElementById('input-nombre').value.trim();
+        if(!nombre) return alert("¡Ponte un nombre!");
+        estado.j1.nombre = nombre;
+        document.getElementById('saludo-titulo').innerText = "HOLA, " + nombre.toUpperCase();
+        ocultarTodo();
+        document.getElementById('pantalla-modos').classList.remove('oculto');
     }
 
-    function mostrarOnline() {
-        miNombre = document.getElementById('nick').value || "Anónimo";
-        mostrar('p-online');
+    function volverAModos() {
+        ocultarTodo();
+        document.getElementById('pantalla-modos').classList.remove('oculto');
     }
 
-    function crearPartida() {
-        modo = "online";
-        const id6 = Math.floor(100000 + Math.random() * 900000).toString();
-        peer = new Peer(id6);
-        peer.on('open', id => {
-            document.getElementById('sala-id').innerText = id;
-            mostrar('p-lobby');
-        });
-        peer.on('connection', c => {
-            conn = c;
-            configurarConexion();
-            document.getElementById('status-lobby').innerText = "¡Oponente Conectado!";
-            document.getElementById('start-btn').classList.remove('oculto');
-        });
+    function irAOnline() {
+        ocultarTodo();
+        document.getElementById('pantalla-online-opciones').classList.remove('oculto');
     }
 
-    function unirsePartida() {
-        modo = "online";
-        const id = document.getElementById('cod-input').value;
-        if(id.length !== 6) return alert("Código de 6 cifras");
-        peer = new Peer();
-        peer.on('open', () => {
-            conn = peer.connect(id);
-            configurarConexion();
-            mostrar('p-lobby');
-            document.getElementById('status-lobby').innerText = "Conectando...";
-        });
+    function volverAOnline() {
+        ocultarTodo();
+        document.getElementById('pantalla-online-opciones').classList.remove('oculto');
     }
 
-    function configurarConexion() {
-        conn.on('open', () => {
-            conn.send({tipo: 'JOIN', nombre: miNombre});
-        });
-        conn.on('data', data => {
-            if(data.tipo === 'JOIN') { document.getElementById('n2').innerText = data.nombre; }
-            if(data.tipo === 'START') { gameData = data.state; iniciarUI(); }
-            if(data.tipo === 'SYNC') { gameData = data.state; syncUI(); }
-        });
+    /* --- MODO SOLO (LOCAL) --- */
+    function modoSolo() {
+        modo = 'solo';
+        miRol = 1; 
+        turnoActual = 1;
+        document.getElementById('jugador-rival').classList.add('oculto'); // Ocultar rival
+        iniciarJuegoUI();
     }
 
-    function iniciar() {
-        if(modo === "online" && conn) conn.send({tipo: 'START', state: gameData});
-        iniciarUI();
-    }
-
-    function iniciarUI() {
-        mostrar(null);
-        document.getElementById('escenario').style.display = 'block';
-        dibujarRosco('r1');
-        dibujarRosco('r2');
-        syncUI();
-    }
-
-    function dibujarRosco(id) {
-        const r = document.getElementById(id);
-        const radio = id === 'r1' ? 180 : 60;
-        letras.forEach((l, i) => {
-            const div = document.createElement('div');
-            div.className = 'letra';
-            div.innerText = l;
-            div.id = `${id}-${i}`;
-            const ang = (i * 360 / 25) - 90;
-            const x = radio * Math.cos(ang * Math.PI / 180);
-            const y = radio * Math.sin(ang * Math.PI / 180);
-            div.style.left = `calc(50% + ${x}px - ${id==='r1'?20:6}px)`;
-            div.style.top = `calc(50% + ${y}px - ${id==='r1'?20:6}px)`;
-            r.appendChild(div);
-        });
-    }
-
-    function syncUI() {
-        const j1Box = document.getElementById('j1-box');
-        const j2Box = document.getElementById('j2-box');
+    /* --- MODO ONLINE (PEERJS) --- */
+    function pantallaGenerar() {
+        modo = 'online';
+        miRol = 1; // Soy Host (Jugador 1)
+        estado.j1.nombre = nombre;
+        ocultarTodo();
+        document.getElementById('pantalla-host').classList.remove('oculto');
         
-        if(gameData.turno === 1) { j1Box.className="bloque activo"; j2Box.className="bloque espera"; }
-        else { j1Box.className="bloque espera"; j2Box.className="bloque activo"; }
+        // Generar ID de 6 cifras
+        const idSala = Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('codigo-mostrado').innerText = idSala;
 
-        actualizarRosco(1, gameData.j1);
-        actualizarRosco(2, gameData.j2);
-    }
+        // Crear Peer
+        peer = new Peer(idSala.toString());
+        
+        peer.on('open', (id) => {
+            console.log('Mi ID es: ' + id);
+        });
 
-    function actualizarRosco(n, player) {
-        const pDef = banco[player.pos];
-        document.getElementById(`q${n}`).innerText = `CON LA ${pDef.l}: ${pDef.p}`;
-        player.res.forEach((r, i) => {
-            const el = document.getElementById(`r${n}-${i}`);
-            el.className = 'letra' + (r===1?' bien':r===2?' mal':'') + (i===player.pos?' actual':'');
+        peer.on('connection', (c) => {
+            conn = c;
+            document.getElementById('estado-host').innerText = "¡Alguien se está uniendo!";
+            setupConexion();
         });
     }
 
-    function validar(n) {
-        const player = n === 1 ? gameData.j1 : gameData.j2;
-        const input = document.getElementById(`ans${n}`);
-        if(input.value.toLowerCase().trim() === banco[player.pos].r) {
-            player.res[player.pos] = 1;
-        } else {
-            player.res[player.pos] = 2;
-            gameData.turno = n === 1 ? 2 : 1;
+    function pantallaUnirse() {
+        modo = 'online';
+        miRol = 2; // Soy Guest (Jugador 2)
+        estado.j2.nombre = nombre;
+        ocultarTodo();
+        document.getElementById('pantalla-guest').classList.remove('oculto');
+    }
+
+    function conectarHost() {
+        const codigo = document.getElementById('input-codigo').value;
+        if(codigo.length !== 6) return alert("El código debe tener 6 cifras");
+        
+        document.getElementById('estado-guest').innerText = "Buscando sala...";
+        peer = new Peer(); // ID automático para mí
+        
+        peer.on('open', () => {
+            conn = peer.connect(codigo);
+            
+            conn.on('open', () => {
+                document.getElementById('estado-guest').innerText = "¡Conectado! Esperando inicio...";
+                setupConexion();
+                // Enviar mi nombre al Host
+                conn.send({ tipo: 'SALUDO', nombre: nombre });
+            });
+            
+            // Si el código no existe o falla
+            peer.on('error', (err) => {
+                alert("Error: No se encuentra la sala o fallo de red.");
+                document.getElementById('estado-guest').innerText = "";
+            });
+        });
+    }
+
+    function setupConexion() {
+        conn.on('data', (data) => {
+            // Lógica de recepción de datos
+            if(data.tipo === 'SALUDO') {
+                // Host recibe nombre del Guest
+                if(miRol === 1) {
+                    estado.j2.nombre = data.nombre;
+                    // Host inicia el juego para ambos
+                    enviarEstado('START');
+                    iniciarJuegoUI();
+                }
+            }
+            if(data.tipo === 'START') {
+                estado = data.estado;
+                iniciarJuegoUI();
+            }
+            if(data.tipo === 'UPDATE') {
+                estado = data.estado;
+                turnoActual = data.turno;
+                actualizarTablero();
+            }
+        });
+    }
+
+    function enviarEstado(tipo) {
+        if(conn) {
+            conn.send({
+                tipo: tipo, // 'START' o 'UPDATE'
+                estado: estado,
+                turno: turnoActual
+            });
         }
-        player.pos = (player.pos + 1) % 25;
+    }
+
+    /* --- LÓGICA DEL JUEGO --- */
+    function iniciarJuegoUI() {
+        ocultarTodo();
+        document.getElementById('tablero-juego').style.display = 'block';
+        
+        // Configurar Nombres
+        document.getElementById('mi-nick').innerText = (miRol === 1) ? estado.j1.nombre : estado.j2.nombre;
+        document.getElementById('rival-nick').innerText = (miRol === 1) ? estado.j2.nombre : estado.j1.nombre;
+
+        if(modo === 'online') {
+            document.getElementById('jugador-rival').classList.remove('oculto');
+        }
+
+        // Crear roscos visuales
+        crearRoscoHTML('rosco-yo', 260); // Grande
+        crearRoscoHTML('rosco-rival', 80); // Pequeño
+
+        actualizarTablero();
+    }
+
+    function crearRoscoHTML(idContainer, radio) {
+        const container = document.getElementById(idContainer);
+        container.innerHTML = "";
+        const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+        
+        for(let i=0; i<letras.length; i++) {
+            let div = document.createElement('div');
+            div.innerText = letras[i];
+            div.classList.add('letra');
+            
+            // Corrección de ángulo: -90 grados para que A esté arriba
+            let angulo = (i * 360 / 25) - 90;
+            let radianes = angulo * (Math.PI / 180);
+            
+            // Posicionar desde el centro
+            let x = Math.cos(radianes) * radio;
+            let y = Math.sin(radianes) * radio;
+            
+            // Ajustar al centro del div (offset)
+            div.style.left = `calc(50% + ${x}px - 19px)`; 
+            div.style.top = `calc(50% + ${y}px - 19px)`;
+            
+            // IDs únicos para pintar luego: rosco-yo-0, rosco-rival-24
+            div.id = `${idContainer}-${i}`; 
+            
+            container.appendChild(div);
+        }
+    }
+
+    function actualizarTablero() {
+        // Determinar qué datos son MÍOS y cuáles del RIVAL según mi rol
+        let misDatos = (miRol === 1) ? estado.j1 : estado.j2;
+        let rivalDatos = (miRol === 1) ? estado.j2 : estado.j1;
+
+        // 1. Actualizar MI Rosco (Grande)
+        pintarRosco('rosco-yo', misDatos);
+        
+        // 2. Actualizar Rosco Rival (Pequeño)
+        pintarRosco('rosco-rival', rivalDatos);
+
+        // 3. Pregunta y Turno
+        // Si es mi turno
+        if(turnoActual === miRol) {
+            let letraActual = bancoPreguntas[misDatos.pos];
+            document.getElementById('pregunta-texto').innerText = 
+                `CON LA ${letraActual.l}: ${letraActual.p}`;
+            document.getElementById('respuesta-input').disabled = false;
+            document.getElementById('respuesta-input').focus();
+            document.getElementById('jugador-yo').style.opacity = "1";
+            document.getElementById('jugador-yo').style.borderColor = "var(--oro)";
+            
+            // Efecto visual: Rival oscuro
+            if(modo === 'online') {
+                document.getElementById('jugador-rival').style.opacity = "0.5";
+            }
+        } else {
+            // Turno del rival
+            document.getElementById('pregunta-texto').innerText = "ESPERANDO AL RIVAL...";
+            document.getElementById('respuesta-input').disabled = true;
+            document.getElementById('jugador-yo').style.opacity = "0.7";
+            document.getElementById('jugador-yo').style.borderColor = "#555";
+            
+            if(modo === 'online') {
+                document.getElementById('jugador-rival').style.opacity = "1";
+                document.getElementById('jugador-rival').style.borderColor = "var(--oro)";
+            }
+        }
+    }
+
+    function pintarRosco(prefijoID, datosJugador) {
+        for(let i=0; i<25; i++) {
+            let el = document.getElementById(`${prefijoID}-${i}`);
+            el.className = 'letra'; // Reset
+            
+            // Colores acertado/fallado
+            if(datosJugador.aciertos[i] === 1) el.classList.add('bien');
+            else if(datosJugador.aciertos[i] === 2) el.classList.add('mal');
+            
+            // Letra actual (solo si no ha terminado)
+            if(i === datosJugador.pos) el.classList.add('actual');
+        }
+    }
+
+    function enviarRespuesta() {
+        if(turnoActual !== miRol) return;
+        
+        let misDatos = (miRol === 1) ? estado.j1 : estado.j2;
+        let input = document.getElementById('respuesta-input');
+        let respuesta = input.value.toLowerCase().trim();
+        let correcta = bancoPreguntas[misDatos.pos].r;
+
+        if(respuesta === correcta) {
+            misDatos.aciertos[misDatos.pos] = 1; // Verde
+            // Si acierta, SIGUE jugando. No cambiamos turno.
+        } else {
+            misDatos.aciertos[misDatos.pos] = 2; // Rojo
+            cambiarTurno();
+        }
+
+        misDatos.pos = (misDatos.pos + 1) % 25; // Siguiente letra
         input.value = "";
-        finalizarTurno();
+        
+        if(modo === 'online') enviarEstado('UPDATE');
+        actualizarTablero();
     }
 
-    function pasapalabra(n) {
-        gameData.turno = n === 1 ? 2 : 1;
-        finalizarTurno();
+    function pasarPalabra() {
+        if(turnoActual !== miRol) return;
+        
+        let misDatos = (miRol === 1) ? estado.j1 : estado.j2;
+        // Solo cambia turno, no marca error
+        misDatos.pos = (misDatos.pos + 1) % 25;
+        cambiarTurno();
+        
+        document.getElementById('respuesta-input').value = "";
+        
+        if(modo === 'online') enviarEstado('UPDATE');
+        actualizarTablero();
     }
 
-    function finalizarTurno() {
-        if(modo === "online" && conn) conn.send({tipo: 'SYNC', state: gameData});
-        syncUI();
+    function cambiarTurno() {
+        if(modo === 'solo') return; // En solo nunca cambia el turno
+        turnoActual = (turnoActual === 1) ? 2 : 1;
     }
+
+    // Enter para enviar
+    document.getElementById('respuesta-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') enviarRespuesta();
+    });
+
 </script>
 </body>
 </html>
