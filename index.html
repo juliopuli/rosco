@@ -39,7 +39,7 @@
         <b id="hud-name" style="color:var(--oro)"></b><br>
         <button id="btn-lock" class="oculto" style="background:var(--rojo); color:white; border:none; padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:4px;"></button><br>
         <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR MI ROSTRO</button>
-        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">CERRAR SESIÓN</button>
+        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="cerrarSesion()">CERRAR SESIÓN</button>
     </div>
 
     <div id="p-login" class="pantalla">
@@ -86,6 +86,15 @@
     let userActivo = "";
     let esRegistro = false;
 
+    // Persistencia de sesión al cargar
+    window.onload = function() {
+        const loggedUser = localStorage.getItem('loggedUser');
+        if (loggedUser && CONFIG[loggedUser]) {
+            userActivo = loggedUser;
+            loginExitoso(loggedUser);
+        }
+    };
+
     function iniciar() {
         const n = document.getElementById('user-name').value;
         if(n) { userActivo = n; irMenu(); }
@@ -97,17 +106,23 @@
     }
 
     function chequearStaff() {
+        if (isLocked) { alert("Sistema bloqueado por SUPERADMIN."); return; }
         if(prompt("CÓDIGO:") === "Pablo23sek") cambiarP('p-staff-login');
     }
 
     function manualLogin() {
         const u = document.getElementById('st-u').value.toLowerCase();
         const p = document.getElementById('st-p').value;
-        if(CONFIG[u] && CONFIG[u].pass === p) loginExitoso(u);
-        else alert("Error");
+        if (!CONFIG[u]) {
+            alert("Usuario no encontrado.");
+        } else if (CONFIG[u].pass !== p) {
+            alert("Contraseña incorrecta.");
+        } else {
+            loginExitoso(u);
+        }
     }
 
-    // --- LÓGICA DE CÁMARA BLINDADA ---
+    // --- LÓGICA DE CÁMARA CON CAPTURA REAL ---
     function abrirRegistroRostro() {
         esRegistro = true;
         cambiarP('p-scanner');
@@ -133,7 +148,11 @@
             const rank = document.getElementById('rank-input').value.toUpperCase();
             usrKey = Object.keys(CONFIG).find(k => CONFIG[k].rank === rank);
             if(!usrKey) return alert("Rango no válido");
-            if(localStorage.getItem('face_' + usrKey) !== 'OK') return alert("No registrado");
+            if(!localStorage.getItem('face_' + usrKey)) return alert("No registrado");
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return alert("Tu navegador no soporta cámara.");
         }
 
         try {
@@ -144,14 +163,32 @@
             msg.innerText = "ESCANEANDO...";
 
             setTimeout(() => {
+                // Capturar imagen del video
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0);
+                const imgData = canvas.toDataURL('image/png'); // Base64
+
                 // Efecto flash
                 document.getElementById('flash').style.opacity = "1";
                 setTimeout(() => document.getElementById('flash').style.opacity = "0", 100);
 
-                // Guardado
                 if(esRegistro) {
-                    localStorage.setItem('face_' + usrKey, 'OK');
+                    localStorage.setItem('face_' + usrKey, imgData);
                     alert("✅ ROSTRO REGISTRADO CON ÉXITO");
+                } else {
+                    // Comparar con la guardada
+                    const savedImg = localStorage.getItem('face_' + usrKey);
+                    if (imgData === savedImg) {
+                        alert("✅ LOGIN EXITOSO");
+                    } else {
+                        alert("❌ ROSTRO NO COINCIDE");
+                        stream.getTracks().forEach(t => t.stop());
+                        document.getElementById('cam-box').style.display = "none";
+                        return;
+                    }
                 }
 
                 stream.getTracks().forEach(t => t.stop());
@@ -160,12 +197,14 @@
             }, 3000);
 
         } catch (e) {
-            alert("ERROR: No se pudo activar la cámara. Revisa los permisos del navegador.");
+            console.error(e);
+            alert("ERROR: No se pudo activar la cámara. Asegúrate de dar permisos y usar HTTPS (o localhost).");
         }
     }
 
     function loginExitoso(u) {
         userActivo = u;
+        localStorage.setItem('loggedUser', u); // Persistencia
         document.getElementById('hud-staff').style.display = "block";
         document.getElementById('hud-name').innerText = u.toUpperCase();
         
@@ -179,6 +218,11 @@
             };
         }
         irMenu();
+    }
+
+    function cerrarSesion() {
+        localStorage.removeItem('loggedUser');
+        location.reload();
     }
 
     function cambiarP(id) {
