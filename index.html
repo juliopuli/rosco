@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v5.0.0</title>
+    <title>Pasapalabra Pro v5.1.0</title>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
         .oculto { display: none !important; }
 
-        /* CONTENEDORES */
         .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10; position: relative; }
         
         .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; color: white; transition: 0.3s; }
@@ -20,17 +19,16 @@
         
         input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1rem; background: #eee; color: #000; font-weight: bold; }
 
-        /* CÁMARA Y ESCÁNER */
+        /* CÁMARA */
         #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; }
         #v-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .scan-anim { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--oro); box-shadow: 0 0 15px var(--oro); animation: scanMove 2s infinite; }
         @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
-        /* JUEGO ROSCO */
+        /* JUEGO */
         #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: var(--fondo); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        .rosco-main { position: relative; width: 450px; height: 450px; margin-bottom: 20px; }
-        .letra { position: absolute; width: 38px; height: 38px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 1rem; transition: 0.3s; }
-        .letra.activa { background: var(--oro); color: black; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
+        .rosco-main { position: relative; width: 400px; height: 400px; margin-bottom: 20px; }
+        .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; }
 
         #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
         #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; transition: 0.1s; }
@@ -42,192 +40,177 @@
 
     <div id="hud-staff">
         <b id="hud-name" style="color:var(--oro)"></b><br>
-        <button id="btn-lock" class="oculto" style="background:var(--rojo); color:white; border:none; padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:4px;"></button><br>
-        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR MI CARA</button>
+        <button id="btn-lock" class="oculto" style="padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:4px; border:none; color:white;"></button><br>
+        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR CARA</button>
         <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">SALIR</button>
     </div>
 
     <div id="p-login" class="pantalla">
         <h1 style="color:var(--oro)">PASAPALABRA</h1>
-        <input type="text" id="user-name" placeholder="Escribe tu nombre...">
-        <button class="btn btn-green" onclick="accesoPublico()">JUGAR</button>
+        <input type="text" id="user-name" placeholder="Tu nombre...">
+        <button class="btn btn-green" onclick="accesoPublico()">ENTRAR</button>
         <button class="btn" style="background:#333; font-size:0.7rem;" onclick="irAStaff()">ACCESO STAFF</button>
+    </div>
+
+    <div id="p-locked" class="pantalla oculto">
+        <h1 style="color:var(--rojo)">🔒 BLOQUEADO</h1>
+        <p>El administrador ha cerrado el acceso temporalmente.</p>
+        <button class="btn btn-blue" onclick="irAStaff()">ACCESO STAFF PARA DESBLOQUEAR</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
         <h2 id="saludo">HOLA</h2>
         <button class="btn btn-blue" onclick="iniciarJuego('ONLINE')">MODO ONLINE</button>
         <button class="btn btn-green" onclick="iniciarJuego('LOCAL')">MODO LOCAL</button>
-        <button class="btn" style="background:#444" onclick="location.reload()">VOLVER</button>
+        <button class="btn" style="background:#444" onclick="location.reload()">CAMBIAR USUARIO</button>
     </div>
 
     <div id="p-staff-login" class="pantalla oculto">
-        <h3>IDENTIFICACIÓN STAFF</h3>
+        <h3>ZONA STAFF</h3>
         <input type="text" id="st-u" placeholder="Usuario">
         <input type="password" id="st-p" placeholder="Contraseña">
-        <button class="btn btn-green" onclick="loginManual()">ENTRAR CON CLAVE</button>
+        <button class="btn btn-green" onclick="loginManual()">LOGIN MANUAL</button>
         <hr style="border:0.5px solid #333; margin:15px;">
-        <button class="btn btn-face" onclick="abrirFaceID()">👁️ FACE ID POR RANGO</button>
-        <button class="btn" style="background:transparent" onclick="cambiarP('p-login')">CANCELAR</button>
+        <button class="btn btn-face" onclick="abrirFaceID()">👁️ FACE ID (POR RANGO)</button>
+        <button class="btn" style="background:transparent" onclick="cambiarP('p-login')">VOLVER</button>
     </div>
 
     <div id="p-scanner" class="pantalla oculto">
         <h3 id="scan-title">ESCÁNER</h3>
-        <input type="text" id="rank-input" placeholder="PON AQUÍ TU RANGO (SUPERADMIN)">
+        <input type="text" id="rank-input" placeholder="RANGO (Ej: SUPERADMIN)">
         <div id="cam-box">
             <video id="v-feed" autoplay playsinline></video>
             <div class="scan-anim"></div>
         </div>
-        <button id="btn-scan" class="btn btn-blue" onclick="capturaBiometrica()">ACTIVAR ESCÁNER</button>
+        <button id="btn-scan" class="btn btn-blue" onclick="capturaBiometrica()">INICIAR</button>
         <p id="scan-msg" style="color:var(--oro)"></p>
     </div>
 
     <div id="juego-cont">
         <div class="rosco-main" id="rosco-box"></div>
-        <div style="text-align:center; max-width: 500px;">
-            <h2 id="tipo-juego" style="color:var(--oro); margin:0;">MODO LOCAL</h2>
-            <div id="pregunta-box" style="background:var(--panel); padding:20px; border-radius:15px; border:1px solid var(--azul); margin:15px 0; min-height:60px;">
-                <span id="txt-pregunta">Cargando definición...</span>
-            </div>
-            <input type="text" id="respuesta-user" placeholder="Tu respuesta..." style="width: 80%;">
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn btn-green" onclick="validar()">ENVIAR</button>
-                <button class="btn" style="background:var(--oro); color:black;" onclick="pasapalabra()">PASAPALABRA</button>
+        <div style="text-align:center; z-index:10; background:rgba(17,27,61,0.9); padding:20px; border-radius:20px; border:2px solid var(--azul);">
+            <h3 id="txt-pregunta" style="margin-bottom:15px;">CON LA A...</h3>
+            <input type="text" id="respuesta-user" placeholder="Respuesta...">
+            <div style="display:flex; gap:5px; margin-top:10px;">
+                <button class="btn btn-green" style="flex:1" onclick="alert('Correcto!')">ENVIAR</button>
+                <button class="btn" style="flex:1; background:var(--oro); color:black;" onclick="alert('Pasando...')">PASAR</button>
             </div>
         </div>
     </div>
 
 <script>
-    const CONFIG_STAFF = {
+    const CONFIG = {
         "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true },
         "juliopuli": { pass: "juli26", rank: "ADMIN", super: false }
     };
 
-    let lockGlobal = localStorage.getItem('lock') === 'true';
-    let userSesion = "";
-    let esModoRegistro = false;
+    let lock = localStorage.getItem('isLocked') === 'true';
+    let user = "";
+    let esReg = false;
 
-    // --- ACCESO Y MENÚ ---
+    // Inicializar al cargar
+    if(lock) { cambiarP('p-locked'); }
+
     function accesoPublico() {
         const n = document.getElementById('user-name').value;
-        if(!n) return alert("Pon un nombre");
-        if(lockGlobal) return alert("SISTEMA BLOQUEADO POR STAFF");
-        userSesion = n;
+        if(!n) return;
+        if(lock) { cambiarP('p-locked'); return; }
+        user = n;
+        irMenu();
+    }
+
+    function irMenu() {
         cambiarP('p-menu');
-        document.getElementById('saludo').innerText = "HOLA, " + n.toUpperCase();
+        document.getElementById('saludo').innerText = "HOLA, " + user.toUpperCase();
     }
 
     function irAStaff() {
-        if(prompt("CÓDIGO SECRETO:") === "Pablo23sek") cambiarP('p-staff-login');
+        if(prompt("CÓDIGO STAFF:") === "Pablo23sek") cambiarP('p-staff-login');
     }
 
     function loginManual() {
         const u = document.getElementById('st-u').value.toLowerCase();
         const p = document.getElementById('st-p').value;
-        if(CONFIG_STAFF[u] && CONFIG_STAFF[u].pass === p) loginExitoso(u);
-        else alert("Credenciales incorrectas");
+        if(CONFIG[u] && CONFIG[u].pass === p) loginExitoso(u);
+        else alert("Error");
     }
 
-    // --- BIOMETRÍA (FACE ID) ---
+    // FACE ID
     function abrirFaceID() {
-        esModoRegistro = false;
+        esReg = false;
         cambiarP('p-scanner');
-        document.getElementById('scan-title').innerText = "IDENTIFICACIÓN POR RANGO";
         document.getElementById('rank-input').classList.remove('oculto');
     }
 
     function abrirRegistroRostro() {
-        esModoRegistro = true;
+        esReg = true;
         cambiarP('p-scanner');
-        document.getElementById('scan-title').innerText = "REGISTRAR ROSTRO";
         document.getElementById('rank-input').classList.add('oculto');
-        document.getElementById('scan-msg').innerText = "Vinculando cara a: " + userSesion;
     }
 
     async function capturaBiometrica() {
         const msg = document.getElementById('scan-msg');
-        let usrEncontrado = "";
-
-        if(esModoRegistro) {
-            usrEncontrado = userSesion.toLowerCase();
-        } else {
-            const rango = document.getElementById('rank-input').value.toUpperCase();
-            usrEncontrado = Object.keys(CONFIG_STAFF).find(k => CONFIG_STAFF[k].rank === rango);
-            if(!usrEncontrado) return alert("Rango no reconocido");
-            if(localStorage.getItem('face_' + usrEncontrado) !== 'REGISTRADO') return alert("No hay rostro guardado para este rango");
-        }
+        let target = esReg ? user.toLowerCase() : Object.keys(CONFIG).find(k => CONFIG[k].rank === document.getElementById('rank-input').value.toUpperCase());
+        
+        if(!target) return alert("No válido");
+        if(!esReg && localStorage.getItem('face_'+target) !== 'OK') return alert("No registrado");
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const s = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('cam-box').style.display = "block";
-            document.getElementById('v-feed').srcObject = stream;
-            msg.innerText = "PROCESANDO... NO TE MUEVAS";
+            document.getElementById('v-feed').srcObject = s;
+            msg.innerText = "ESCANEANDO...";
 
             setTimeout(() => {
-                // Flash visual
                 document.getElementById('flash').style.opacity = "1";
-                setTimeout(() => document.getElementById('flash').style.opacity = "0", 150);
-
-                if(esModoRegistro) {
-                    localStorage.setItem('face_' + usrEncontrado, 'REGISTRADO');
-                    alert("✅ ROSTRO GUARDADO CORRECTAMENTE");
-                }
-
-                stream.getTracks().forEach(track => track.stop());
+                setTimeout(()=> document.getElementById('flash').style.opacity = "0", 100);
+                
+                if(esReg) localStorage.setItem('face_'+target, 'OK');
+                
+                s.getTracks().forEach(t => t.stop());
                 document.getElementById('cam-box').style.display = "none";
-                loginExitoso(usrEncontrado);
+                loginExitoso(target);
             }, 3000);
-
-        } catch (e) { alert("Error cámara: Asegúrate de dar permisos."); }
+        } catch(e) { alert("Sin cámara"); }
     }
 
     function loginExitoso(u) {
-        userSesion = u;
-        const hud = document.getElementById('hud-staff');
-        hud.style.display = "block";
-        document.getElementById('hud-name').innerText = u.toUpperCase() + " (" + CONFIG_STAFF[u].rank + ")";
+        user = u;
+        lock = false; // Al loguearse un admin, permitimos que se mueva por el menú
+        document.getElementById('hud-staff').style.display = "block";
+        document.getElementById('hud-name').innerText = u.toUpperCase();
         
-        if(CONFIG_STAFF[u].super) {
-            const btnL = document.getElementById('btn-lock');
-            btnL.classList.remove('oculto');
-            btnL.innerText = lockGlobal ? "🔓 DESBLOQUEAR SISTEMA" : "🔒 BLOQUEAR TODO";
-            btnL.onclick = () => {
-                localStorage.setItem('lock', !lockGlobal);
+        if(CONFIG[u].super) {
+            const bl = document.getElementById('btn-lock');
+            bl.classList.remove('oculto');
+            const isNowLocked = localStorage.getItem('isLocked') === 'true';
+            bl.innerText = isNowLocked ? "🔓 DESBLOQUEAR TODO" : "🔒 BLOQUEAR TODO";
+            bl.style.background = isNowLocked ? "var(--verde)" : "var(--rojo)";
+            bl.onclick = () => {
+                localStorage.setItem('isLocked', !isNowLocked);
                 location.reload();
             };
         }
-        cambiarP('p-menu');
-        document.getElementById('saludo').innerText = "HOLA, " + u.toUpperCase();
+        irMenu();
     }
 
-    // --- LÓGICA DEL JUEGO ---
-    function iniciarJuego(modo) {
+    function iniciarJuego(m) {
         document.getElementById('p-menu').classList.add('oculto');
         document.getElementById('juego-cont').style.display = "flex";
-        document.getElementById('tipo-juego').innerText = "MODO " + modo;
-        dibujarRosco();
-        document.getElementById('txt-pregunta').innerText = "CON LA A: Estructura de datos que permite guardar información en el navegador...";
+        pintaRosco();
     }
 
-    function dibujarRosco() {
-        const box = document.getElementById('rosco-box');
-        box.innerHTML = "";
-        const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
-        const radio = 190;
-        
-        letras.forEach((letra, i) => {
-            const div = document.createElement('div');
-            div.className = "letra";
-            div.innerText = letra;
-            const angulo = (i * (360 / 26)) - 90;
-            const radianes = angulo * (Math.PI / 180);
-            const x = Math.cos(radianes) * radio;
-            const y = Math.sin(radianes) * radio;
-            
-            div.style.left = `calc(50% + ${x}px - 19px)`;
-            div.style.top = `calc(50% + ${y}px - 19px)`;
-            if(i === 0) div.classList.add('activa');
-            box.appendChild(div);
+    function pintaRosco() {
+        const b = document.getElementById('rosco-box');
+        b.innerHTML = "";
+        const abc = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
+        abc.forEach((l, i) => {
+            const d = document.createElement('div');
+            d.className = "letra"; d.innerText = l;
+            const r = (i * (360/26) - 90) * (Math.PI/180);
+            d.style.left = `calc(50% + ${Math.cos(r)*170}px - 17px)`;
+            d.style.top = `calc(50% + ${Math.sin(r)*170}px - 17px)`;
+            b.appendChild(d);
         });
     }
 
@@ -235,10 +218,6 @@
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
         document.getElementById(id).classList.remove('oculto');
     }
-
-    function validar() { alert("Respuesta enviada (Simulación)"); }
-    function pasapalabra() { alert("Pasas palabra..."); }
-
 </script>
 </body>
 </html>
