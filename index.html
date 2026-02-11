@@ -3,199 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v5.1.0</title>
+    <title>Pasapalabra VOICE v6.0.0</title>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
         .oculto { display: none !important; }
 
-        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10; position: relative; }
+        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         
         .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; color: white; transition: 0.3s; }
+        .btn-voice { background: linear-gradient(90deg, #ff0080, #ff8c00); border: 2px solid #fff; animation: pulse 2s infinite; }
         .btn-green { background: var(--verde); }
-        .btn-blue { background: var(--azul); color: #000; }
-        .btn-red { background: var(--rojo); }
-        .btn-face { background: linear-gradient(90deg, #00c6ff, #0072ff); border: 1px solid #fff; }
         
-        input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1rem; background: #eee; color: #000; font-weight: bold; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
 
-        /* CÁMARA */
-        #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; }
-        #v-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .scan-anim { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--oro); box-shadow: 0 0 15px var(--oro); animation: scanMove 2s infinite; }
-        @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1.2rem; font-weight: bold; }
 
         /* JUEGO */
         #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: var(--fondo); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        .rosco-main { position: relative; width: 400px; height: 400px; margin-bottom: 20px; }
-        .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; }
-
-        #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
-        #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; transition: 0.1s; }
+        .rosco-main { position: relative; width: 380px; height: 380px; margin-bottom: 20px; }
+        .letra { position: absolute; width: 32px; height: 32px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; }
+        
+        #status-voz { color: var(--oro); font-weight: bold; height: 20px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="flash"></div>
-
-    <div id="hud-staff">
-        <b id="hud-name" style="color:var(--oro)"></b><br>
-        <button id="btn-lock" class="oculto" style="padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:4px; border:none; color:white;"></button><br>
-        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR CARA</button>
-        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">SALIR</button>
-    </div>
-
     <div id="p-login" class="pantalla">
-        <h1 style="color:var(--oro)">PASAPALABRA</h1>
+        <h1 style="color:var(--oro)">PASAPALABRA <br><span style="font-size: 0.8rem; color: white;">VOICE CONTROL</span></h1>
         <input type="text" id="user-name" placeholder="Tu nombre...">
-        <button class="btn btn-green" onclick="accesoPublico()">ENTRAR</button>
-        <button class="btn" style="background:#333; font-size:0.7rem;" onclick="irAStaff()">ACCESO STAFF</button>
-    </div>
-
-    <div id="p-locked" class="pantalla oculto">
-        <h1 style="color:var(--rojo)">🔒 BLOQUEADO</h1>
-        <p>El administrador ha cerrado el acceso temporalmente.</p>
-        <button class="btn btn-blue" onclick="irAStaff()">ACCESO STAFF PARA DESBLOQUEAR</button>
-    </div>
-
-    <div id="p-menu" class="pantalla oculto">
-        <h2 id="saludo">HOLA</h2>
-        <button class="btn btn-blue" onclick="iniciarJuego('ONLINE')">MODO ONLINE</button>
-        <button class="btn btn-green" onclick="iniciarJuego('LOCAL')">MODO LOCAL</button>
-        <button class="btn" style="background:#444" onclick="location.reload()">CAMBIAR USUARIO</button>
-    </div>
-
-    <div id="p-staff-login" class="pantalla oculto">
-        <h3>ZONA STAFF</h3>
-        <input type="text" id="st-u" placeholder="Usuario">
-        <input type="password" id="st-p" placeholder="Contraseña">
-        <button class="btn btn-green" onclick="loginManual()">LOGIN MANUAL</button>
-        <hr style="border:0.5px solid #333; margin:15px;">
-        <button class="btn btn-face" onclick="abrirFaceID()">👁️ FACE ID (POR RANGO)</button>
-        <button class="btn" style="background:transparent" onclick="cambiarP('p-login')">VOLVER</button>
-    </div>
-
-    <div id="p-scanner" class="pantalla oculto">
-        <h3 id="scan-title">ESCÁNER</h3>
-        <input type="text" id="rank-input" placeholder="RANGO (Ej: SUPERADMIN)">
-        <div id="cam-box">
-            <video id="v-feed" autoplay playsinline></video>
-            <div class="scan-anim"></div>
-        </div>
-        <button id="btn-scan" class="btn btn-blue" onclick="capturaBiometrica()">INICIAR</button>
-        <p id="scan-msg" style="color:var(--oro)"></p>
+        <button class="btn btn-green" onclick="empezar()">ENTRAR AL JUEGO</button>
+        <p style="font-size: 0.7rem; opacity: 0.6;">Asegúrate de permitir el micrófono cuando se te pida.</p>
     </div>
 
     <div id="juego-cont">
         <div class="rosco-main" id="rosco-box"></div>
-        <div style="text-align:center; z-index:10; background:rgba(17,27,61,0.9); padding:20px; border-radius:20px; border:2px solid var(--azul);">
-            <h3 id="txt-pregunta" style="margin-bottom:15px;">CON LA A...</h3>
-            <input type="text" id="respuesta-user" placeholder="Respuesta...">
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <button class="btn btn-green" style="flex:1" onclick="alert('Correcto!')">ENVIAR</button>
-                <button class="btn" style="flex:1; background:var(--oro); color:black;" onclick="alert('Pasando...')">PASAR</button>
+        
+        <div style="text-align:center; background:rgba(17,27,61,0.95); padding:25px; border-radius:20px; border:2px solid var(--azul); width: 80%; max-width: 450px;">
+            <h3 id="txt-pregunta" style="min-height: 50px;">CON LA A: Estructura de datos...</h3>
+            
+            <input type="text" id="respuesta-texto" placeholder="Esperando voz o escritura...">
+            
+            <div id="status-voz"></div>
+
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn btn-voice" id="btn-escuchar" onclick="activarMicrofono()">🎤 DICTAR RESPUESTA</button>
             </div>
+            
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-green" onclick="enviar()">ENVIAR</button>
+                <button class="btn" style="background:var(--oro); color:black;" onclick="pasapalabra()">PASAPALABRA</button>
+            </div>
+            <button class="btn" style="background:transparent; font-size: 0.7rem;" onclick="location.reload()">SALIR</button>
         </div>
     </div>
 
 <script>
-    const CONFIG = {
-        "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true },
-        "juliopuli": { pass: "juli26", rank: "ADMIN", super: false }
-    };
-
-    let lock = localStorage.getItem('isLocked') === 'true';
     let user = "";
-    let esReg = false;
+    const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
 
-    // Inicializar al cargar
-    if(lock) { cambiarP('p-locked'); }
+    if (recognition) {
+        recognition.lang = 'es-ES';
+        recognition.interimResults = false;
+        recognition.continuous = false;
 
-    function accesoPublico() {
-        const n = document.getElementById('user-name').value;
-        if(!n) return;
-        if(lock) { cambiarP('p-locked'); return; }
-        user = n;
-        irMenu();
+        recognition.onstart = () => {
+            document.getElementById('status-voz').innerText = "🔴 ESCUCHANDO...";
+            document.getElementById('btn-escuchar').style.filter = "hue-rotate(90deg)";
+        };
+
+        recognition.onresult = (event) => {
+            const voz = event.results[0][0].transcript;
+            document.getElementById('respuesta-texto').value = voz;
+            document.getElementById('status-voz').innerText = "✅ ENTENDIDO";
+        };
+
+        recognition.onerror = () => {
+            document.getElementById('status-voz').innerText = "❌ ERROR DE MICRO";
+        };
+
+        recognition.onend = () => {
+            document.getElementById('btn-escuchar').style.filter = "none";
+            if(document.getElementById('status-voz').innerText === "🔴 ESCUCHANDO...") {
+                document.getElementById('status-voz').innerText = "";
+            }
+        };
     }
 
-    function irMenu() {
-        cambiarP('p-menu');
-        document.getElementById('saludo').innerText = "HOLA, " + user.toUpperCase();
-    }
-
-    function irAStaff() {
-        if(prompt("CÓDIGO STAFF:") === "Pablo23sek") cambiarP('p-staff-login');
-    }
-
-    function loginManual() {
-        const u = document.getElementById('st-u').value.toLowerCase();
-        const p = document.getElementById('st-p').value;
-        if(CONFIG[u] && CONFIG[u].pass === p) loginExitoso(u);
-        else alert("Error");
-    }
-
-    // FACE ID
-    function abrirFaceID() {
-        esReg = false;
-        cambiarP('p-scanner');
-        document.getElementById('rank-input').classList.remove('oculto');
-    }
-
-    function abrirRegistroRostro() {
-        esReg = true;
-        cambiarP('p-scanner');
-        document.getElementById('rank-input').classList.add('oculto');
-    }
-
-    async function capturaBiometrica() {
-        const msg = document.getElementById('scan-msg');
-        let target = esReg ? user.toLowerCase() : Object.keys(CONFIG).find(k => CONFIG[k].rank === document.getElementById('rank-input').value.toUpperCase());
-        
-        if(!target) return alert("No válido");
-        if(!esReg && localStorage.getItem('face_'+target) !== 'OK') return alert("No registrado");
-
-        try {
-            const s = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById('cam-box').style.display = "block";
-            document.getElementById('v-feed').srcObject = s;
-            msg.innerText = "ESCANEANDO...";
-
-            setTimeout(() => {
-                document.getElementById('flash').style.opacity = "1";
-                setTimeout(()=> document.getElementById('flash').style.opacity = "0", 100);
-                
-                if(esReg) localStorage.setItem('face_'+target, 'OK');
-                
-                s.getTracks().forEach(t => t.stop());
-                document.getElementById('cam-box').style.display = "none";
-                loginExitoso(target);
-            }, 3000);
-        } catch(e) { alert("Sin cámara"); }
-    }
-
-    function loginExitoso(u) {
-        user = u;
-        lock = false; // Al loguearse un admin, permitimos que se mueva por el menú
-        document.getElementById('hud-staff').style.display = "block";
-        document.getElementById('hud-name').innerText = u.toUpperCase();
-        
-        if(CONFIG[u].super) {
-            const bl = document.getElementById('btn-lock');
-            bl.classList.remove('oculto');
-            const isNowLocked = localStorage.getItem('isLocked') === 'true';
-            bl.innerText = isNowLocked ? "🔓 DESBLOQUEAR TODO" : "🔒 BLOQUEAR TODO";
-            bl.style.background = isNowLocked ? "var(--verde)" : "var(--rojo)";
-            bl.onclick = () => {
-                localStorage.setItem('isLocked', !isNowLocked);
-                location.reload();
-            };
+    function activarMicrofono() {
+        if (!recognition) {
+            alert("Tu navegador no soporta reconocimiento de voz. Usa Chrome.");
+            return;
         }
-        irMenu();
+        recognition.start();
     }
 
-    function iniciarJuego(m) {
-        document.getElementById('p-menu').classList.add('oculto');
+    function empezar() {
+        user = document.getElementById('user-name').value;
+        if(!user) return alert("Dime tu nombre");
+        document.getElementById('p-login').classList.add('oculto');
         document.getElementById('juego-cont').style.display = "flex";
         pintaRosco();
     }
@@ -208,15 +118,24 @@
             const d = document.createElement('div');
             d.className = "letra"; d.innerText = l;
             const r = (i * (360/26) - 90) * (Math.PI/180);
-            d.style.left = `calc(50% + ${Math.cos(r)*170}px - 17px)`;
-            d.style.top = `calc(50% + ${Math.sin(r)*170}px - 17px)`;
+            d.style.left = `calc(50% + ${Math.cos(r)*160}px - 16px)`;
+            d.style.top = `calc(50% + ${Math.sin(r)*160}px - 16px)`;
             b.appendChild(d);
         });
     }
 
-    function cambiarP(id) {
-        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-        document.getElementById(id).classList.remove('oculto');
+    function enviar() {
+        const resp = document.getElementById('respuesta-texto').value;
+        if(resp) {
+            alert("Has dicho: " + resp);
+            document.getElementById('respuesta-texto').value = "";
+            document.getElementById('status-voz').innerText = "";
+        }
+    }
+
+    function pasapalabra() {
+        alert("¡Pasapalabra!");
+        document.getElementById('respuesta-texto').value = "";
     }
 </script>
 </body>
