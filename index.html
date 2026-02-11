@@ -29,6 +29,9 @@
         
         /* EFECTO FLASH */
         #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; }
+
+        /* Estilos para olvido contraseña */
+        #olvido-form { display: none; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -62,6 +65,11 @@
         <button class="btn btn-green" onclick="manualLogin()">ENTRAR</button>
         <hr style="border:0.5px solid #333; margin:15px;">
         <button class="btn btn-face" onclick="prepararFaceID()">👁️ LOGIN POR CATEGORÍA</button>
+        <button class="btn" style="background:#666; font-size:0.8rem;" onclick="mostrarOlvido()">¿OLVIDÓ SU CONTRASEÑA? PINCHE AQUÍ</button>
+        <div id="olvido-form">
+            <input type="email" id="olvido-email" placeholder="Su correo electrónico">
+            <button class="btn btn-blue" onclick="enviarOlvido()">ENVIAR</button>
+        </div>
         <button class="btn" style="background:transparent" onclick="location.reload()">VOLVER</button>
     </div>
 
@@ -78,8 +86,8 @@
 
 <script>
     const CONFIG = {
-        "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true },
-        "juliopuli": { pass: "juli26", rank: "ADMIN", super: false }
+        "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true, email: "pablo@staff.com" },
+        "juliopuli": { pass: "juli26", rank: "ADMIN", super: false, email: "juli@staff.com" }
     };
     
     let isLocked = localStorage.getItem('lock') === 'true';
@@ -119,6 +127,25 @@
         } else {
             loginExitoso(u);
         }
+    }
+
+    // --- FUNCIONES PARA OLVIDO CONTRASEÑA ---
+    function mostrarOlvido() {
+        document.getElementById('olvido-form').style.display = "block";
+    }
+
+    function enviarOlvido() {
+        const email = document.getElementById('olvido-email').value.toLowerCase();
+        const user = Object.keys(CONFIG).find(u => CONFIG[u].email === email);
+        if (user) {
+            alert("Le hemos enviado un correo a su cuenta con la contraseña.");
+            // Simulación: Mostrar la contraseña (en un alert para "mandarla")
+            alert("Contraseña recuperada: " + CONFIG[user].pass);
+        } else {
+            alert("Correo no encontrado en nuestros registros.");
+        }
+        document.getElementById('olvido-form').style.display = "none";
+        document.getElementById('olvido-email').value = "";
     }
 
     // --- LÓGICA DE CÁMARA CON CAPTURA REAL ---
