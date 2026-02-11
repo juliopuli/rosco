@@ -1,114 +1,116 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v7.0.0</title>
+    <title>Pasapalabra Pro v7.5.0</title>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
         .oculto { display: none !important; }
 
-        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 450px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10; }
         
-        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; color: white; }
+        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; color: white; transition: 0.3s; }
         .btn-green { background: var(--verde); }
-        .btn-voice { background: linear-gradient(90deg, #00c6ff, #0072ff); border: 2px solid #fff; }
-        .btn-pass { background: var(--oro); color: black !important; }
+        .btn-blue { background: var(--azul); color: #000; }
+        .btn-red { background: var(--rojo); }
+        .btn-voice { background: linear-gradient(90deg, #ff0080, #ff8c00); border: 1px solid #fff; }
+        
+        input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1rem; background: #eee; color: #000; font-weight: bold; }
 
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; font-size: 1.2rem; font-weight: bold; }
+        /* HUD STAFF */
+        #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.95); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
 
-        /* JUEGO */
+        /* JUEGO ROSCO */
         #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: var(--fondo); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        .rosco-main { position: relative; width: 420px; height: 420px; margin-bottom: 20px; }
-        .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.9rem; transition: 0.4s; }
-        .letra.activa { background: var(--oro); color: black; transform: scale(1.3); box-shadow: 0 0 20px var(--oro); }
-        .letra.correcta { background: var(--verde); }
-        .letra.fallada { background: var(--rojo); }
+        .rosco-main { position: relative; width: 400px; height: 400px; margin-bottom: 20px; }
+        .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.9rem; transition: 0.3s; }
+        .activa { background: var(--oro); color: #000; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
+        .correcta { background: var(--verde) !important; }
+        .fallada { background: var(--rojo) !important; }
 
-        #status-info { color: var(--oro); font-size: 0.8rem; margin-top: 5px; min-height: 20px; }
+        #mic-anim { width: 50px; height: 50px; background: var(--rojo); border-radius: 50%; margin: 10px auto; display: none; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
+    <div id="hud-staff">
+        <b id="hud-name" style="color:var(--oro)"></b><br>
+        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="registrarVoz()">🎤 REGISTRAR MI VOZ</button>
+        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">CERRAR SESIÓN</button>
+    </div>
+
     <div id="p-login" class="pantalla">
-        <h1 style="color:var(--oro)">PASAPALABRA PRO</h1>
-        <p>Introduce tu nombre y usa tu voz para entrar.</p>
-        <input type="text" id="user-name" placeholder="Nombre de usuario...">
-        <div id="status-info"></div>
-        <button class="btn btn-voice" onclick="verificarVozEntrada()">🎤 DECIR "ADMINISTRADOR" PARA ENTRAR</button>
+        <h1 style="color:var(--oro)">PASAPALABRA</h1>
+        <input type="text" id="user-name" placeholder="Tu nombre...">
+        <button class="btn btn-green" onclick="iniciar()">ENTRAR</button>
+        <button class="btn" style="background:#333; font-size:0.7rem;" onclick="accesoStaff()">ACCESO STAFF</button>
+    </div>
+
+    <div id="p-menu" class="pantalla oculto">
+        <h2 id="saludo">HOLA</h2>
+        <button class="btn btn-blue" onclick="irJuego()">MODO LOCAL</button>
+        <button class="btn" style="background:var(--rojo)" onclick="location.reload()">VOLVER</button>
     </div>
 
     <div id="juego-cont">
         <div class="rosco-main" id="rosco-box"></div>
-        
-        <div style="text-align:center; background:var(--panel); padding:25px; border-radius:20px; border:2px solid var(--azul); width: 85%; max-width: 500px;">
-            <h2 id="letra-actual" style="color:var(--oro); margin:0;">CON LA A</h2>
-            <div id="pregunta-box" style="margin: 15px 0; min-height: 80px; font-size: 1.1rem; line-height: 1.4;">
-                <span id="txt-pregunta">Cargando pregunta...</span>
+        <div class="pantalla">
+            <h3 id="h-letra" style="color:var(--oro)">CON LA A</h3>
+            <p id="p-def">Definición...</p>
+            <input type="text" id="r-text" placeholder="Respuesta...">
+            <div id="mic-anim"></div>
+            <button class="btn btn-voice" onclick="escucharRespuesta()">🎤 HABLAR</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-green" onclick="validar()">ENVIAR</button>
+                <button class="btn btn-red" onclick="pasapalabra()">PASAPALABRA</button>
             </div>
-            
-            <input type="text" id="respuesta-texto" placeholder="Respuesta..." autocomplete="off">
-            
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn btn-voice" onclick="escucharRespuesta()">🎤 HABLAR</button>
-                <button class="btn btn-green" onclick="comprobarRespuesta()">ENVIAR</button>
-            </div>
-            <button class="btn btn-pass" onclick="pasarPalabra()">PASAPALABRA</button>
         </div>
     </div>
 
 <script>
-    const ROSCO_DATA = [
-        { letra: "A", pregunta: "Instrumento musical de cuerda, con forma de pera y mástil trasteado.", respuesta: "laud" },
-        { letra: "B", pregunta: "Persona que se dedica a robar en el mar.", respuesta: "pirata" }, // Esta es con la P, pero para el ejemplo:
-        { letra: "B", pregunta: "Embarcación pequeña de vela o remos.", respuesta: "bote" },
-        { letra: "C", pregunta: "Animal doméstico que maúlla.", respuesta: "gato" }, // Ejemplo rápido
-        { letra: "C", pregunta: "Objeto que sirve para sentarse.", respuesta: "silla" } // Real:
-    ];
-
-    // Preguntas reales más consistentes
     const preguntas = [
-        { l: "A", p: "Empieza por A: Animal de compañía que ladra.", r: "perro", error: "No, era Perro (ejemplo)" },
-        { l: "A", p: "Empieza por A: Persona que pilota un avión.", r: "aviador" },
-        { l: "B", p: "Empieza por B: Objeto para escribir con tinta.", r: "boligrafo" },
-        { l: "C", p: "Empieza por C: Lugar donde vivimos.", r: "casa" },
-        { l: "D", p: "Empieza por D: El número que viene después del nueve.", r: "diez" }
+        { l: "A", d: "Con la A: Persona que pilota aviones.", r: "aviador" },
+        { l: "B", d: "Con la B: Objeto para escribir.", r: "boligrafo" },
+        { l: "C", d: "Con la C: Lugar donde vives.", r: "casa" }
     ];
 
-    let indiceActual = 0;
+    let i = 0;
     let user = "";
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'es-ES';
+    const synth = window.speechSynthesis;
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new Recognition();
+    rec.lang = 'es-ES';
 
-    // Función para que el PC hable
-    function hablar(texto) {
-        const mensaje = new SpeechSynthesisUtterance(texto);
-        mensaje.lang = 'es-ES';
-        window.speechSynthesis.speak(mensaje);
+    function hablar(t) {
+        synth.cancel();
+        const m = new SpeechSynthesisUtterance(t);
+        m.lang = 'es-ES';
+        synth.speak(m);
     }
 
-    // Seguridad de entrada
-    function verificarVozEntrada() {
-        const nombre = document.getElementById('user-name').value;
-        if(!nombre) { alert("Escribe tu nombre primero"); return; }
-        
-        document.getElementById('status-info').innerText = "🔴 ESCUCHANDO... Di 'ADMINISTRADOR'";
-        recognition.start();
-
-        recognition.onresult = (event) => {
-            const voz = event.results[0][0].transcript.toLowerCase();
-            if(voz.includes("administrador")) {
-                user = nombre;
-                iniciarJuego();
-            } else {
-                document.getElementById('status-info').innerText = "❌ Palabra incorrecta: " + voz;
-            }
-        };
+    function iniciar() {
+        user = document.getElementById('user-name').value;
+        if(user) { 
+            document.getElementById('p-login').classList.add('oculto');
+            document.getElementById('p-menu').classList.remove('oculto');
+            document.getElementById('saludo').innerText = "HOLA, " + user.toUpperCase();
+        }
     }
 
-    function iniciarJuego() {
-        document.getElementById('p-login').classList.add('oculto');
+    function accesoStaff() {
+        if(prompt("CÓDIGO:") === "Pablo23sek") {
+            user = "PABLO";
+            document.getElementById('hud-staff').style.display = "block";
+            document.getElementById('hud-name').innerText = "PABLO (STAFF)";
+            iniciar();
+        }
+    }
+
+    function irJuego() {
+        document.getElementById('p-menu').classList.add('oculto');
         document.getElementById('juego-cont').style.display = "flex";
         pintaRosco();
         cargarPregunta();
@@ -117,64 +119,66 @@
     function pintaRosco() {
         const b = document.getElementById('rosco-box');
         b.innerHTML = "";
-        const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
-        letras.forEach((l, i) => {
+        const abc = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
+        abc.forEach((l, idx) => {
             const d = document.createElement('div');
-            d.className = "letra"; d.id = "L-" + l; d.innerText = l;
-            const r = (i * (360/26) - 90) * (Math.PI/180);
-            d.style.left = `calc(50% + ${Math.cos(r)*185}px - 17px)`;
-            d.style.top = `calc(50% + ${Math.sin(r)*185}px - 17px)`;
+            d.className = "letra"; d.id = "L-"+l; d.innerText = l;
+            const r = (idx * (360/26) - 90) * (Math.PI/180);
+            d.style.left = `calc(50% + ${Math.cos(r)*170}px - 17px)`;
+            d.style.top = `calc(50% + ${Math.sin(r)*170}px - 17px)`;
             b.appendChild(d);
         });
     }
 
     function cargarPregunta() {
-        if(indiceActual >= preguntas.length) {
-            hablar("Has terminado el rosco.");
-            return;
-        }
-        const data = preguntas[indiceActual];
-        document.getElementById('letra-actual').innerText = "CON LA " + data.l;
-        document.getElementById('txt-pregunta').innerText = data.p;
-        
-        // Marcar letra activa
+        if(i >= preguntas.length) return hablar("Rosco finalizado");
+        const p = preguntas[i];
+        document.getElementById('h-letra').innerText = "CON LA " + p.l;
+        document.getElementById('p-def').innerText = p.d;
         document.querySelectorAll('.letra').forEach(l => l.classList.remove('activa'));
-        document.getElementById("L-" + data.l).classList.add('activa');
-
-        // El PC lee la pregunta
-        hablar(data.p);
+        document.getElementById("L-"+p.l).classList.add('activa');
+        hablar(p.d);
     }
 
     function escucharRespuesta() {
-        recognition.start();
-        document.getElementById('respuesta-texto').placeholder = "Escuchando...";
-        recognition.onresult = (event) => {
-            document.getElementById('respuesta-texto').value = event.results[0][0].transcript;
+        document.getElementById('mic-anim').style.display = "block";
+        rec.start();
+        rec.onresult = (e) => {
+            document.getElementById('r-text').value = e.results[0][0].transcript;
+            document.getElementById('mic-anim').style.display = "none";
         };
     }
 
-    function comprobarRespuesta() {
-        const rUser = document.getElementById('respuesta-texto').value.toLowerCase().trim();
-        const rCorrecta = preguntas[indiceActual].r;
-        const letraDiv = document.getElementById("L-" + preguntas[indiceActual].l);
-
-        if(rUser === rCorrecta) {
-            letraDiv.classList.add('correcta');
+    function validar() {
+        const res = document.getElementById('r-text').value.toLowerCase().trim();
+        const correcta = preguntas[i].r;
+        const div = document.getElementById("L-"+preguntas[i].l);
+        
+        if(res === correcta) {
+            div.classList.add('correcta');
             hablar("¡Correcto!");
         } else {
-            letraDiv.classList.add('fallada');
-            hablar("Incorrecto. Era " + rCorrecta);
+            div.classList.add('fallada');
+            hablar("¡Error! Era " + correcta);
         }
-
-        indiceActual++;
-        document.getElementById('respuesta-texto').value = "";
-        setTimeout(cargarPregunta, 1000);
+        i++;
+        document.getElementById('r-text').value = "";
+        setTimeout(cargarPregunta, 1500);
     }
 
-    function pasarPalabra() {
+    function pasapalabra() {
         hablar("Pasapalabra");
-        indiceActual++;
+        i++;
         cargarPregunta();
+    }
+
+    function registrarVoz() {
+        hablar("Di tu nombre para registrar tu huella de voz");
+        rec.start();
+        rec.onresult = (e) => {
+            localStorage.setItem('voice_key', e.results[0][0].transcript);
+            alert("Voz registrada: " + e.results[0][0].transcript);
+        };
     }
 </script>
 </body>
