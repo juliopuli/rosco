@@ -3,221 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v5.1.0</title>
+    <title>SISTEMA DE ACCESO BIOMÉTRICO - ALPHA v2.0</title>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+    
     <style>
-        :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
-        body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-        .oculto { display: none !important; }
+        /* CSS: DISEÑO TIPO TERMINAL DE SEGURIDAD */
+        :root {
+            --primary: #00ff41; /* Verde Matrix */
+            --danger: #ff3e3e;
+            --bg: #0a0a0a;
+            --panel: #1a1a1a;
+        }
 
-        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10; position: relative; }
-        
-        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; color: white; transition: 0.3s; }
-        .btn-green { background: var(--verde); }
-        .btn-blue { background: var(--azul); color: #000; }
-        .btn-red { background: var(--rojo); }
-        .btn-face { background: linear-gradient(90deg, #00c6ff, #0072ff); border: 1px solid #fff; }
-        
-        input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1rem; background: #eee; color: #000; font-weight: bold; }
+        body {
+            background-color: var(--bg);
+            color: var(--primary);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
 
-        /* CÁMARA */
-        #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; }
-        #v-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .scan-anim { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--oro); box-shadow: 0 0 15px var(--oro); animation: scanMove 2s infinite; }
-        @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        header {
+            width: 100%;
+            padding: 20px;
+            background: #000;
+            border-bottom: 2px solid var(--primary);
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
 
-        /* JUEGO */
-        #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: var(--fondo); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        .rosco-main { position: relative; width: 400px; height: 400px; margin-bottom: 20px; }
-        .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; }
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            width: 95%;
+            max-width: 1400px;
+            margin-top: 20px;
+        }
 
-        #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
-        #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; transition: 0.1s; }
+        /* ÁREA DE VIDEO */
+        .video-section {
+            position: relative;
+            background: var(--panel);
+            padding: 15px;
+            border: 1px solid var(--primary);
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        #video-container {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #333;
+        }
+
+        video {
+            display: block;
+            border-radius: 4px;
+            background: #000;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* PANEL LATERAL DE DATOS */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .data-panel {
+            background: var(--panel);
+            border: 1px solid var(--primary);
+            padding: 15px;
+            font-size: 0.8rem;
+        }
+
+        .status-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 10px;
+            border: 2px solid var(--primary);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .access-denied { border-color: var(--danger); color: var(--danger); }
+        .access-granted { border-color: var(--primary); color: var(--primary); }
+
+        /* BOTONES */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--primary);
+            color: #000;
+        }
+
+        /* REGISTRO DE EVENTOS (LOGS) */
+        #log-container {
+            height: 300px;
+            overflow-y: auto;
+            background: #000;
+            padding: 10px;
+            border: 1px solid #333;
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #222; }
+        .log-time { color: var(--primary); }
+
+        /* ESCÁNER ANIMADO */
+        .scanner-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 65, 0.5);
+            top: 0;
+            box-shadow: 0 0 15px var(--primary);
+            animation: scan 3s infinite linear;
+            z-index: 10;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="flash"></div>
+<header>
+    <h1>SYSTEM_OVERRIDE_BIOMETRIC_INTERFACE [SECURED]</h1>
+</header>
 
-    <div id="hud-staff">
-        <b id="hud-name" style="color:var(--oro)"></b><br>
-        <button id="btn-lock" class="oculto" style="padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:4px; border:none; color:white;"></button><br>
-        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR CARA</button>
-        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">SALIR</button>
-    </div>
-
-    <div id="p-login" class="pantalla">
-        <h1 style="color:var(--oro)">PASAPALABRA</h1>
-        <input type="text" id="user-name" placeholder="Tu nombre...">
-        <button class="btn btn-green" onclick="accesoPublico()">ENTRAR</button>
-        <button class="btn" style="background:#333; font-size:0.7rem;" onclick="irAStaff()">ACCESO STAFF</button>
-    </div>
-
-    <div id="p-locked" class="pantalla oculto">
-        <h1 style="color:var(--rojo)">🔒 BLOQUEADO</h1>
-        <p>El administrador ha cerrado el acceso temporalmente.</p>
-        <button class="btn btn-blue" onclick="irAStaff()">ACCESO STAFF PARA DESBLOQUEAR</button>
-    </div>
-
-    <div id="p-menu" class="pantalla oculto">
-        <h2 id="saludo">HOLA</h2>
-        <button class="btn btn-blue" onclick="iniciarJuego('ONLINE')">MODO ONLINE</button>
-        <button class="btn btn-green" onclick="iniciarJuego('LOCAL')">MODO LOCAL</button>
-        <button class="btn" style="background:#444" onclick="location.reload()">CAMBIAR USUARIO</button>
-    </div>
-
-    <div id="p-staff-login" class="pantalla oculto">
-        <h3>ZONA STAFF</h3>
-        <input type="text" id="st-u" placeholder="Usuario">
-        <input type="password" id="st-p" placeholder="Contraseña">
-        <button class="btn btn-green" onclick="loginManual()">LOGIN MANUAL</button>
-        <hr style="border:0.5px solid #333; margin:15px;">
-        <button class="btn btn-face" onclick="abrirFaceID()">👁️ FACE ID (POR RANGO)</button>
-        <button class="btn" style="background:transparent" onclick="cambiarP('p-login')">VOLVER</button>
-    </div>
-
-    <div id="p-scanner" class="pantalla oculto">
-        <h3 id="scan-title">ESCÁNER</h3>
-        <input type="text" id="rank-input" placeholder="RANGO (Ej: SUPERADMIN)">
-        <div id="cam-box">
-            <video id="v-feed" autoplay playsinline></video>
-            <div class="scan-anim"></div>
+<div class="main-container">
+    <div class="video-section">
+        <div id="video-container">
+            <div id="scanner-line" class="scanner-line"></div>
+            <video id="video" width="720" height="540" autoplay muted></video>
         </div>
-        <button id="btn-scan" class="btn btn-blue" onclick="capturaBiometrica()">INICIAR</button>
-        <p id="scan-msg" style="color:var(--oro)"></p>
+        <div class="controls">
+            <button id="btn-register">REGISTRAR CARA MAESTRA</button>
+            <button id="btn-clear">RESETEAR SISTEMA</button>
+        </div>
     </div>
 
-    <div id="juego-cont">
-        <div class="rosco-main" id="rosco-box"></div>
-        <div style="text-align:center; z-index:10; background:rgba(17,27,61,0.9); padding:20px; border-radius:20px; border:2px solid var(--azul);">
-            <h3 id="txt-pregunta" style="margin-bottom:15px;">CON LA A...</h3>
-            <input type="text" id="respuesta-user" placeholder="Respuesta...">
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <button class="btn btn-green" style="flex:1" onclick="alert('Correcto!')">ENVIAR</button>
-                <button class="btn" style="flex:1; background:var(--oro); color:black;" onclick="alert('Pasando...')">PASAR</button>
+    <div class="sidebar">
+        <div class="data-panel">
+            <div id="status-display" class="status-box">SISTEMA OFFLINE</div>
+            <p>CONEXIÓN: <span id="conn-status">ESTABLECIENDO...</span></p>
+            <p>ID DISPOSITIVO: <span id="device-id">NODE_MALAGA_01</span></p>
+            <p>SIMILITUD REQUERIDA: 0.60 (60%)</p>
+        </div>
+
+        <div class="data-panel">
+            <h3>LOG DE ACTIVIDAD</h3>
+            <div id="log-container">
+                <div class="log-entry">> Inicializando módulos de IA...</div>
             </div>
         </div>
     </div>
+</div>
 
 <script>
-    const CONFIG = {
-        "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true },
-        "juliopuli": { pass: "juli26", rank: "ADMIN", super: false }
-    };
+    /* LÓGICA DEL SISTEMA: FACE-API.JS
+       Aquí gestionamos el reconocimiento facial real
+    */
+    const video = document.getElementById('video');
+    const statusDisplay = document.getElementById('status-display');
+    const logContainer = document.getElementById('log-container');
+    const scannerLine = document.getElementById('scanner-line');
+    
+    let faceMatcher = null;
+    let labeledFaceDescriptors = [];
 
-    let lock = localStorage.getItem('isLocked') === 'true';
-    let user = "";
-    let esReg = false;
-
-    // Inicializar al cargar
-    if(lock) { cambiarP('p-locked'); }
-
-    function accesoPublico() {
-        const n = document.getElementById('user-name').value;
-        if(!n) return;
-        if(lock) { cambiarP('p-locked'); return; }
-        user = n;
-        irMenu();
+    // Función para añadir mensajes al Log
+    function addLog(message) {
+        const time = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span class="log-time">[${time}]</span> > ${message}`;
+        logContainer.prepend(entry);
     }
 
-    function irMenu() {
-        cambiarP('p-menu');
-        document.getElementById('saludo').innerText = "HOLA, " + user.toUpperCase();
-    }
-
-    function irAStaff() {
-        if(prompt("CÓDIGO STAFF:") === "Pablo23sek") cambiarP('p-staff-login');
-    }
-
-    function loginManual() {
-        const u = document.getElementById('st-u').value.toLowerCase();
-        const p = document.getElementById('st-p').value;
-        if(CONFIG[u] && CONFIG[u].pass === p) loginExitoso(u);
-        else alert("Error");
-    }
-
-    // FACE ID
-    function abrirFaceID() {
-        esReg = false;
-        cambiarP('p-scanner');
-        document.getElementById('rank-input').classList.remove('oculto');
-    }
-
-    function abrirRegistroRostro() {
-        esReg = true;
-        cambiarP('p-scanner');
-        document.getElementById('rank-input').classList.add('oculto');
-    }
-
-    async function capturaBiometrica() {
-        const msg = document.getElementById('scan-msg');
-        let target = esReg ? user.toLowerCase() : Object.keys(CONFIG).find(k => CONFIG[k].rank === document.getElementById('rank-input').value.toUpperCase());
+    // 1. CARGA DE MODELOS
+    async function initSystem() {
+        addLog("Cargando redes neuronales...");
+        const MODEL_URL = 'https://raw.githubusercontent.com/vladmandic/face-api/master/model/';
         
-        if(!target) return alert("No válido");
-        if(!esReg && localStorage.getItem('face_'+target) !== 'OK') return alert("No registrado");
-
         try {
-            const s = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById('cam-box').style.display = "block";
-            document.getElementById('v-feed').srcObject = s;
-            msg.innerText = "ESCANEANDO...";
-
-            setTimeout(() => {
-                document.getElementById('flash').style.opacity = "1";
-                setTimeout(()=> document.getElementById('flash').style.opacity = "0", 100);
-                
-                if(esReg) localStorage.setItem('face_'+target, 'OK');
-                
-                s.getTracks().forEach(t => t.stop());
-                document.getElementById('cam-box').style.display = "none";
-                loginExitoso(target);
-            }, 3000);
-        } catch(e) { alert("Sin cámara"); }
-    }
-
-    function loginExitoso(u) {
-        user = u;
-        lock = false; // Al loguearse un admin, permitimos que se mueva por el menú
-        document.getElementById('hud-staff').style.display = "block";
-        document.getElementById('hud-name').innerText = u.toUpperCase();
-        
-        if(CONFIG[u].super) {
-            const bl = document.getElementById('btn-lock');
-            bl.classList.remove('oculto');
-            const isNowLocked = localStorage.getItem('isLocked') === 'true';
-            bl.innerText = isNowLocked ? "🔓 DESBLOQUEAR TODO" : "🔒 BLOQUEAR TODO";
-            bl.style.background = isNowLocked ? "var(--verde)" : "var(--rojo)";
-            bl.onclick = () => {
-                localStorage.setItem('isLocked', !isNowLocked);
-                location.reload();
-            };
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            
+            addLog("Modelos cargados correctamente.");
+            startVideo();
+        } catch (err) {
+            addLog("ERROR CRÍTICO: No se pudieron cargar los modelos.");
+            console.error(err);
         }
-        irMenu();
     }
 
-    function iniciarJuego(m) {
-        document.getElementById('p-menu').classList.add('oculto');
-        document.getElementById('juego-cont').style.display = "flex";
-        pintaRosco();
+    // 2. INICIAR CÁMARA
+    function startVideo() {
+        navigator.mediaDevices.getUserMedia({ video: {} })
+            .then(stream => {
+                video.srcObject = stream;
+                document.getElementById('conn-status').innerText = "ONLINE";
+                document.getElementById('conn-status').style.color = "var(--primary)";
+                statusDisplay.innerText = "ESPERANDO SUJETO";
+                scannerLine.style.display = "block";
+                addLog("Cámara activada. Iniciando escaneo de entorno.");
+                startRecognition();
+            })
+            .catch(err => {
+                addLog("ERROR: Fallo al acceder a la cámara web.");
+            });
     }
 
-    function pintaRosco() {
-        const b = document.getElementById('rosco-box');
-        b.innerHTML = "";
-        const abc = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
-        abc.forEach((l, i) => {
-            const d = document.createElement('div');
-            d.className = "letra"; d.innerText = l;
-            const r = (i * (360/26) - 90) * (Math.PI/180);
-            d.style.left = `calc(50% + ${Math.cos(r)*170}px - 17px)`;
-            d.style.top = `calc(50% + ${Math.sin(r)*170}px - 17px)`;
-            b.appendChild(d);
-        });
+    // 3. REGISTRAR CARA (La foto del escáner que decías)
+    document.getElementById('btn-register').addEventListener('click', async () => {
+        addLog("Capturando rostro maestro... Manténgase quieto.");
+        const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (detections) {
+            labeledFaceDescriptors = [new faceapi.LabeledFaceDescriptors('USUARIO_AUTORIZADO', [detections.descriptor])];
+            faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
+            addLog("Rostro maestro guardado encriptado en memoria.");
+            alert("¡Cara registrada con éxito!");
+        } else {
+            addLog("ERROR: No se detecta rostro para registrar.");
+            alert("No se ve ninguna cara. Inténtalo de nuevo.");
+        }
+    });
+
+    // 4. RECONOCIMIENTO EN TIEMPO REAL
+    async function startRecognition() {
+        const canvas = faceapi.createCanvasFromMedia(video);
+        document.getElementById('video-container').append(canvas);
+        const displaySize = { width: video.width, height: video.height };
+        faceapi.matchDimensions(canvas, displaySize);
+
+        setInterval(async () => {
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptors();
+
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar cuadros en las caras
+            faceapi.draw.drawDetections(canvas, resizedDetections);
+
+            if (faceMatcher && detections.length > 0) {
+                const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor));
+                
+                results.forEach(result => {
+                    if (result.label === 'USUARIO_AUTORIZADO') {
+                        statusDisplay.innerText = "ACCESO PERMITIDO";
+                        statusDisplay.className = "status-box access-granted";
+                        addLog("ALERTA: Usuario autorizado detectado.");
+                    } else {
+                        statusDisplay.innerText = "ACCESO DENEGADO";
+                        statusDisplay.className = "status-box access-denied";
+                        addLog("WARNING: Intento de acceso no autorizado.");
+                    }
+                });
+            } else if (!faceMatcher && detections.length > 0) {
+                statusDisplay.innerText = "SUJETO NO REGISTRADO";
+                statusDisplay.className = "status-box";
+            }
+        }, 500);
     }
 
-    function cambiarP(id) {
-        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-        document.getElementById(id).classList.remove('oculto');
-    }
+    // Reiniciar
+    document.getElementById('btn-clear').addEventListener('click', () => {
+        location.reload();
+    });
+
+    // Iniciar todo al cargar la página
+    initSystem();
 </script>
+
 </body>
 </html>
