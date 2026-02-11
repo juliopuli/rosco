@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v4.8.0</title>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script> <!-- EmailJS -->
+    <title>Pasapalabra Pro v5.0.0</title>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
         .oculto { display: none !important; }
 
-        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10; }
+        /* CONTENEDORES */
+        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10; position: relative; }
         
         .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; color: white; transition: 0.3s; }
         .btn-green { background: var(--verde); }
@@ -20,19 +20,20 @@
         
         input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1rem; background: #eee; color: #000; font-weight: bold; }
 
-        /* CÁMARA */
-        #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; box-shadow: 0 0 20px var(--azul); }
+        /* CÁMARA Y ESCÁNER */
+        #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; }
         #v-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .scan-anim { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--oro); box-shadow: 0 0 15px var(--oro); animation: scanMove 2s infinite; }
         @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
-        #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.95); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
-        
-        /* EFECTO FLASH */
-        #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; }
+        /* JUEGO ROSCO */
+        #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: var(--fondo); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        .rosco-main { position: relative; width: 450px; height: 450px; margin-bottom: 20px; }
+        .letra { position: absolute; width: 38px; height: 38px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 1rem; transition: 0.3s; }
+        .letra.activa { background: var(--oro); color: black; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
 
-        /* Estilos para reset contraseña */
-        #reset-form { display: none; margin-top: 15px; }
+        #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
+        #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; transition: 0.1s; }
     </style>
 </head>
 <body>
@@ -42,256 +43,202 @@
     <div id="hud-staff">
         <b id="hud-name" style="color:var(--oro)"></b><br>
         <button id="btn-lock" class="oculto" style="background:var(--rojo); color:white; border:none; padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:4px;"></button><br>
-        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR MI ROSTRO</button>
-        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="cerrarSesion()">CERRAR SESIÓN</button>
+        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR MI CARA</button>
+        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">SALIR</button>
     </div>
 
     <div id="p-login" class="pantalla">
         <h1 style="color:var(--oro)">PASAPALABRA</h1>
-        <input type="text" id="user-name" placeholder="Tu nombre...">
-        <button class="btn btn-green" onclick="iniciar()">ENTRAR</button>
-        <button class="btn" style="background:#666; font-size:0.8rem;" onclick="cambiarP('p-reset')">OLVIDÉ MI CONTRASEÑA</button>
-    </div>
-
-    <div id="p-reset" class="pantalla oculto">
-        <h3>RECUPERAR CONTRASEÑA</h3>
-        <input type="email" id="olvido-email" placeholder="Su correo electrónico">
-        <button class="btn btn-blue" onclick="enviarOlvido()">ENVIAR</button>
-        <div id="reset-form">
-            <input type="password" id="nueva-pass" placeholder="Nueva contraseña">
-            <button class="btn btn-green" onclick="resetearPass()">CAMBIAR CONTRASEÑA</button>
-        </div>
-        <button class="btn" style="background:transparent" onclick="cambiarP('p-login')">VOLVER</button>
+        <input type="text" id="user-name" placeholder="Escribe tu nombre...">
+        <button class="btn btn-green" onclick="accesoPublico()">JUGAR</button>
+        <button class="btn" style="background:#333; font-size:0.7rem;" onclick="irAStaff()">ACCESO STAFF</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
         <h2 id="saludo">HOLA</h2>
-        <button class="btn btn-blue" onclick="alert('Modo Online Próximamente')">MODO ONLINE</button>
-        <button class="btn btn-green" onclick="alert('Modo Local Próximamente')">MODO LOCAL</button>
-        <button class="btn" style="background:#333" onclick="chequearStaff()">ACCESO STAFF</button>
+        <button class="btn btn-blue" onclick="iniciarJuego('ONLINE')">MODO ONLINE</button>
+        <button class="btn btn-green" onclick="iniciarJuego('LOCAL')">MODO LOCAL</button>
+        <button class="btn" style="background:#444" onclick="location.reload()">VOLVER</button>
     </div>
 
     <div id="p-staff-login" class="pantalla oculto">
-        <h3>ZONA STAFF</h3>
+        <h3>IDENTIFICACIÓN STAFF</h3>
         <input type="text" id="st-u" placeholder="Usuario">
         <input type="password" id="st-p" placeholder="Contraseña">
-        <button class="btn btn-green" onclick="manualLogin()">ENTRAR</button>
+        <button class="btn btn-green" onclick="loginManual()">ENTRAR CON CLAVE</button>
         <hr style="border:0.5px solid #333; margin:15px;">
-        <button class="btn btn-face" onclick="prepararFaceID()">👁️ LOGIN POR CATEGORÍA</button>
-        <button class="btn" style="background:transparent" onclick="location.reload()">VOLVER</button>
+        <button class="btn btn-face" onclick="abrirFaceID()">👁️ FACE ID POR RANGO</button>
+        <button class="btn" style="background:transparent" onclick="cambiarP('p-login')">CANCELAR</button>
     </div>
 
     <div id="p-scanner" class="pantalla oculto">
         <h3 id="scan-title">ESCÁNER</h3>
-        <input type="text" id="rank-input" placeholder="CATEGORÍA (Ej: SUPERADMIN)">
+        <input type="text" id="rank-input" placeholder="PON AQUÍ TU RANGO (SUPERADMIN)">
         <div id="cam-box">
             <video id="v-feed" autoplay playsinline></video>
             <div class="scan-anim"></div>
         </div>
-        <button id="btn-scan" class="btn btn-blue" onclick="comenzarCaptura()">ACTIVAR CÁMARA</button>
+        <button id="btn-scan" class="btn btn-blue" onclick="capturaBiometrica()">ACTIVAR ESCÁNER</button>
         <p id="scan-msg" style="color:var(--oro)"></p>
     </div>
 
+    <div id="juego-cont">
+        <div class="rosco-main" id="rosco-box"></div>
+        <div style="text-align:center; max-width: 500px;">
+            <h2 id="tipo-juego" style="color:var(--oro); margin:0;">MODO LOCAL</h2>
+            <div id="pregunta-box" style="background:var(--panel); padding:20px; border-radius:15px; border:1px solid var(--azul); margin:15px 0; min-height:60px;">
+                <span id="txt-pregunta">Cargando definición...</span>
+            </div>
+            <input type="text" id="respuesta-user" placeholder="Tu respuesta..." style="width: 80%;">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn btn-green" onclick="validar()">ENVIAR</button>
+                <button class="btn" style="background:var(--oro); color:black;" onclick="pasapalabra()">PASAPALABRA</button>
+            </div>
+        </div>
+    </div>
+
 <script>
-    // Inicializar EmailJS (reemplaza con tus IDs)
-    emailjs.init("YOUR_PUBLIC_KEY"); // Tu Public Key de EmailJS
-
-    let CONFIG = {
-        "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true, email: "pablo@staff.com" },
-        "juliopuli": { pass: "juli26", rank: "ADMIN", super: false, email: "juli@staff.com" }
-    };
-    
-    // Cargar CONFIG desde localStorage si hay cambios
-    const savedConfig = localStorage.getItem('config');
-    if (savedConfig) {
-        CONFIG = JSON.parse(savedConfig);
-    }
-
-    let isLocked = localStorage.getItem('lock') === 'true';
-    let userActivo = "";
-    let esRegistro = false;
-    let userReset = ""; // Usuario para reset
-
-    // Persistencia de sesión al cargar
-    window.onload = function() {
-        const loggedUser = localStorage.getItem('loggedUser');
-        if (loggedUser && CONFIG[loggedUser]) {
-            userActivo = loggedUser;
-            loginExitoso(loggedUser);
-        }
+    const CONFIG_STAFF = {
+        "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true },
+        "juliopuli": { pass: "juli26", rank: "ADMIN", super: false }
     };
 
-    function iniciar() {
+    let lockGlobal = localStorage.getItem('lock') === 'true';
+    let userSesion = "";
+    let esModoRegistro = false;
+
+    // --- ACCESO Y MENÚ ---
+    function accesoPublico() {
         const n = document.getElementById('user-name').value;
-        if(n) { userActivo = n; irMenu(); }
-    }
-
-    function irMenu() {
+        if(!n) return alert("Pon un nombre");
+        if(lockGlobal) return alert("SISTEMA BLOQUEADO POR STAFF");
+        userSesion = n;
         cambiarP('p-menu');
-        document.getElementById('saludo').innerText = "HOLA, " + userActivo.toUpperCase();
+        document.getElementById('saludo').innerText = "HOLA, " + n.toUpperCase();
     }
 
-    function chequearStaff() {
-        if(prompt("CÓDIGO:") === "Pablo23sek") cambiarP('p-staff-login');
+    function irAStaff() {
+        if(prompt("CÓDIGO SECRETO:") === "Pablo23sek") cambiarP('p-staff-login');
     }
 
-    function manualLogin() {
+    function loginManual() {
         const u = document.getElementById('st-u').value.toLowerCase();
         const p = document.getElementById('st-p').value;
-        if (!CONFIG[u]) {
-            alert("Usuario no encontrado.");
-        } else if (CONFIG[u].pass !== p) {
-            alert("Contraseña incorrecta.");
-        } else {
-            loginExitoso(u);
-        }
+        if(CONFIG_STAFF[u] && CONFIG_STAFF[u].pass === p) loginExitoso(u);
+        else alert("Credenciales incorrectas");
     }
 
-    // --- FUNCIONES PARA RESET CONTRASEÑA ---
-    function enviarOlvido() {
-        const email = document.getElementById('olvido-email').value.toLowerCase();
-        const user = Object.keys(CONFIG).find(u => CONFIG[u].email === email);
-        if (user) {
-            // Enviar email con EmailJS
-            emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
-                to_email: email,
-                pass: CONFIG[user].pass
-            }).then(() => {
-                alert("Le hemos enviado un correo a su cuenta con la contraseña.");
-                userReset = user;
-                document.getElementById('reset-form').style.display = "block";
-            }).catch((error) => {
-                console.error(error);
-                alert("Error al enviar el correo. Inténtalo de nuevo.");
-            });
-        } else {
-            alert("Correo no encontrado en nuestros registros.");
-        }
-    }
-
-    function resetearPass() {
-        const nuevaPass = document.getElementById('nueva-pass').value;
-        if (nuevaPass && userReset) {
-            CONFIG[userReset].pass = nuevaPass;
-            localStorage.setItem('config', JSON.stringify(CONFIG)); // Guardar cambios
-            alert("Contraseña cambiada exitosamente.");
-            document.getElementById('reset-form').style.display = "none";
-            document.getElementById('olvido-email').value = "";
-            document.getElementById('nueva-pass').value = "";
-            userReset = "";
-            cambiarP('p-login'); // Volver a login
-        } else {
-            alert("Ingresa una nueva contraseña.");
-        }
-    }
-
-    // --- LÓGICA DE CÁMARA CON CAPTURA REAL ---
-    function abrirRegistroRostro() {
-        esRegistro = true;
+    // --- BIOMETRÍA (FACE ID) ---
+    function abrirFaceID() {
+        esModoRegistro = false;
         cambiarP('p-scanner');
-        document.getElementById('scan-title').innerText = "REGISTRAR ROSTRO";
-        document.getElementById('rank-input').classList.add('oculto');
-        document.getElementById('scan-msg').innerText = "Vincular cara a: " + userActivo;
-    }
-
-    function prepararFaceID() {
-        esRegistro = false;
-        cambiarP('p-scanner');
-        document.getElementById('scan-title').innerText = "LOGIN BIOMÉTRICO";
+        document.getElementById('scan-title').innerText = "IDENTIFICACIÓN POR RANGO";
         document.getElementById('rank-input').classList.remove('oculto');
     }
 
-    async function comenzarCaptura() {
+    function abrirRegistroRostro() {
+        esModoRegistro = true;
+        cambiarP('p-scanner');
+        document.getElementById('scan-title').innerText = "REGISTRAR ROSTRO";
+        document.getElementById('rank-input').classList.add('oculto');
+        document.getElementById('scan-msg').innerText = "Vinculando cara a: " + userSesion;
+    }
+
+    async function capturaBiometrica() {
         const msg = document.getElementById('scan-msg');
-        let usrKey = "";
+        let usrEncontrado = "";
 
-        if(esRegistro) {
-            usrKey = userActivo.toLowerCase();
+        if(esModoRegistro) {
+            usrEncontrado = userSesion.toLowerCase();
         } else {
-            const rank = document.getElementById('rank-input').value.toUpperCase();
-            usrKey = Object.keys(CONFIG).find(k => CONFIG[k].rank === rank);
-            if(!usrKey) return alert("Rango no válido");
-            if(!localStorage.getItem('face_' + usrKey)) return alert("No registrado");
-        }
-
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            return alert("Tu navegador no soporta cámara.");
+            const rango = document.getElementById('rank-input').value.toUpperCase();
+            usrEncontrado = Object.keys(CONFIG_STAFF).find(k => CONFIG_STAFF[k].rank === rango);
+            if(!usrEncontrado) return alert("Rango no reconocido");
+            if(localStorage.getItem('face_' + usrEncontrado) !== 'REGISTRADO') return alert("No hay rostro guardado para este rango");
         }
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-            const video = document.getElementById('v-feed');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('cam-box').style.display = "block";
-            video.srcObject = stream;
-            msg.innerText = "ESCANEANDO...";
+            document.getElementById('v-feed').srcObject = stream;
+            msg.innerText = "PROCESANDO... NO TE MUEVAS";
 
             setTimeout(() => {
-                // Capturar imagen del video
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0);
-                const imgData = canvas.toDataURL('image/png'); // Base64
-
-                // Efecto flash
+                // Flash visual
                 document.getElementById('flash').style.opacity = "1";
-                setTimeout(() => document.getElementById('flash').style.opacity = "0", 100);
+                setTimeout(() => document.getElementById('flash').style.opacity = "0", 150);
 
-                if(esRegistro) {
-                    localStorage.setItem('face_' + usrKey, imgData);
-                    alert("✅ ROSTRO REGISTRADO CON ÉXITO");
-                } else {
-                    // Comparar con la guardada
-                    const savedImg = localStorage.getItem('face_' + usrKey);
-                    if (imgData === savedImg) {
-                        alert("✅ LOGIN EXITOSO");
-                    } else {
-                        alert("❌ ROSTRO NO COINCIDE");
-                        stream.getTracks().forEach(t => t.stop());
-                        document.getElementById('cam-box').style.display = "none";
-                        return;
-                    }
+                if(esModoRegistro) {
+                    localStorage.setItem('face_' + usrEncontrado, 'REGISTRADO');
+                    alert("✅ ROSTRO GUARDADO CORRECTAMENTE");
                 }
 
-                stream.getTracks().forEach(t => t.stop());
+                stream.getTracks().forEach(track => track.stop());
                 document.getElementById('cam-box').style.display = "none";
-                loginExitoso(usrKey);
+                loginExitoso(usrEncontrado);
             }, 3000);
 
-        } catch (e) {
-            console.error(e);
-            alert("ERROR: No se pudo activar la cámara. Asegúrate de dar permisos y usar HTTPS (o localhost).");
-        }
+        } catch (e) { alert("Error cámara: Asegúrate de dar permisos."); }
     }
 
     function loginExitoso(u) {
-        userActivo = u;
-        localStorage.setItem('loggedUser', u); // Persistencia
-        document.getElementById('hud-staff').style.display = "block";
-        document.getElementById('hud-name').innerText = u.toUpperCase();
+        userSesion = u;
+        const hud = document.getElementById('hud-staff');
+        hud.style.display = "block";
+        document.getElementById('hud-name').innerText = u.toUpperCase() + " (" + CONFIG_STAFF[u].rank + ")";
         
-        if(CONFIG[u].super) {
-            const b = document.getElementById('btn-lock');
-            b.classList.remove('oculto');
-            b.innerText = isLocked ? "🔓 ABRIR" : "🔒 CERRAR";
-            b.onclick = () => { 
-                localStorage.setItem('lock', !isLocked); 
-                location.reload(); 
+        if(CONFIG_STAFF[u].super) {
+            const btnL = document.getElementById('btn-lock');
+            btnL.classList.remove('oculto');
+            btnL.innerText = lockGlobal ? "🔓 DESBLOQUEAR SISTEMA" : "🔒 BLOQUEAR TODO";
+            btnL.onclick = () => {
+                localStorage.setItem('lock', !lockGlobal);
+                location.reload();
             };
         }
-        irMenu();
+        cambiarP('p-menu');
+        document.getElementById('saludo').innerText = "HOLA, " + u.toUpperCase();
     }
 
-    function cerrarSesion() {
-        localStorage.removeItem('loggedUser');
-        location.reload();
+    // --- LÓGICA DEL JUEGO ---
+    function iniciarJuego(modo) {
+        document.getElementById('p-menu').classList.add('oculto');
+        document.getElementById('juego-cont').style.display = "flex";
+        document.getElementById('tipo-juego').innerText = "MODO " + modo;
+        dibujarRosco();
+        document.getElementById('txt-pregunta').innerText = "CON LA A: Estructura de datos que permite guardar información en el navegador...";
+    }
+
+    function dibujarRosco() {
+        const box = document.getElementById('rosco-box');
+        box.innerHTML = "";
+        const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
+        const radio = 190;
+        
+        letras.forEach((letra, i) => {
+            const div = document.createElement('div');
+            div.className = "letra";
+            div.innerText = letra;
+            const angulo = (i * (360 / 26)) - 90;
+            const radianes = angulo * (Math.PI / 180);
+            const x = Math.cos(radianes) * radio;
+            const y = Math.sin(radianes) * radio;
+            
+            div.style.left = `calc(50% + ${x}px - 19px)`;
+            div.style.top = `calc(50% + ${y}px - 19px)`;
+            if(i === 0) div.classList.add('activa');
+            box.appendChild(div);
+        });
     }
 
     function cambiarP(id) {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
         document.getElementById(id).classList.remove('oculto');
     }
+
+    function validar() { alert("Respuesta enviada (Simulación)"); }
+    function pasapalabra() { alert("Pasas palabra..."); }
+
 </script>
 </body>
 </html>
