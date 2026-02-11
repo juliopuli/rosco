@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v4.7.0</title>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <title>Pasapalabra Pro v4.8.0</title>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
@@ -17,223 +16,172 @@
         .btn-blue { background: var(--azul); color: #000; }
         .btn-red { background: var(--rojo); }
         .btn-face { background: linear-gradient(90deg, #00c6ff, #0072ff); border: 1px solid #fff; }
-        .btn-staff { background: transparent; color: #555; font-size: 0.7rem; margin-top: 15px; border: 1px solid #333; }
-
+        
         input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1rem; background: #eee; color: #000; font-weight: bold; }
 
-        /* JUEGO */
-        #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top:0; left:0; background: var(--fondo); z-index: 100; }
-        .rosco-main { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 400px; }
-        .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; }
-
-        /* CÁMARA ESCÁNER */
-        #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; }
+        /* CÁMARA */
+        #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; box-shadow: 0 0 20px var(--azul); }
         #v-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .scan-anim { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--oro); box-shadow: 0 0 15px var(--oro); animation: scanMove 2s infinite; }
         @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
-        #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 1px solid var(--oro); padding: 10px; border-radius: 10px; z-index: 1000; text-align: center; }
+        #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.95); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
+        
+        /* EFECTO FLASH */
+        #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; }
     </style>
 </head>
 <body>
 
+    <div id="flash"></div>
+
     <div id="hud-staff">
-        <small id="hud-txt" style="color:var(--oro)"></small><br>
-        <button id="btn-master-lock" class="oculto" style="background:var(--rojo); color:white; border:none; padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:5px;"></button><br>
-        <button class="btn-blue" style="font-size:0.6rem; padding:6px; border-radius:5px; cursor:pointer;" onclick="abrirEscanerRegistro()">📸 REGISTRAR MI CARA</button>
-        <button style="background:#444; color:white; border:none; padding:5px; margin-top:5px; cursor:pointer; border-radius:5px;" onclick="location.reload()">SALIR</button>
+        <b id="hud-name" style="color:var(--oro)"></b><br>
+        <button id="btn-lock" class="oculto" style="background:var(--rojo); color:white; border:none; padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:4px;"></button><br>
+        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR MI ROSTRO</button>
+        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">CERRAR SESIÓN</button>
     </div>
 
     <div id="p-login" class="pantalla">
         <h1 style="color:var(--oro)">PASAPALABRA</h1>
-        <input type="text" id="n-jugador" placeholder="Tu nombre...">
-        <button class="btn btn-green" onclick="entrarComoJugador()">ENTRAR</button>
-    </div>
-
-    <div id="p-locked" class="pantalla oculto">
-        <h1 style="color:var(--rojo)">🔒 BLOQUEADO</h1>
-        <p>Sistema cerrado temporalmente.</p>
-        <button class="btn btn-staff" onclick="irAStaffAcceso()">ACCESO STAFF</button>
+        <input type="text" id="user-name" placeholder="Tu nombre...">
+        <button class="btn btn-green" onclick="iniciar()">ENTRAR</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
         <h2 id="saludo">HOLA</h2>
-        <button class="btn btn-blue" onclick="irOnline()">MODO ONLINE</button>
-        <button class="btn btn-green" onclick="irLocal()">MODO LOCAL</button>
-        <button class="btn btn-staff" onclick="irAStaffAcceso()">ACCESO STAFF</button>
+        <button class="btn btn-blue" onclick="alert('Modo Online Próximamente')">MODO ONLINE</button>
+        <button class="btn btn-green" onclick="alert('Modo Local Próximamente')">MODO LOCAL</button>
+        <button class="btn" style="background:#333" onclick="chequearStaff()">ACCESO STAFF</button>
     </div>
 
-    <div id="p-staff-ops" class="pantalla oculto">
-        <h3>ACCESO STAFF</h3>
-        <div id="manual-login">
-            <input type="text" id="user-st" placeholder="Usuario">
-            <input type="password" id="pass-st" placeholder="Contraseña">
-            <button class="btn btn-green" onclick="validaManual()">IDENTIFICARSE</button>
-        </div>
-        <hr style="border-color:#333; margin:15px;">
-        <button class="btn btn-face" onclick="mostrarFaceID()">👁️ LOGIN POR CATEGORÍA</button>
-        <button class="btn btn-staff" onclick="location.reload()">VOLVER</button>
+    <div id="p-staff-login" class="pantalla oculto">
+        <h3>ZONA STAFF</h3>
+        <input type="text" id="st-u" placeholder="Usuario">
+        <input type="password" id="st-p" placeholder="Contraseña">
+        <button class="btn btn-green" onclick="manualLogin()">ENTRAR</button>
+        <hr style="border:0.5px solid #333; margin:15px;">
+        <button class="btn btn-face" onclick="prepararFaceID()">👁️ LOGIN POR CATEGORÍA</button>
+        <button class="btn" style="background:transparent" onclick="location.reload()">VOLVER</button>
     </div>
 
-    <div id="p-face-scan" class="pantalla oculto">
-        <h3 id="scan-title">ESCÁNER BIOMÉTRICO</h3>
-        <input type="text" id="rank-to-scan" placeholder="PON TU CATEGORÍA AQUÍ">
-        
+    <div id="p-scanner" class="pantalla oculto">
+        <h3 id="scan-title">ESCÁNER</h3>
+        <input type="text" id="rank-input" placeholder="CATEGORÍA (Ej: SUPERADMIN)">
         <div id="cam-box">
             <video id="v-feed" autoplay playsinline></video>
             <div class="scan-anim"></div>
         </div>
-        
-        <button id="btn-do-scan" class="btn btn-blue" onclick="ejecutarEscaneo()">INICIAR ESCANEO</button>
-        <p id="face-msg" style="color:var(--oro); font-size:0.9rem; font-weight:bold;"></p>
-        <button class="btn btn-staff" id="btn-cancel-scan" onclick="location.reload()">CANCELAR</button>
-    </div>
-
-    <div id="juego-cont">
-        <div class="rosco-main" id="rosco-box"></div>
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:280px;">
-            <div id="txt-pregunta" style="font-weight:bold; margin-bottom:10px; font-size:1.2rem;">CARGANDO...</div>
-            <input type="text" id="input-resp" placeholder="Respuesta...">
-            <button class="btn btn-green" onclick="alert('Enviado')">ENVIAR</button>
-        </div>
+        <button id="btn-scan" class="btn btn-blue" onclick="comenzarCaptura()">ACTIVAR CÁMARA</button>
+        <p id="scan-msg" style="color:var(--oro)"></p>
     </div>
 
 <script>
-    const CLAVE_STAFF = "Pablo23sek";
-    const DB = {
+    const CONFIG = {
         "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true },
         "juliopuli": { pass: "juli26", rank: "ADMIN", super: false }
     };
+    
+    let isLocked = localStorage.getItem('lock') === 'true';
+    let userActivo = "";
+    let esRegistro = false;
 
-    let isLocked = localStorage.getItem('isLocked') === 'true';
-    let currentUser = "";
-    let modoRegistro = false;
-
-    function entrarComoJugador() {
-        const n = document.getElementById('n-jugador').value;
-        if(isLocked) { cambiarPantalla('p-locked'); }
-        else if(n) { currentUser = n; irAMenu(); }
+    function iniciar() {
+        const n = document.getElementById('user-name').value;
+        if(n) { userActivo = n; irMenu(); }
     }
 
-    function irAMenu() {
-        cambiarPantalla('p-menu');
-        document.getElementById('saludo').innerText = "HOLA, " + currentUser.toUpperCase();
+    function irMenu() {
+        cambiarP('p-menu');
+        document.getElementById('saludo').innerText = "HOLA, " + userActivo.toUpperCase();
     }
 
-    function irAStaffAcceso() {
-        if(prompt("CÓDIGO STAFF:") === CLAVE_STAFF) cambiarPantalla('p-staff-ops');
+    function chequearStaff() {
+        if(prompt("CÓDIGO:") === "Pablo23sek") cambiarP('p-staff-login');
     }
 
-    function validaManual() {
-        const u = document.getElementById('user-st').value.toLowerCase();
-        const p = document.getElementById('pass-st').value;
-        if(DB[u] && DB[u].pass === p) loginSuccess(u);
-        else alert("Datos incorrectos");
+    function manualLogin() {
+        const u = document.getElementById('st-u').value.toLowerCase();
+        const p = document.getElementById('st-p').value;
+        if(CONFIG[u] && CONFIG[u].pass === p) loginExitoso(u);
+        else alert("Error");
     }
 
-    // --- LÓGICA DE CÁMARA (REGISTRO Y LOGIN) ---
-
-    function abrirEscanerRegistro() {
-        modoRegistro = true;
-        cambiarPantalla('p-face-scan');
+    // --- LÓGICA DE CÁMARA BLINDADA ---
+    function abrirRegistroRostro() {
+        esRegistro = true;
+        cambiarP('p-scanner');
         document.getElementById('scan-title').innerText = "REGISTRAR ROSTRO";
-        document.getElementById('rank-to-scan').classList.add('oculto'); // No hace falta input en registro
-        document.getElementById('face-msg').innerText = "Pulsa el botón para vincular tu cara a " + currentUser;
+        document.getElementById('rank-input').classList.add('oculto');
+        document.getElementById('scan-msg').innerText = "Vincular cara a: " + userActivo;
     }
 
-    function mostrarFaceID() {
-        modoRegistro = false;
-        cambiarPantalla('p-face-scan');
-        document.getElementById('scan-title').innerText = "LOGIN POR CATEGORÍA";
-        document.getElementById('rank-to-scan').classList.remove('oculto');
+    function prepararFaceID() {
+        esRegistro = false;
+        cambiarP('p-scanner');
+        document.getElementById('scan-title').innerText = "LOGIN BIOMÉTRICO";
+        document.getElementById('rank-input').classList.remove('oculto');
     }
 
-    async function ejecutarEscaneo() {
-        const msg = document.getElementById('face-msg');
-        let targetUser = "";
+    async function comenzarCaptura() {
+        const msg = document.getElementById('scan-msg');
+        let usrKey = "";
 
-        if (modoRegistro) {
-            targetUser = currentUser.toLowerCase();
+        if(esRegistro) {
+            usrKey = userActivo.toLowerCase();
         } else {
-            const categoria = document.getElementById('rank-to-scan').value.toUpperCase().trim();
-            targetUser = Object.keys(DB).find(key => DB[key].rank === categoria);
-            if(!targetUser) return alert("Categoría no válida");
-            if(localStorage.getItem('face_reg_' + targetUser) !== 'true') {
-                return alert("Esta categoría no tiene rostro registrado.");
-            }
+            const rank = document.getElementById('rank-input').value.toUpperCase();
+            usrKey = Object.keys(CONFIG).find(k => CONFIG[k].rank === rank);
+            if(!usrKey) return alert("Rango no válido");
+            if(localStorage.getItem('face_' + usrKey) !== 'OK') return alert("No registrado");
         }
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+            const video = document.getElementById('v-feed');
             document.getElementById('cam-box').style.display = "block";
-            document.getElementById('v-feed').srcObject = stream;
-            msg.innerText = modoRegistro ? "CAPTURANDO ROSTRO..." : "ANALIZANDO BIOMETRÍA...";
-            
+            video.srcObject = stream;
+            msg.innerText = "ESCANEANDO...";
+
             setTimeout(() => {
+                // Efecto flash
+                document.getElementById('flash').style.opacity = "1";
+                setTimeout(() => document.getElementById('flash').style.opacity = "0", 100);
+
+                // Guardado
+                if(esRegistro) {
+                    localStorage.setItem('face_' + usrKey, 'OK');
+                    alert("✅ ROSTRO REGISTRADO CON ÉXITO");
+                }
+
                 stream.getTracks().forEach(t => t.stop());
                 document.getElementById('cam-box').style.display = "none";
-                
-                if(modoRegistro) {
-                    localStorage.setItem('face_reg_' + targetUser, 'true');
-                    alert("✅ ROSTRO GUARDADO. Ya puedes usar Face ID.");
-                    loginSuccess(targetUser);
-                } else {
-                    loginSuccess(targetUser);
-                }
-            }, 3500);
-        } catch(e) { alert("Error: No se detecta cámara o permiso denegado."); }
+                loginExitoso(usrKey);
+            }, 3000);
+
+        } catch (e) {
+            alert("ERROR: No se pudo activar la cámara. Revisa los permisos del navegador.");
+        }
     }
 
-    function loginSuccess(u) {
-        currentUser = u;
-        const hud = document.getElementById('hud-staff');
-        hud.style.display = "block";
-        document.getElementById('hud-txt').innerText = u.toUpperCase() + " (" + DB[u].rank + ")";
+    function loginExitoso(u) {
+        userActivo = u;
+        document.getElementById('hud-staff').style.display = "block";
+        document.getElementById('hud-name').innerText = u.toUpperCase();
         
-        if(DB[u].super) {
-            const bl = document.getElementById('btn-master-lock');
-            bl.classList.remove('oculto');
-            bl.innerText = isLocked ? "🔓 ABRIR JUEGO" : "🔒 CERRAR JUEGO";
-            bl.onclick = () => {
-                isLocked = !isLocked;
-                localStorage.setItem('isLocked', isLocked);
-                location.reload();
+        if(CONFIG[u].super) {
+            const b = document.getElementById('btn-lock');
+            b.classList.remove('oculto');
+            b.innerText = isLocked ? "🔓 ABRIR" : "🔒 CERRAR";
+            b.onclick = () => { 
+                localStorage.setItem('lock', !isLocked); 
+                location.reload(); 
             };
         }
-        irAMenu();
+        irMenu();
     }
 
-    // --- BOTONES JUEGO ---
-    function irLocal() {
-        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-        document.getElementById('juego-cont').style.display = "block";
-        pintaRosco();
-        document.getElementById('txt-pregunta').innerText = "CON LA A: Empieza el juego...";
-    }
-
-    function irOnline() {
-        irLocal(); // Redirección funcional para que el juego no se pare
-    }
-
-    function pintaRosco() {
-        const box = document.getElementById('rosco-box');
-        box.innerHTML = "";
-        const abc = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
-        abc.forEach((l, i) => {
-            const d = document.createElement('div');
-            d.className = "letra"; d.innerText = l;
-            const a = (i * (360/26)) - 90;
-            const r = a * (Math.PI / 180);
-            const x = Math.cos(r) * 180;
-            const y = Math.sin(r) * 180;
-            d.style.left = `calc(50% + ${x}px - 17px)`;
-            d.style.top = `calc(50% + ${y}px - 17px)`;
-            if(i===0) d.style.background = "var(--oro)";
-            box.appendChild(d);
-        });
-    }
-
-    function cambiarPantalla(id) {
+    function cambiarP(id) {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
         document.getElementById(id).classList.remove('oculto');
     }
