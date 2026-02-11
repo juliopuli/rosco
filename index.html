@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v4.6.0</title>
+    <title>Pasapalabra Pro v4.7.0</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
@@ -26,10 +26,10 @@
         .rosco-main { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 400px; }
         .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; }
 
-        /* CÁMARA */
-        #cam-box { width: 200px; height: 200px; margin: 10px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; }
+        /* CÁMARA ESCÁNER */
+        #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; }
         #v-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .scan-anim { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--oro); box-shadow: 0 0 15px var(--oro); animation: scanMove 2s infinite; }
+        .scan-anim { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--oro); box-shadow: 0 0 15px var(--oro); animation: scanMove 2s infinite; }
         @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
         #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 1px solid var(--oro); padding: 10px; border-radius: 10px; z-index: 1000; text-align: center; }
@@ -39,9 +39,9 @@
 
     <div id="hud-staff">
         <small id="hud-txt" style="color:var(--oro)"></small><br>
-        <button id="btn-master-lock" class="oculto" style="background:var(--rojo); color:white; border:none; padding:5px; margin:5px; cursor:pointer; font-weight:bold;"></button><br>
-        <button class="btn-blue" style="font-size:0.6rem; padding:4px;" onclick="registrarEstaCara()">📸 REGISTRAR MI CARA</button>
-        <button style="background:#333; color:white; border:none; padding:4px; margin-top:5px; cursor:pointer;" onclick="location.reload()">SALIR</button>
+        <button id="btn-master-lock" class="oculto" style="background:var(--rojo); color:white; border:none; padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:5px;"></button><br>
+        <button class="btn-blue" style="font-size:0.6rem; padding:6px; border-radius:5px; cursor:pointer;" onclick="abrirEscanerRegistro()">📸 REGISTRAR MI CARA</button>
+        <button style="background:#444; color:white; border:none; padding:5px; margin-top:5px; cursor:pointer; border-radius:5px;" onclick="location.reload()">SALIR</button>
     </div>
 
     <div id="p-login" class="pantalla">
@@ -64,39 +64,42 @@
     </div>
 
     <div id="p-staff-ops" class="pantalla oculto">
-        <h3>ACCESO RESTRINGIDO</h3>
+        <h3>ACCESO STAFF</h3>
         <div id="manual-login">
             <input type="text" id="user-st" placeholder="Usuario">
             <input type="password" id="pass-st" placeholder="Contraseña">
-            <button class="btn btn-green" onclick="validaManual()">ENTRAR</button>
+            <button class="btn btn-green" onclick="validaManual()">IDENTIFICARSE</button>
         </div>
-        <hr>
-        <button class="btn btn-face" onclick="mostrarFaceID()">👁️ FACE ID POR CATEGORÍA</button>
-        <button class="btn btn-staff" onclick="location.reload()">ATRÁS</button>
+        <hr style="border-color:#333; margin:15px;">
+        <button class="btn btn-face" onclick="mostrarFaceID()">👁️ LOGIN POR CATEGORÍA</button>
+        <button class="btn btn-staff" onclick="location.reload()">VOLVER</button>
     </div>
 
     <div id="p-face-scan" class="pantalla oculto">
-        <h3>BIOMETRÍA</h3>
+        <h3 id="scan-title">ESCÁNER BIOMÉTRICO</h3>
         <input type="text" id="rank-to-scan" placeholder="PON TU CATEGORÍA AQUÍ">
+        
         <div id="cam-box">
             <video id="v-feed" autoplay playsinline></video>
             <div class="scan-anim"></div>
         </div>
+        
         <button id="btn-do-scan" class="btn btn-blue" onclick="ejecutarEscaneo()">INICIAR ESCANEO</button>
-        <p id="face-msg"></p>
+        <p id="face-msg" style="color:var(--oro); font-size:0.9rem; font-weight:bold;"></p>
+        <button class="btn btn-staff" id="btn-cancel-scan" onclick="location.reload()">CANCELAR</button>
     </div>
 
     <div id="juego-cont">
         <div class="rosco-main" id="rosco-box"></div>
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:280px;">
-            <div id="txt-pregunta" style="font-weight:bold; margin-bottom:10px;">Cargando...</div>
+            <div id="txt-pregunta" style="font-weight:bold; margin-bottom:10px; font-size:1.2rem;">CARGANDO...</div>
             <input type="text" id="input-resp" placeholder="Respuesta...">
             <button class="btn btn-green" onclick="alert('Enviado')">ENVIAR</button>
         </div>
     </div>
 
 <script>
-    const CLAVE_SECRETA = "Pablo23sek";
+    const CLAVE_STAFF = "Pablo23sek";
     const DB = {
         "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true },
         "juliopuli": { pass: "juli26", rank: "ADMIN", super: false }
@@ -104,6 +107,7 @@
 
     let isLocked = localStorage.getItem('isLocked') === 'true';
     let currentUser = "";
+    let modoRegistro = false;
 
     function entrarComoJugador() {
         const n = document.getElementById('n-jugador').value;
@@ -117,7 +121,7 @@
     }
 
     function irAStaffAcceso() {
-        if(prompt("CÓDIGO STAFF:") === CLAVE_SECRETA) cambiarPantalla('p-staff-ops');
+        if(prompt("CÓDIGO STAFF:") === CLAVE_STAFF) cambiarPantalla('p-staff-ops');
     }
 
     function validaManual() {
@@ -127,35 +131,57 @@
         else alert("Datos incorrectos");
     }
 
-    // --- FACE ID ---
-    function mostrarFaceID() { cambiarPantalla('p-face-scan'); }
+    // --- LÓGICA DE CÁMARA (REGISTRO Y LOGIN) ---
+
+    function abrirEscanerRegistro() {
+        modoRegistro = true;
+        cambiarPantalla('p-face-scan');
+        document.getElementById('scan-title').innerText = "REGISTRAR ROSTRO";
+        document.getElementById('rank-to-scan').classList.add('oculto'); // No hace falta input en registro
+        document.getElementById('face-msg').innerText = "Pulsa el botón para vincular tu cara a " + currentUser;
+    }
+
+    function mostrarFaceID() {
+        modoRegistro = false;
+        cambiarPantalla('p-face-scan');
+        document.getElementById('scan-title').innerText = "LOGIN POR CATEGORÍA";
+        document.getElementById('rank-to-scan').classList.remove('oculto');
+    }
 
     async function ejecutarEscaneo() {
-        const categoria = document.getElementById('rank-to-scan').value.toUpperCase().trim();
         const msg = document.getElementById('face-msg');
-        
-        // Buscar usuario por rango
-        let targetUser = Object.keys(DB).find(key => DB[key].rank === categoria);
-        
-        if(!targetUser) return alert("Categoría no válida");
-        
-        // COMPROBAR SI ESTÁ GUARDADO
-        if(localStorage.getItem('face_reg_' + targetUser) !== 'true') {
-            msg.innerText = "Error: Esa categoría no ha registrado su cara aún.";
-            return;
+        let targetUser = "";
+
+        if (modoRegistro) {
+            targetUser = currentUser.toLowerCase();
+        } else {
+            const categoria = document.getElementById('rank-to-scan').value.toUpperCase().trim();
+            targetUser = Object.keys(DB).find(key => DB[key].rank === categoria);
+            if(!targetUser) return alert("Categoría no válida");
+            if(localStorage.getItem('face_reg_' + targetUser) !== 'true') {
+                return alert("Esta categoría no tiene rostro registrado.");
+            }
         }
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('cam-box').style.display = "block";
             document.getElementById('v-feed').srcObject = stream;
-            msg.innerText = "Analizando rostro para: " + categoria;
+            msg.innerText = modoRegistro ? "CAPTURANDO ROSTRO..." : "ANALIZANDO BIOMETRÍA...";
             
             setTimeout(() => {
                 stream.getTracks().forEach(t => t.stop());
-                loginSuccess(targetUser);
-            }, 3000);
-        } catch(e) { alert("Cámara no disponible"); }
+                document.getElementById('cam-box').style.display = "none";
+                
+                if(modoRegistro) {
+                    localStorage.setItem('face_reg_' + targetUser, 'true');
+                    alert("✅ ROSTRO GUARDADO. Ya puedes usar Face ID.");
+                    loginSuccess(targetUser);
+                } else {
+                    loginSuccess(targetUser);
+                }
+            }, 3500);
+        } catch(e) { alert("Error: No se detecta cámara o permiso denegado."); }
     }
 
     function loginSuccess(u) {
@@ -177,24 +203,16 @@
         irAMenu();
     }
 
-    function registrarEstaCara() {
-        const u = currentUser.toLowerCase();
-        if(confirm("¿Quieres registrar tu cara para " + u.toUpperCase() + "?")) {
-            localStorage.setItem('face_reg_' + u, 'true'); // GUARDADO PERMANENTE
-            alert("✅ Rostro vinculado a " + DB[u].rank + ". Ya puedes entrar con Face ID.");
-        }
-    }
-
     // --- BOTONES JUEGO ---
     function irLocal() {
         document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
         document.getElementById('juego-cont').style.display = "block";
         pintaRosco();
+        document.getElementById('txt-pregunta').innerText = "CON LA A: Empieza el juego...";
     }
 
     function irOnline() {
-        alert("Buscando servidores...");
-        irLocal(); // Redirige al rosco para que funcione
+        irLocal(); // Redirección funcional para que el juego no se pare
     }
 
     function pintaRosco() {
@@ -210,6 +228,7 @@
             const y = Math.sin(r) * 180;
             d.style.left = `calc(50% + ${x}px - 17px)`;
             d.style.top = `calc(50% + ${y}px - 17px)`;
+            if(i===0) d.style.background = "var(--oro)";
             box.appendChild(d);
         });
     }
