@@ -3,87 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v3.9.0</title>
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="manifest" href="manifest.json">
+    <title>Pasapalabra Pro v4.0.0</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #0044ff; }
-        body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #3498db; }
+        body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
         .oculto { display: none !important; }
 
-        .pantalla { text-align: center; background: var(--panel); padding: 35px; border-radius: 25px; border: 1px solid #2a3a6d; width: 90%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); position: relative; }
+        /* CONTENEDORES */
+        .pantalla { text-align: center; background: var(--panel); padding: 40px; border-radius: 30px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
         
-        input { width: 85%; padding: 14px; margin: 10px 0; border-radius: 10px; border: none; font-size: 1rem; text-align: center; background: #e0e0e0; color: #111; font-weight: bold; }
-        .btn { width: 100%; padding: 16px; margin: 10px 0; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-green { background: var(--verde); color: white; }
-        .btn-red { background: var(--rojo); color: white; }
-        .btn-blue { background: #3498db; color: white; }
-        .btn-staff { background: #444; color: #aaa; font-size: 0.7rem; margin-top: 20px; }
+        /* BOTONES ESTILO MODERNO */
+        .btn { width: 100%; padding: 18px; margin: 12px 0; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem; transition: 0.3s; color: white; }
+        .btn-blue { background: var(--azul); }
+        .btn-green { background: var(--verde); }
+        .btn-staff { background: #333; color: #888; margin-top: 30px; font-size: 0.8rem; }
+        .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
 
-        /* PANEL STAFF FLOTANTE */
-        #panel-staff { display: none; position: fixed; top: 15px; right: 15px; background: rgba(0,0,0,0.95); border: 2px solid var(--oro); padding: 15px; border-radius: 15px; z-index: 1000; min-width: 180px; text-align: center; }
+        input { width: 90%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; text-align: center; font-size: 1.1rem; font-weight: bold; }
+
+        /* ROSCO */
+        #juego-cont { display: none; width: 100vw; height: 100vh; position: relative; }
+        .rosco-main { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; height: 450px; }
+        .letra { position: absolute; width: 40px; height: 40px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transition: 0.3s; }
+        .letra.activa { background: var(--oro) !important; color: black; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
+
+        /* PANEL ADMIN */
+        #panel-staff-flotante { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 1px solid var(--oro); padding: 10px; border-radius: 10px; z-index: 1000; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="panel-staff">
-        <b id="st-name">ADMIN</b><br>
-        <small id="st-range" style="color:var(--oro)"></small>
-        <hr style="border:0.5px solid #444;">
-        <button id="btn-admin-action" class="oculto" style="width:100%; border-radius:5px; border:none; padding:8px; font-weight:bold; cursor:pointer;"></button>
+    <div id="panel-staff-flotante">
+        <small id="st-info" style="color:var(--oro)"></small><br>
+        <button id="btn-master-lock" class="oculto" style="background:var(--rojo); border:none; color:white; padding:5px 10px; border-radius:5px; margin-top:5px; font-weight:bold; cursor:pointer;"></button>
     </div>
 
     <div id="p-entrada" class="pantalla">
-        <h1 style="color:var(--oro); margin-bottom:5px;">PASAPALABRA</h1>
-        <p>Introduce tu nombre para jugar</p>
-        <input type="text" id="nombre-input" placeholder="Tu nombre...">
-        <button class="btn btn-green" onclick="validarEntradaNormal()">ENTRAR</button>
+        <h1 style="color:var(--oro)">PASAPALABRA</h1>
+        <p>Introduce tu nombre</p>
+        <input type="text" id="nombre-input" placeholder="Ej: Pablo...">
+        <button class="btn btn-green" onclick="entrarAlSistema()">ENTRAR</button>
     </div>
 
-    <div id="p-denegado" class="pantalla oculto">
-        <h1 style="color:var(--rojo); font-size: 3rem;">🔒</h1>
-        <h2 style="color:var(--rojo);">SISTEMA BLOQUEADO</h2>
-        <p>Acceso denegado por el Superadmin.</p>
-        <button class="btn btn-staff" onclick="pedirCodigoStaff()">ACCESO STAFF</button>
+    <div id="p-bloqueo" class="pantalla oculto">
+        <h1 style="color:var(--rojo); font-size:4rem;">🔒</h1>
+        <h2>ACCESO DENEGADO</h2>
+        <p>El Superadmin ha bloqueado el sistema.</p>
+        <button class="btn btn-staff" onclick="abrirAccesoStaff()">STAFF ACCESO</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
-        <h2 id="msg-bienvenida">HOLA</h2>
-        <button class="btn btn-blue" onclick="alert('Modo Online...')">MODO ONLINE</button>
-        <button class="btn btn-green" onclick="alert('Modo Local...')">MODO LOCAL</button>
+        <h2 id="saludo">HOLA</h2>
+        <button class="btn btn-blue" onclick="mostrarOnline()">MODO ONLINE</button>
+        <button class="btn btn-green" onclick="iniciarJuegoLocal()">MODO LOCAL</button>
         
-        <button class="btn btn-staff" onclick="pedirCodigoStaff()">ACCESO STAFF</button>
+        <button class="btn btn-staff" onclick="abrirAccesoStaff()">ACCESO STAFF</button>
     </div>
 
-    <div id="p-login-staff" class="pantalla oculto">
+    <div id="p-staff-login" class="pantalla oculto">
         <h2 style="color:var(--oro)">LOGIN STAFF</h2>
-        <div id="box-auth-staff">
-            <input type="text" id="user-staff" placeholder="Usuario">
-            <input type="password" id="pass-staff" placeholder="Contraseña">
-            <button class="btn btn-green" onclick="verificarCredenciales()">ACCEDER</button>
+        <input type="text" id="u-staff" placeholder="Usuario">
+        <input type="password" id="p-staff" placeholder="Contraseña">
+        <button class="btn btn-green" onclick="verificarStaff()">IDENTIFICARSE</button>
+        <button class="btn btn-staff" onclick="irMenu()">VOLVER</button>
+    </div>
+
+    <div id="p-online" class="pantalla oculto">
+        <h2>ONLINE</h2>
+        <button class="btn btn-blue" onclick="crearSala()">CREAR SALA</button>
+        <input type="text" id="input-sala" placeholder="Código...">
+        <button class="btn btn-green" onclick="unirseSala()">UNIRSE</button>
+        <h2 id="sala-id-display" style="color:var(--oro)"></h2>
+        <button class="btn btn-staff" onclick="irMenu()">VOLVER</button>
+    </div>
+
+    <div id="juego-cont">
+        <div class="rosco-main" id="rosco-container"></div>
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:300px;">
+            <div id="pregunta-txt" style="font-weight:bold; font-size:1.2rem; min-height:80px;">Cargando rosco...</div>
+            <input type="text" id="ans-in" placeholder="Respuesta...">
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-green" onclick="enviar()">ENVIAR</button>
+                <button class="btn" style="background:var(--oro); color:black" onclick="pasar()">PASO</button>
+            </div>
         </div>
-        <button class="btn btn-staff" onclick="location.reload()">VOLVER</button>
     </div>
 
 <script>
-    const CODIGO_MAESTRO = "Pablo23sek";
+    const CODIGO_PABLO = "Pablo23sek";
     const staffDB = {
-        "pablo": { pass: "Pablo23sek", rango: "SUPERADMIN", super: true },
-        "juliopuli": { pass: "juli26", rango: "ADMIN", super: false },
-        "alvarito": { pass: "poki", rango: "VISUALIZADOR", super: false }
+        "pablo": { pass: "Pablo23sek", rango: "SUPERADMIN", boss: true },
+        "juliopuli": { pass: "juli26", rango: "ADMIN", boss: false }
     };
 
-    let bloqueado = localStorage.getItem('lockPasapalabra') === 'true';
     let miNombre = "";
+    let estaBloqueado = localStorage.getItem('masterLock') === 'true';
 
-    function validarEntradaNormal() {
+    function entrarAlSistema() {
         const n = document.getElementById('nombre-input').value.trim();
-        if(n.length < 2) return alert("Nombre no válido");
+        if(n === "") return alert("Pon un nombre");
         
-        if(bloqueado) {
-            document.getElementById('p-entrada').classList.add('oculto');
-            document.getElementById('p-denegado').classList.remove('oculto');
+        if(estaBloqueado) {
+            cambiarPantalla('p-bloqueo');
         } else {
             miNombre = n;
             irMenu();
@@ -91,48 +113,77 @@
     }
 
     function irMenu() {
-        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-        document.getElementById('p-menu').classList.remove('oculto');
-        document.getElementById('msg-bienvenida').innerText = "HOLA, " + miNombre.toUpperCase();
+        cambiarPantalla('p-menu');
+        document.getElementById('saludo').innerText = "HOLA, " + miNombre.toUpperCase();
     }
 
-    function pedirCodigoStaff() {
-        const codigo = prompt("Introduce el CÓDIGO STAFF para continuar:");
-        if(codigo === CODIGO_MAESTRO) {
-            document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
-            document.getElementById('p-login-staff').classList.remove('oculto');
-        } else if(codigo !== null) {
-            alert("Código incorrecto.");
+    function abrirAccesoStaff() {
+        const code = prompt("Introduce el código secreto de STAFF:");
+        if(code === CODIGO_PABLO) {
+            cambiarPantalla('p-staff-login');
+        } else if(code !== null) {
+            alert("Código incorrecto");
         }
     }
 
-    function verificarCredenciales() {
-        const u = document.getElementById('user-staff').value.toLowerCase();
-        const p = document.getElementById('pass-staff').value;
+    function verificarStaff() {
+        const u = document.getElementById('u-staff').value.toLowerCase();
+        const p = document.getElementById('p-staff').value;
 
         if(staffDB[u] && staffDB[u].pass === p) {
             miNombre = u.toUpperCase();
+            const panel = document.getElementById('panel-staff-flotante');
+            panel.style.display = "block";
+            document.getElementById('st-info').innerText = u.toUpperCase() + " ("+staffDB[u].rango+")";
             
-            // Mostrar Panel Admin
-            document.getElementById('panel-staff').style.display = "block";
-            document.getElementById('st-name').innerText = miNombre;
-            document.getElementById('st-range').innerText = staffDB[u].rango;
-            
-            const btn = document.getElementById('btn-admin-action');
-            if(staffDB[u].super) {
+            if(staffDB[u].boss) {
+                const btn = document.getElementById('btn-master-lock');
                 btn.classList.remove('oculto');
-                btn.innerText = bloqueado ? "🔓 ABRIR JUEGO" : "🔒 CERRAR JUEGO";
-                btn.className = bloqueado ? "btn-green" : "btn-red";
+                btn.innerText = estaBloqueado ? "🔓 DESBLOQUEAR TODO" : "🔒 BLOQUEAR TODO";
                 btn.onclick = () => {
-                    bloqueado = !bloqueado;
-                    localStorage.setItem('lockPasapalabra', bloqueado);
-                    alert(bloqueado ? "Juego Bloqueado" : "Juego Abierto");
+                    estaBloqueado = !estaBloqueado;
+                    localStorage.setItem('masterLock', estaBloqueado);
                     location.reload();
                 };
             }
             irMenu();
-        } else {
-            alert("Usuario o Contraseña incorrectos.");
+        } else { alert("Error de login"); }
+    }
+
+    // ACCIONES DE JUEGO (ARREGLADAS)
+    function iniciarJuegoLocal() {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById('juego-cont').style.display = "block";
+        dibujarRosco();
+        document.getElementById('pregunta-txt').innerText = "CON LA A: Relativo a las abejas"; // Ejemplo inicio
+    }
+
+    function mostrarOnline() {
+        cambiarPantalla('p-online');
+    }
+
+    function cambiarPantalla(id) {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById('juego-cont').style.display = "none";
+        document.getElementById(id).classList.remove('oculto');
+    }
+
+    function dibujarRosco() {
+        const container = document.getElementById('rosco-container');
+        container.innerHTML = "";
+        const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
+        for(let i=0; i<26; i++) {
+            const div = document.createElement('div');
+            div.className = "letra";
+            div.innerText = letras[i];
+            const ang = (i * (360/26)) - 90;
+            const rad = ang * (Math.PI / 180);
+            const x = Math.cos(rad) * 200;
+            const y = Math.sin(rad) * 200;
+            div.style.left = `calc(50% + ${x}px - 20px)`;
+            div.style.top = `calc(50% + ${y}px - 20px)`;
+            if(i === 0) div.classList.add('activa');
+            container.appendChild(div);
         }
     }
 </script>
