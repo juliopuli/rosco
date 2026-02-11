@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pasapalabra Pro v4.8.0</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script> <!-- EmailJS -->
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
@@ -30,8 +31,8 @@
         /* EFECTO FLASH */
         #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; }
 
-        /* Estilos para olvido contraseña */
-        #olvido-form { display: none; margin-top: 15px; }
+        /* Estilos para reset contraseña */
+        #reset-form { display: none; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -49,6 +50,18 @@
         <h1 style="color:var(--oro)">PASAPALABRA</h1>
         <input type="text" id="user-name" placeholder="Tu nombre...">
         <button class="btn btn-green" onclick="iniciar()">ENTRAR</button>
+        <button class="btn" style="background:#666; font-size:0.8rem;" onclick="cambiarP('p-reset')">OLVIDÉ MI CONTRASEÑA</button>
+    </div>
+
+    <div id="p-reset" class="pantalla oculto">
+        <h3>RECUPERAR CONTRASEÑA</h3>
+        <input type="email" id="olvido-email" placeholder="Su correo electrónico">
+        <button class="btn btn-blue" onclick="enviarOlvido()">ENVIAR</button>
+        <div id="reset-form">
+            <input type="password" id="nueva-pass" placeholder="Nueva contraseña">
+            <button class="btn btn-green" onclick="resetearPass()">CAMBIAR CONTRASEÑA</button>
+        </div>
+        <button class="btn" style="background:transparent" onclick="cambiarP('p-login')">VOLVER</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
@@ -65,11 +78,6 @@
         <button class="btn btn-green" onclick="manualLogin()">ENTRAR</button>
         <hr style="border:0.5px solid #333; margin:15px;">
         <button class="btn btn-face" onclick="prepararFaceID()">👁️ LOGIN POR CATEGORÍA</button>
-        <button class="btn" style="background:#666; font-size:0.8rem;" onclick="mostrarOlvido()">¿OLVIDÓ SU CONTRASEÑA? PINCHE AQUÍ</button>
-        <div id="olvido-form">
-            <input type="email" id="olvido-email" placeholder="Su correo electrónico">
-            <button class="btn btn-blue" onclick="enviarOlvido()">ENVIAR</button>
-        </div>
         <button class="btn" style="background:transparent" onclick="location.reload()">VOLVER</button>
     </div>
 
@@ -85,14 +93,24 @@
     </div>
 
 <script>
-    const CONFIG = {
+    // Inicializar EmailJS (reemplaza con tus IDs)
+    emailjs.init("YOUR_PUBLIC_KEY"); // Tu Public Key de EmailJS
+
+    let CONFIG = {
         "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true, email: "pablo@staff.com" },
         "juliopuli": { pass: "juli26", rank: "ADMIN", super: false, email: "juli@staff.com" }
     };
     
+    // Cargar CONFIG desde localStorage si hay cambios
+    const savedConfig = localStorage.getItem('config');
+    if (savedConfig) {
+        CONFIG = JSON.parse(savedConfig);
+    }
+
     let isLocked = localStorage.getItem('lock') === 'true';
     let userActivo = "";
     let esRegistro = false;
+    let userReset = ""; // Usuario para reset
 
     // Persistencia de sesión al cargar
     window.onload = function() {
@@ -129,23 +147,42 @@
         }
     }
 
-    // --- FUNCIONES PARA OLVIDO CONTRASEÑA ---
-    function mostrarOlvido() {
-        document.getElementById('olvido-form').style.display = "block";
-    }
-
+    // --- FUNCIONES PARA RESET CONTRASEÑA ---
     function enviarOlvido() {
         const email = document.getElementById('olvido-email').value.toLowerCase();
         const user = Object.keys(CONFIG).find(u => CONFIG[u].email === email);
         if (user) {
-            alert("Le hemos enviado un correo a su cuenta con la contraseña.");
-            // Simulación: Mostrar la contraseña (en un alert para "mandarla")
-            alert("Contraseña recuperada: " + CONFIG[user].pass);
+            // Enviar email con EmailJS
+            emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+                to_email: email,
+                pass: CONFIG[user].pass
+            }).then(() => {
+                alert("Le hemos enviado un correo a su cuenta con la contraseña.");
+                userReset = user;
+                document.getElementById('reset-form').style.display = "block";
+            }).catch((error) => {
+                console.error(error);
+                alert("Error al enviar el correo. Inténtalo de nuevo.");
+            });
         } else {
             alert("Correo no encontrado en nuestros registros.");
         }
-        document.getElementById('olvido-form').style.display = "none";
-        document.getElementById('olvido-email').value = "";
+    }
+
+    function resetearPass() {
+        const nuevaPass = document.getElementById('nueva-pass').value;
+        if (nuevaPass && userReset) {
+            CONFIG[userReset].pass = nuevaPass;
+            localStorage.setItem('config', JSON.stringify(CONFIG)); // Guardar cambios
+            alert("Contraseña cambiada exitosamente.");
+            document.getElementById('reset-form').style.display = "none";
+            document.getElementById('olvido-email').value = "";
+            document.getElementById('nueva-pass').value = "";
+            userReset = "";
+            cambiarP('p-login'); // Volver a login
+        } else {
+            alert("Ingresa una nueva contraseña.");
+        }
     }
 
     // --- LÓGICA DE CÁMARA CON CAPTURA REAL ---
