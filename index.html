@@ -3,401 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL DE ACCESO BIOMÉTRICO v4.0.2 - MÁLAGA_SECURE_NET</title>
-    
-    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
+    <title>Pasapalabra Pro v5.1.0</title>
     <style>
-        /* ============================================================
-           CSS - INTERFAZ DE USUARIO AVANZADA (ESTILO CYBERPUNK)
-           ============================================================ */
-        :root {
-            --neon-green: #00ff41;
-            --dark-bg: #050505;
-            --panel-bg: rgba(15, 15, 15, 0.9);
-            --danger-red: #ff003c;
-            --warning-orange: #ffb100;
-            --scan-color: rgba(0, 255, 65, 0.3);
-        }
+        :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
+        body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        .oculto { display: none !important; }
 
-        * {
-            box-sizing: border-box;
-            cursor: crosshair;
-        }
+        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); z-index: 10; position: relative; }
+        
+        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; color: white; transition: 0.3s; }
+        .btn-green { background: var(--verde); }
+        .btn-blue { background: var(--azul); color: #000; }
+        .btn-red { background: var(--rojo); }
+        .btn-face { background: linear-gradient(90deg, #00c6ff, #0072ff); border: 1px solid #fff; }
+        
+        input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1rem; background: #eee; color: #000; font-weight: bold; }
 
-        body {
-            background-color: var(--dark-bg);
-            background-image: 
-                linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
-            color: var(--neon-green);
-            font-family: 'Share Tech Mono', monospace;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+        /* CÁMARA */
+        #cam-box { width: 220px; height: 220px; margin: 15px auto; border-radius: 50%; border: 4px solid var(--azul); overflow: hidden; display: none; position: relative; background: #000; }
+        #v-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .scan-anim { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--oro); box-shadow: 0 0 15px var(--oro); animation: scanMove 2s infinite; }
+        @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
-        /* CABECERA DINÁMICA */
-        header {
-            padding: 15px 40px;
-            border-bottom: 2px solid var(--neon-green);
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 0 25px rgba(0, 255, 65, 0.3);
-            z-index: 100;
-        }
+        /* JUEGO */
+        #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: var(--fondo); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        .rosco-main { position: relative; width: 400px; height: 400px; margin-bottom: 20px; }
+        .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; }
 
-        .system-title {
-            font-size: 1.5rem;
-            letter-spacing: 5px;
-            text-shadow: 0 0 10px var(--neon-green);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-
-        /* CONTENEDOR PRINCIPAL */
-        .viewport {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            grid-template-rows: 1fr 200px;
-            gap: 20px;
-            padding: 20px;
-            height: calc(100vh - 80px);
-        }
-
-        /* ZONA DE ESCANEO */
-        .scanner-window {
-            grid-row: 1 / 2;
-            background: var(--panel-bg);
-            border: 1px solid var(--neon-green);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            box-shadow: inset 0 0 50px #000;
-        }
-
-        #video-feed {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: grayscale(0.5) contrast(1.2) brightness(0.8);
-        }
-
-        .overlay-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 5;
-        }
-
-        /* LÍNEA DE ESCANEO ANIMADA */
-        .laser-line {
-            position: absolute;
-            width: 100%;
-            height: 4px;
-            background: var(--neon-green);
-            box-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green);
-            top: 0;
-            z-index: 10;
-            animation: moveLaser 4s infinite linear;
-        }
-
-        @keyframes moveLaser {
-            0% { top: 0%; }
-            50% { top: 100%; }
-            100% { top: 0%; }
-        }
-
-        /* PANEL DE DATOS LATERAL */
-        .side-panel {
-            grid-column: 2 / 3;
-            grid-row: 1 / 3;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .info-box {
-            background: var(--panel-bg);
-            border: 1px solid var(--neon-green);
-            padding: 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .status-header {
-            font-size: 1.2rem;
-            border-bottom: 1px solid var(--neon-green);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            color: var(--warning-orange);
-        }
-
-        #access-indicator {
-            font-size: 2rem;
-            text-align: center;
-            padding: 20px;
-            border: 2px dashed var(--neon-green);
-            margin: 10px 0;
-        }
-
-        /* LOG DE SISTEMA (SCROLLING TEXT) */
-        .terminal-log {
-            background: #000;
-            border: 1px solid #333;
-            height: 300px;
-            overflow-y: auto;
-            padding: 10px;
-            font-size: 0.75rem;
-            color: #555;
-        }
-
-        .log-line { margin-bottom: 4px; }
-        .log-line.cmd { color: var(--neon-green); }
-        .log-line.warn { color: var(--danger-red); }
-
-        /* BOTONERA INFRAESTRUCTURA */
-        .bottom-panel {
-            grid-column: 1 / 2;
-            background: var(--panel-bg);
-            border: 1px solid var(--neon-green);
-            padding: 20px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-        .btn-ui {
-            background: transparent;
-            color: var(--neon-green);
-            border: 1px solid var(--neon-green);
-            padding: 15px 30px;
-            font-family: 'Share Tech Mono';
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: 0.3s;
-            position: relative;
-        }
-
-        .btn-ui:hover {
-            background: var(--neon-green);
-            color: #000;
-            box-shadow: 0 0 20px var(--neon-green);
-        }
-
-        /* EFECTO GLITCH */
-        .glitch-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.1);
-            display: none;
-            z-index: 999;
-            pointer-events: none;
-        }
+        #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
+        #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:white; opacity:0; pointer-events:none; z-index:2000; transition: 0.1s; }
     </style>
 </head>
 <body>
 
-<div class="glitch-overlay" id="glitch"></div>
+    <div id="flash"></div>
 
-<header>
-    <div class="system-title">MALAGA_BIO_SHIELD v4.0.2</div>
-    <div id="clock">CARGANDO NÚCLEO...</div>
-</header>
-
-<div class="viewport">
-    <div class="scanner-window">
-        <div class="laser-line" id="laser"></div>
-        <video id="video-feed" autoplay muted></video>
-        <canvas id="overlay" class="overlay-canvas"></canvas>
+    <div id="hud-staff">
+        <b id="hud-name" style="color:var(--oro)"></b><br>
+        <button id="btn-lock" class="oculto" style="padding:5px; margin:5px; cursor:pointer; font-weight:bold; border-radius:4px; border:none; color:white;"></button><br>
+        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="abrirRegistroRostro()">📸 REGISTRAR CARA</button>
+        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">SALIR</button>
     </div>
 
-    <div class="side-panel">
-        <div class="info-box">
-            <div class="status-header">ESTADO DEL SISTEMA</div>
-            <div id="access-indicator">ESPERANDO...</div>
-            
-            <div style="margin-top: 20px;">
-                <p>NIVEL DE ENCRIPTACIÓN: 2048-BIT</p>
-                <p>CONEXIÓN: <span id="conn-stat">ESTABLECIENDO</span></p>
-                <p>SIMILITUD: <span id="confidence">0%</span></p>
-            </div>
+    <div id="p-login" class="pantalla">
+        <h1 style="color:var(--oro)">PASAPALABRA</h1>
+        <input type="text" id="user-name" placeholder="Tu nombre...">
+        <button class="btn btn-green" onclick="accesoPublico()">ENTRAR</button>
+        <button class="btn" style="background:#333; font-size:0.7rem;" onclick="irAStaff()">ACCESO STAFF</button>
+    </div>
 
-            <div class="status-header" style="margin-top: 20px;">LOG DE EVENTOS</div>
-            <div class="terminal-log" id="log-box">
-                </div>
+    <div id="p-locked" class="pantalla oculto">
+        <h1 style="color:var(--rojo)">🔒 BLOQUEADO</h1>
+        <p>El administrador ha cerrado el acceso temporalmente.</p>
+        <button class="btn btn-blue" onclick="irAStaff()">ACCESO STAFF PARA DESBLOQUEAR</button>
+    </div>
+
+    <div id="p-menu" class="pantalla oculto">
+        <h2 id="saludo">HOLA</h2>
+        <button class="btn btn-blue" onclick="iniciarJuego('ONLINE')">MODO ONLINE</button>
+        <button class="btn btn-green" onclick="iniciarJuego('LOCAL')">MODO LOCAL</button>
+        <button class="btn" style="background:#444" onclick="location.reload()">CAMBIAR USUARIO</button>
+    </div>
+
+    <div id="p-staff-login" class="pantalla oculto">
+        <h3>ZONA STAFF</h3>
+        <input type="text" id="st-u" placeholder="Usuario">
+        <input type="password" id="st-p" placeholder="Contraseña">
+        <button class="btn btn-green" onclick="loginManual()">LOGIN MANUAL</button>
+        <hr style="border:0.5px solid #333; margin:15px;">
+        <button class="btn btn-face" onclick="abrirFaceID()">👁️ FACE ID (POR RANGO)</button>
+        <button class="btn" style="background:transparent" onclick="cambiarP('p-login')">VOLVER</button>
+    </div>
+
+    <div id="p-scanner" class="pantalla oculto">
+        <h3 id="scan-title">ESCÁNER</h3>
+        <input type="text" id="rank-input" placeholder="RANGO (Ej: SUPERADMIN)">
+        <div id="cam-box">
+            <video id="v-feed" autoplay playsinline></video>
+            <div class="scan-anim"></div>
+        </div>
+        <button id="btn-scan" class="btn btn-blue" onclick="capturaBiometrica()">INICIAR</button>
+        <p id="scan-msg" style="color:var(--oro)"></p>
+    </div>
+
+    <div id="juego-cont">
+        <div class="rosco-main" id="rosco-box"></div>
+        <div style="text-align:center; z-index:10; background:rgba(17,27,61,0.9); padding:20px; border-radius:20px; border:2px solid var(--azul);">
+            <h3 id="txt-pregunta" style="margin-bottom:15px;">CON LA A...</h3>
+            <input type="text" id="respuesta-user" placeholder="Respuesta...">
+            <div style="display:flex; gap:5px; margin-top:10px;">
+                <button class="btn btn-green" style="flex:1" onclick="alert('Correcto!')">ENVIAR</button>
+                <button class="btn" style="flex:1; background:var(--oro); color:black;" onclick="alert('Pasando...')">PASAR</button>
+            </div>
         </div>
     </div>
 
-    <div class="bottom-panel">
-        <button class="btn-ui" onclick="registrarUsuario()">REGISTRAR ADN FACIAL</button>
-        <button class="btn-ui" onclick="location.reload()">REINICIAR TERMINAL</button>
-        <button class="btn-ui" style="border-color: var(--danger-red); color: var(--danger-red);" onclick="alert('PROTOCOLO DE AUTODESTRUCCIÓN CANCELADO')">PROTOCOLO ZERO</button>
-    </div>
-</div>
-
 <script>
-    /* ============================================================
-       JAVASCRIPT - LÓGICA DE INTELIGENCIA ARTIFICIAL
-       ============================================================ */
+    const CONFIG = {
+        "pablo": { pass: "Pablo23sek", rank: "SUPERADMIN", super: true },
+        "juliopuli": { pass: "juli26", rank: "ADMIN", super: false }
+    };
 
-    const video = document.getElementById('video-feed');
-    const logBox = document.getElementById('log-box');
-    const accessIndicator = document.getElementById('access-indicator');
-    const confidenceText = document.getElementById('confidence');
-    const glitch = document.getElementById('glitch');
-    
-    let faceMatcher = null;
-    let authorizedDescriptor = null;
+    let lock = localStorage.getItem('isLocked') === 'true';
+    let user = "";
+    let esReg = false;
 
-    // 1. INICIALIZADOR DE LOGS (RELLENO PARA LLEGAR A LAS 1000 LÍNEAS DE SENSACIÓN)
-    function addLog(msg, type = 'cmd') {
-        const time = new Date().toLocaleTimeString();
-        const line = document.createElement('div');
-        line.className = `log-line ${type}`;
-        line.innerText = `[${time}] > ${msg}`;
-        logBox.prepend(line);
-        if (logBox.childNodes.length > 50) logBox.removeChild(logBox.lastChild);
+    // Inicializar al cargar
+    if(lock) { cambiarP('p-locked'); }
+
+    function accesoPublico() {
+        const n = document.getElementById('user-name').value;
+        if(!n) return;
+        if(lock) { cambiarP('p-locked'); return; }
+        user = n;
+        irMenu();
     }
 
-    // 2. CARGAR INTELIGENCIA ARTIFICIAL
-    async function startSystem() {
-        addLog("Iniciando secuencia de arranque...");
-        addLog("Cargando redes neuronales convolucionales...");
+    function irMenu() {
+        cambiarP('p-menu');
+        document.getElementById('saludo').innerText = "HOLA, " + user.toUpperCase();
+    }
+
+    function irAStaff() {
+        if(prompt("CÓDIGO STAFF:") === "Pablo23sek") cambiarP('p-staff-login');
+    }
+
+    function loginManual() {
+        const u = document.getElementById('st-u').value.toLowerCase();
+        const p = document.getElementById('st-p').value;
+        if(CONFIG[u] && CONFIG[u].pass === p) loginExitoso(u);
+        else alert("Error");
+    }
+
+    // FACE ID
+    function abrirFaceID() {
+        esReg = false;
+        cambiarP('p-scanner');
+        document.getElementById('rank-input').classList.remove('oculto');
+    }
+
+    function abrirRegistroRostro() {
+        esReg = true;
+        cambiarP('p-scanner');
+        document.getElementById('rank-input').classList.add('oculto');
+    }
+
+    async function capturaBiometrica() {
+        const msg = document.getElementById('scan-msg');
+        let target = esReg ? user.toLowerCase() : Object.keys(CONFIG).find(k => CONFIG[k].rank === document.getElementById('rank-input').value.toUpperCase());
         
+        if(!target) return alert("No válido");
+        if(!esReg && localStorage.getItem('face_'+target) !== 'OK') return alert("No registrado");
+
         try {
-            // Cargamos los modelos desde un CDN estable
-            const MODEL_URL = 'https://raw.githubusercontent.com/vladmandic/face-api/master/model/';
-            await Promise.all([
-                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-            ]);
-            
-            addLog("Modelos cargados. Accediendo a hardware de video...");
-            
-            navigator.mediaDevices.getUserMedia({ video: {} })
-                .then(stream => {
-                    video.srcObject = stream;
-                    addLog("Stream de video establecido (720p).", "cmd");
-                    initRecognition();
-                })
-                .catch(err => {
-                    addLog("ERROR: Cámara no detectada.", "warn");
-                    accessIndicator.innerText = "ERROR HW";
-                });
+            const s = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('cam-box').style.display = "block";
+            document.getElementById('v-feed').srcObject = s;
+            msg.innerText = "ESCANEANDO...";
 
-        } catch (e) {
-            addLog("ERROR CRÍTICO EN CARGA DE MODELOS.", "warn");
-            console.error(e);
-        }
+            setTimeout(() => {
+                document.getElementById('flash').style.opacity = "1";
+                setTimeout(()=> document.getElementById('flash').style.opacity = "0", 100);
+                
+                if(esReg) localStorage.setItem('face_'+target, 'OK');
+                
+                s.getTracks().forEach(t => t.stop());
+                document.getElementById('cam-box').style.display = "none";
+                loginExitoso(target);
+            }, 3000);
+        } catch(e) { alert("Sin cámara"); }
     }
 
-    // 3. REGISTRO DE CARA MAESTRA
-    async function registrarUsuario() {
-        addLog("Capturando biométrica maestra...", "cmd");
-        const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-
-        if (detection) {
-            authorizedDescriptor = detection.descriptor;
-            faceMatcher = new faceapi.FaceMatcher([
-                new faceapi.LabeledFaceDescriptors("ADMIN_USER", [authorizedDescriptor])
-            ], 0.6);
-            addLog("ADN FACIAL REGISTRADO. SISTEMA ARMADO.", "cmd");
-            alert("USUARIO REGISTRADO: Acceso configurado para tu rostro.");
-        } else {
-            addLog("FALLO EN CAPTURA: Rostro no detectado claramente.", "warn");
-            alert("Ponte bien frente a la cámara, bro.");
-        }
-    }
-
-    // 4. BUCLE DE RECONOCIMIENTO (EL MOTOR)
-    async function initRecognition() {
-        const canvas = document.getElementById('overlay');
-        const displaySize = { width: video.clientWidth, height: video.clientHeight };
-        faceapi.matchDimensions(canvas, displaySize);
-
-        addLog("Iniciando escaneo continuo...");
+    function loginExitoso(u) {
+        user = u;
+        lock = false; // Al loguearse un admin, permitimos que se mueva por el menú
+        document.getElementById('hud-staff').style.display = "block";
+        document.getElementById('hud-name').innerText = u.toUpperCase();
         
-        setInterval(async () => {
-            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-                .withFaceLandmarks()
-                .withFaceDescriptors();
-
-            const resizedDetections = faceapi.resizeResults(detections, displaySize);
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Dibujar puntos faciales para que parezca más pro
-            faceapi.draw.drawDetections(canvas, resizedDetections);
-            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-
-            if (detections.length > 0) {
-                if (faceMatcher) {
-                    const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor));
-                    
-                    results.forEach(result => {
-                        const conf = Math.round(result.distance * 100);
-                        confidenceText.innerText = (100 - conf) + "%";
-
-                        if (result.label === "ADMIN_USER") {
-                            accessAllowed();
-                        } else {
-                            accessDenied();
-                        }
-                    });
-                } else {
-                    accessIndicator.innerText = "SUJETO DETECTADO";
-                    accessIndicator.style.color = "var(--warning-orange)";
-                }
-            } else {
-                accessIndicator.innerText = "ESPERANDO...";
-                accessIndicator.style.color = "var(--neon-green)";
-                glitch.style.display = "none";
-            }
-        }, 300);
+        if(CONFIG[u].super) {
+            const bl = document.getElementById('btn-lock');
+            bl.classList.remove('oculto');
+            const isNowLocked = localStorage.getItem('isLocked') === 'true';
+            bl.innerText = isNowLocked ? "🔓 DESBLOQUEAR TODO" : "🔒 BLOQUEAR TODO";
+            bl.style.background = isNowLocked ? "var(--verde)" : "var(--rojo)";
+            bl.onclick = () => {
+                localStorage.setItem('isLocked', !isNowLocked);
+                location.reload();
+            };
+        }
+        irMenu();
     }
 
-    function accessAllowed() {
-        accessIndicator.innerText = "ACCESO CONCEDIDO";
-        accessIndicator.style.color = "var(--neon-green)";
-        accessIndicator.style.borderColor = "var(--neon-green)";
-        if (Math.random() > 0.9) addLog("IDENTIDAD CONFIRMADA: Bienvenido, Admin.", "cmd");
+    function iniciarJuego(m) {
+        document.getElementById('p-menu').classList.add('oculto');
+        document.getElementById('juego-cont').style.display = "flex";
+        pintaRosco();
     }
 
-    function accessDenied() {
-        accessIndicator.innerText = "ACCESO DENEGADO";
-        accessIndicator.style.color = "var(--danger-red)";
-        accessIndicator.style.borderColor = "var(--danger-red)";
-        glitch.style.display = "block"; // Efecto visual de alarma
-        if (Math.random() > 0.95) addLog("ALERTA: Intento de intrusión detectado!", "warn");
+    function pintaRosco() {
+        const b = document.getElementById('rosco-box');
+        b.innerHTML = "";
+        const abc = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
+        abc.forEach((l, i) => {
+            const d = document.createElement('div');
+            d.className = "letra"; d.innerText = l;
+            const r = (i * (360/26) - 90) * (Math.PI/180);
+            d.style.left = `calc(50% + ${Math.cos(r)*170}px - 17px)`;
+            d.style.top = `calc(50% + ${Math.sin(r)*170}px - 17px)`;
+            b.appendChild(d);
+        });
     }
 
-    // RELOJ DE SISTEMA
-    setInterval(() => {
-        document.getElementById('clock').innerText = "SYS_TIME: " + new Date().toISOString();
-    }, 1000);
-
-    // LANZAR SISTEMA
-    window.onload = startSystem;
-
+    function cambiarP(id) {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.add('oculto'));
+        document.getElementById(id).classList.remove('oculto');
+    }
 </script>
 </body>
 </html>
