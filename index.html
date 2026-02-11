@@ -3,139 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra VOICE v6.0.0</title>
+    <title>Pasapalabra Pro v7.0.0</title>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
         .oculto { display: none !important; }
 
-        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 400px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .pantalla { text-align: center; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid #2a3a6d; width: 90%; max-width: 450px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         
-        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; color: white; transition: 0.3s; }
-        .btn-voice { background: linear-gradient(90deg, #ff0080, #ff8c00); border: 2px solid #fff; animation: pulse 2s infinite; }
+        .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; color: white; }
         .btn-green { background: var(--verde); }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
-        }
+        .btn-voice { background: linear-gradient(90deg, #00c6ff, #0072ff); border: 2px solid #fff; }
+        .btn-pass { background: var(--oro); color: black !important; }
 
-        input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1.2rem; font-weight: bold; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; font-size: 1.2rem; font-weight: bold; }
 
         /* JUEGO */
         #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: var(--fondo); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        .rosco-main { position: relative; width: 380px; height: 380px; margin-bottom: 20px; }
-        .letra { position: absolute; width: 32px; height: 32px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.8rem; }
-        
-        #status-voz { color: var(--oro); font-weight: bold; height: 20px; margin-top: 10px; }
+        .rosco-main { position: relative; width: 420px; height: 420px; margin-bottom: 20px; }
+        .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.9rem; transition: 0.4s; }
+        .letra.activa { background: var(--oro); color: black; transform: scale(1.3); box-shadow: 0 0 20px var(--oro); }
+        .letra.correcta { background: var(--verde); }
+        .letra.fallada { background: var(--rojo); }
+
+        #status-info { color: var(--oro); font-size: 0.8rem; margin-top: 5px; min-height: 20px; }
     </style>
 </head>
 <body>
 
     <div id="p-login" class="pantalla">
-        <h1 style="color:var(--oro)">PASAPALABRA <br><span style="font-size: 0.8rem; color: white;">VOICE CONTROL</span></h1>
-        <input type="text" id="user-name" placeholder="Tu nombre...">
-        <button class="btn btn-green" onclick="empezar()">ENTRAR AL JUEGO</button>
-        <p style="font-size: 0.7rem; opacity: 0.6;">Asegúrate de permitir el micrófono cuando se te pida.</p>
+        <h1 style="color:var(--oro)">PASAPALABRA PRO</h1>
+        <p>Introduce tu nombre y usa tu voz para entrar.</p>
+        <input type="text" id="user-name" placeholder="Nombre de usuario...">
+        <div id="status-info"></div>
+        <button class="btn btn-voice" onclick="verificarVozEntrada()">🎤 DECIR "ADMINISTRADOR" PARA ENTRAR</button>
     </div>
 
     <div id="juego-cont">
         <div class="rosco-main" id="rosco-box"></div>
         
-        <div style="text-align:center; background:rgba(17,27,61,0.95); padding:25px; border-radius:20px; border:2px solid var(--azul); width: 80%; max-width: 450px;">
-            <h3 id="txt-pregunta" style="min-height: 50px;">CON LA A: Estructura de datos...</h3>
-            
-            <input type="text" id="respuesta-texto" placeholder="Esperando voz o escritura...">
-            
-            <div id="status-voz"></div>
-
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn btn-voice" id="btn-escuchar" onclick="activarMicrofono()">🎤 DICTAR RESPUESTA</button>
+        <div style="text-align:center; background:var(--panel); padding:25px; border-radius:20px; border:2px solid var(--azul); width: 85%; max-width: 500px;">
+            <h2 id="letra-actual" style="color:var(--oro); margin:0;">CON LA A</h2>
+            <div id="pregunta-box" style="margin: 15px 0; min-height: 80px; font-size: 1.1rem; line-height: 1.4;">
+                <span id="txt-pregunta">Cargando pregunta...</span>
             </div>
             
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-green" onclick="enviar()">ENVIAR</button>
-                <button class="btn" style="background:var(--oro); color:black;" onclick="pasapalabra()">PASAPALABRA</button>
+            <input type="text" id="respuesta-texto" placeholder="Respuesta..." autocomplete="off">
+            
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn btn-voice" onclick="escucharRespuesta()">🎤 HABLAR</button>
+                <button class="btn btn-green" onclick="comprobarRespuesta()">ENVIAR</button>
             </div>
-            <button class="btn" style="background:transparent; font-size: 0.7rem;" onclick="location.reload()">SALIR</button>
+            <button class="btn btn-pass" onclick="pasarPalabra()">PASAPALABRA</button>
         </div>
     </div>
 
 <script>
+    const ROSCO_DATA = [
+        { letra: "A", pregunta: "Instrumento musical de cuerda, con forma de pera y mástil trasteado.", respuesta: "laud" },
+        { letra: "B", pregunta: "Persona que se dedica a robar en el mar.", respuesta: "pirata" }, // Esta es con la P, pero para el ejemplo:
+        { letra: "B", pregunta: "Embarcación pequeña de vela o remos.", respuesta: "bote" },
+        { letra: "C", pregunta: "Animal doméstico que maúlla.", respuesta: "gato" }, // Ejemplo rápido
+        { letra: "C", pregunta: "Objeto que sirve para sentarse.", respuesta: "silla" } // Real:
+    ];
+
+    // Preguntas reales más consistentes
+    const preguntas = [
+        { l: "A", p: "Empieza por A: Animal de compañía que ladra.", r: "perro", error: "No, era Perro (ejemplo)" },
+        { l: "A", p: "Empieza por A: Persona que pilota un avión.", r: "aviador" },
+        { l: "B", p: "Empieza por B: Objeto para escribir con tinta.", r: "boligrafo" },
+        { l: "C", p: "Empieza por C: Lugar donde vivimos.", r: "casa" },
+        { l: "D", p: "Empieza por D: El número que viene después del nueve.", r: "diez" }
+    ];
+
+    let indiceActual = 0;
     let user = "";
-    const recognition = window.SpeechRecognition || window.webkitSpeechRecognition ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'es-ES';
 
-    if (recognition) {
-        recognition.lang = 'es-ES';
-        recognition.interimResults = false;
-        recognition.continuous = false;
+    // Función para que el PC hable
+    function hablar(texto) {
+        const mensaje = new SpeechSynthesisUtterance(texto);
+        mensaje.lang = 'es-ES';
+        window.speechSynthesis.speak(mensaje);
+    }
 
-        recognition.onstart = () => {
-            document.getElementById('status-voz').innerText = "🔴 ESCUCHANDO...";
-            document.getElementById('btn-escuchar').style.filter = "hue-rotate(90deg)";
-        };
+    // Seguridad de entrada
+    function verificarVozEntrada() {
+        const nombre = document.getElementById('user-name').value;
+        if(!nombre) { alert("Escribe tu nombre primero"); return; }
+        
+        document.getElementById('status-info').innerText = "🔴 ESCUCHANDO... Di 'ADMINISTRADOR'";
+        recognition.start();
 
         recognition.onresult = (event) => {
-            const voz = event.results[0][0].transcript;
-            document.getElementById('respuesta-texto').value = voz;
-            document.getElementById('status-voz').innerText = "✅ ENTENDIDO";
-        };
-
-        recognition.onerror = () => {
-            document.getElementById('status-voz').innerText = "❌ ERROR DE MICRO";
-        };
-
-        recognition.onend = () => {
-            document.getElementById('btn-escuchar').style.filter = "none";
-            if(document.getElementById('status-voz').innerText === "🔴 ESCUCHANDO...") {
-                document.getElementById('status-voz').innerText = "";
+            const voz = event.results[0][0].transcript.toLowerCase();
+            if(voz.includes("administrador")) {
+                user = nombre;
+                iniciarJuego();
+            } else {
+                document.getElementById('status-info').innerText = "❌ Palabra incorrecta: " + voz;
             }
         };
     }
 
-    function activarMicrofono() {
-        if (!recognition) {
-            alert("Tu navegador no soporta reconocimiento de voz. Usa Chrome.");
-            return;
-        }
-        recognition.start();
-    }
-
-    function empezar() {
-        user = document.getElementById('user-name').value;
-        if(!user) return alert("Dime tu nombre");
+    function iniciarJuego() {
         document.getElementById('p-login').classList.add('oculto');
         document.getElementById('juego-cont').style.display = "flex";
         pintaRosco();
+        cargarPregunta();
     }
 
     function pintaRosco() {
         const b = document.getElementById('rosco-box');
         b.innerHTML = "";
-        const abc = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
-        abc.forEach((l, i) => {
+        const letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXY Z".split("");
+        letras.forEach((l, i) => {
             const d = document.createElement('div');
-            d.className = "letra"; d.innerText = l;
+            d.className = "letra"; d.id = "L-" + l; d.innerText = l;
             const r = (i * (360/26) - 90) * (Math.PI/180);
-            d.style.left = `calc(50% + ${Math.cos(r)*160}px - 16px)`;
-            d.style.top = `calc(50% + ${Math.sin(r)*160}px - 16px)`;
+            d.style.left = `calc(50% + ${Math.cos(r)*185}px - 17px)`;
+            d.style.top = `calc(50% + ${Math.sin(r)*185}px - 17px)`;
             b.appendChild(d);
         });
     }
 
-    function enviar() {
-        const resp = document.getElementById('respuesta-texto').value;
-        if(resp) {
-            alert("Has dicho: " + resp);
-            document.getElementById('respuesta-texto').value = "";
-            document.getElementById('status-voz').innerText = "";
+    function cargarPregunta() {
+        if(indiceActual >= preguntas.length) {
+            hablar("Has terminado el rosco.");
+            return;
         }
+        const data = preguntas[indiceActual];
+        document.getElementById('letra-actual').innerText = "CON LA " + data.l;
+        document.getElementById('txt-pregunta').innerText = data.p;
+        
+        // Marcar letra activa
+        document.querySelectorAll('.letra').forEach(l => l.classList.remove('activa'));
+        document.getElementById("L-" + data.l).classList.add('activa');
+
+        // El PC lee la pregunta
+        hablar(data.p);
     }
 
-    function pasapalabra() {
-        alert("¡Pasapalabra!");
+    function escucharRespuesta() {
+        recognition.start();
+        document.getElementById('respuesta-texto').placeholder = "Escuchando...";
+        recognition.onresult = (event) => {
+            document.getElementById('respuesta-texto').value = event.results[0][0].transcript;
+        };
+    }
+
+    function comprobarRespuesta() {
+        const rUser = document.getElementById('respuesta-texto').value.toLowerCase().trim();
+        const rCorrecta = preguntas[indiceActual].r;
+        const letraDiv = document.getElementById("L-" + preguntas[indiceActual].l);
+
+        if(rUser === rCorrecta) {
+            letraDiv.classList.add('correcta');
+            hablar("¡Correcto!");
+        } else {
+            letraDiv.classList.add('fallada');
+            hablar("Incorrecto. Era " + rCorrecta);
+        }
+
+        indiceActual++;
         document.getElementById('respuesta-texto').value = "";
+        setTimeout(cargarPregunta, 1000);
+    }
+
+    function pasarPalabra() {
+        hablar("Pasapalabra");
+        indiceActual++;
+        cargarPregunta();
     }
 </script>
 </body>
