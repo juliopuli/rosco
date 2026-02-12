@@ -1,9 +1,9 @@
-v<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasapalabra Pro v7.5.0</title>
+    <title>Pasapalabra Pro v7.1.0</title>
     <style>
         :root { --fondo: #050a1f; --panel: #111b3d; --oro: #ffcc00; --verde: #2ecc71; --rojo: #dc3545; --azul: #00c6ff; }
         body { background: var(--fondo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
@@ -14,44 +14,40 @@ v<!DOCTYPE html>
         .btn { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; color: white; transition: 0.3s; }
         .btn-green { background: var(--verde); }
         .btn-blue { background: var(--azul); color: #000; }
-        .btn-red { background: var(--rojo); }
-        .btn-voice { background: linear-gradient(90deg, #ff0080, #ff8c00); border: 1px solid #fff; }
+        .btn-voice { background: linear-gradient(90deg, #ff0080, #ff8c00); border: 2px solid #fff; }
         
         input { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; text-align: center; font-size: 1rem; background: #eee; color: #000; font-weight: bold; }
 
-        /* HUD STAFF */
         #hud-staff { display: none; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.95); border: 2px solid var(--oro); padding: 12px; border-radius: 10px; z-index: 1000; text-align: center; }
 
-        /* JUEGO ROSCO */
         #juego-cont { display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0; background: var(--fondo); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
         .rosco-main { position: relative; width: 400px; height: 400px; margin-bottom: 20px; }
         .letra { position: absolute; width: 35px; height: 35px; background: #0044ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 0.9rem; transition: 0.3s; }
         .activa { background: var(--oro); color: #000; transform: scale(1.2); box-shadow: 0 0 15px var(--oro); }
         .correcta { background: var(--verde) !important; }
         .fallada { background: var(--rojo) !important; }
-
-        #mic-anim { width: 50px; height: 50px; background: var(--rojo); border-radius: 50%; margin: 10px auto; display: none; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        
+        #mic-indicador { color: var(--rojo); font-weight: bold; display: none; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div id="hud-staff">
-        <b id="hud-name" style="color:var(--oro)"></b><br>
-        <button class="btn-blue" style="font-size:0.7rem; padding:8px; border-radius:5px; width:100%;" onclick="registrarVoz()">🎤 REGISTRAR MI VOZ</button>
-        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:5px; cursor:pointer;" onclick="location.reload()">CERRAR SESIÓN</button>
+        <b id="hud-name" style="color:var(--oro)">MODO: SUPERADMIN</b><br>
+        <span style="font-size: 0.7rem;">PABLO CONECTADO</span><br>
+        <button style="background:#444; color:white; border:none; padding:5px; width:100%; margin-top:8px; cursor:pointer; border-radius:4px;" onclick="location.reload()">CERRAR SESIÓN</button>
     </div>
 
     <div id="p-login" class="pantalla">
         <h1 style="color:var(--oro)">PASAPALABRA</h1>
         <input type="text" id="user-name" placeholder="Tu nombre...">
-        <button class="btn btn-green" onclick="iniciar()">ENTRAR</button>
-        <button class="btn" style="background:#333; font-size:0.7rem;" onclick="accesoStaff()">ACCESO STAFF</button>
+        <button class="btn btn-green" onclick="iniciarPublico()">ENTRAR</button>
+        <button class="btn" style="background:#333; font-size:0.7rem;" onclick="accesoDirectoStaff()">ACCESO STAFF</button>
     </div>
 
     <div id="p-menu" class="pantalla oculto">
         <h2 id="saludo">HOLA</h2>
-        <button class="btn btn-blue" onclick="irJuego()">MODO LOCAL</button>
+        <button class="btn btn-blue" onclick="irJuego()">JUGAR MODO LOCAL</button>
         <button class="btn" style="background:var(--rojo)" onclick="location.reload()">VOLVER</button>
     </div>
 
@@ -59,54 +55,60 @@ v<!DOCTYPE html>
         <div class="rosco-main" id="rosco-box"></div>
         <div class="pantalla">
             <h3 id="h-letra" style="color:var(--oro)">CON LA A</h3>
-            <p id="p-def">Definición...</p>
-            <input type="text" id="r-text" placeholder="Respuesta...">
-            <div id="mic-anim"></div>
-            <button class="btn btn-voice" onclick="escucharRespuesta()">🎤 HABLAR</button>
+            <p id="p-def" style="min-height: 50px;">Definición...</p>
+            <div id="mic-indicador">🎤 ESCUCHANDO...</div>
+            <input type="text" id="r-text" placeholder="Escribe o dicta...">
+            <button class="btn btn-voice" onclick="escucharVoz()">🎤 USAR MICRÓFONO</button>
             <div style="display:flex; gap:10px;">
                 <button class="btn btn-green" onclick="validar()">ENVIAR</button>
-                <button class="btn btn-red" onclick="pasapalabra()">PASAPALABRA</button>
+                <button class="btn" style="background:var(--oro); color:black;" onclick="pasapalabra()">PASAR</button>
             </div>
         </div>
     </div>
 
 <script>
     const preguntas = [
-        { l: "A", d: "Con la A: Persona que pilota aviones.", r: "aviador" },
-        { l: "B", d: "Con la B: Objeto para escribir.", r: "boligrafo" },
-        { l: "C", d: "Con la C: Lugar donde vives.", r: "casa" }
+        { l: "A", d: "Empieza por A: Persona que viaja al espacio.", r: "astronauta" },
+        { l: "B", d: "Empieza por B: Deporte que se juega con una canasta.", r: "baloncesto" },
+        { l: "C", d: "Empieza por C: Vehículo con cuatro ruedas para ir por carretera.", r: "coche" }
     ];
 
     let i = 0;
-    let user = "";
+    let userActivo = "";
     const synth = window.speechSynthesis;
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const rec = new Recognition();
     rec.lang = 'es-ES';
 
-    function hablar(t) {
+    function hablar(texto) {
         synth.cancel();
-        const m = new SpeechSynthesisUtterance(t);
+        const m = new SpeechSynthesisUtterance(texto);
         m.lang = 'es-ES';
         synth.speak(m);
     }
 
-    function iniciar() {
-        user = document.getElementById('user-name').value;
-        if(user) { 
-            document.getElementById('p-login').classList.add('oculto');
-            document.getElementById('p-menu').classList.remove('oculto');
-            document.getElementById('saludo').innerText = "HOLA, " + user.toUpperCase();
+    // --- ACCESO DIRECTO SOLICITADO ---
+    function accesoDirectoStaff() {
+        const codigo = prompt("CÓDIGO DE ACCESO:");
+        if (codigo === "Pablo23sek") {
+            userActivo = "PABLO";
+            // Activar HUD de Staff automáticamente
+            document.getElementById('hud-staff').style.display = "block";
+            irMenu();
+        } else {
+            alert("Código incorrecto");
         }
     }
 
-    function accesoStaff() {
-        if(prompt("CÓDIGO:") === "Pablo23sek") {
-            user = "PABLO";
-            document.getElementById('hud-staff').style.display = "block";
-            document.getElementById('hud-name').innerText = "PABLO (STAFF)";
-            iniciar();
-        }
+    function iniciarPublico() {
+        const n = document.getElementById('user-name').value;
+        if(n) { userActivo = n; irMenu(); }
+    }
+
+    function irMenu() {
+        document.getElementById('p-login').classList.add('oculto');
+        document.getElementById('p-menu').classList.remove('oculto');
+        document.getElementById('saludo').innerText = "HOLA, " + userActivo.toUpperCase();
     }
 
     function irJuego() {
@@ -124,14 +126,17 @@ v<!DOCTYPE html>
             const d = document.createElement('div');
             d.className = "letra"; d.id = "L-"+l; d.innerText = l;
             const r = (idx * (360/26) - 90) * (Math.PI/180);
-            d.style.left = `calc(50% + ${Math.cos(r)*170}px - 17px)`;
-            d.style.top = `calc(50% + ${Math.sin(r)*170}px - 17px)`;
+            d.style.left = `calc(50% + ${Math.cos(r)*175}px - 17px)`;
+            d.style.top = `calc(50% + ${Math.sin(r)*175}px - 17px)`;
             b.appendChild(d);
         });
     }
 
     function cargarPregunta() {
-        if(i >= preguntas.length) return hablar("Rosco finalizado");
+        if(i >= preguntas.length) {
+            hablar("Has terminado el juego, " + userActivo);
+            return;
+        }
         const p = preguntas[i];
         document.getElementById('h-letra').innerText = "CON LA " + p.l;
         document.getElementById('p-def').innerText = p.d;
@@ -140,13 +145,14 @@ v<!DOCTYPE html>
         hablar(p.d);
     }
 
-    function escucharRespuesta() {
-        document.getElementById('mic-anim').style.display = "block";
+    function escucharVoz() {
+        document.getElementById('mic-indicador').style.display = "block";
         rec.start();
         rec.onresult = (e) => {
             document.getElementById('r-text').value = e.results[0][0].transcript;
-            document.getElementById('mic-anim').style.display = "none";
+            document.getElementById('mic-indicador').style.display = "none";
         };
+        rec.onerror = () => document.getElementById('mic-indicador').style.display = "none";
     }
 
     function validar() {
@@ -159,26 +165,17 @@ v<!DOCTYPE html>
             hablar("¡Correcto!");
         } else {
             div.classList.add('fallada');
-            hablar("¡Error! Era " + correcta);
+            hablar("¡Error!");
         }
         i++;
         document.getElementById('r-text').value = "";
-        setTimeout(cargarPregunta, 1500);
+        setTimeout(cargarPregunta, 1200);
     }
 
     function pasapalabra() {
         hablar("Pasapalabra");
         i++;
         cargarPregunta();
-    }
-
-    function registrarVoz() {
-        hablar("Di tu nombre para registrar tu huella de voz");
-        rec.start();
-        rec.onresult = (e) => {
-            localStorage.setItem('voice_key', e.results[0][0].transcript);
-            alert("Voz registrada: " + e.results[0][0].transcript);
-        };
     }
 </script>
 </body>
