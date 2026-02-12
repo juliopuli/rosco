@@ -3,23 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pasapalabra Pro v9.0</title>
+<title>Pasapalabra Ultra Pro X</title>
 
 <style>
-:root {
---fondo:#050a1f;
+
+/* ===============================
+   VARIABLES GLOBALES
+================================= */
+
+:root{
+--bg1:#050a1f;
+--bg2:#0d1b3d;
 --panel:#111b3d;
---oro:#ffcc00;
---verde:#2ecc71;
---rojo:#dc3545;
---azul:#00c6ff;
+--gold:#ffcc00;
+--green:#2ecc71;
+--red:#dc3545;
+--blue:#00c6ff;
+--purple:#9b59b6;
+--shadow:0 0 30px rgba(0,0,0,0.8);
 }
 
+/* ===============================
+   BODY
+================================= */
+
 body{
-background:var(--fondo);
-color:white;
-font-family:'Segoe UI',sans-serif;
 margin:0;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,var(--bg1),var(--bg2));
+color:white;
 display:flex;
 align-items:center;
 justify-content:center;
@@ -27,24 +39,65 @@ min-height:100vh;
 overflow:hidden;
 }
 
+/* ===============================
+   CONTENEDORES
+================================= */
+
 .oculto{display:none!important;}
 
 .pantalla{
-text-align:center;
 background:var(--panel);
 padding:30px;
 border-radius:20px;
 border:1px solid #2a3a6d;
 width:90%;
-max-width:420px;
-box-shadow:0 0 40px rgba(0,0,0,0.8);
+max-width:500px;
+text-align:center;
+box-shadow:var(--shadow);
+animation:fadeIn 0.6s ease;
 }
+
+@keyframes fadeIn{
+from{opacity:0;transform:scale(0.95);}
+to{opacity:1;transform:scale(1);}
+}
+
+/* ===============================
+   BOTONES
+================================= */
+
+.btn{
+width:100%;
+padding:14px;
+margin:10px 0;
+border-radius:12px;
+border:none;
+font-weight:bold;
+cursor:pointer;
+text-transform:uppercase;
+font-size:0.9rem;
+transition:0.3s;
+}
+
+.btn:hover{
+transform:scale(1.05);
+}
+
+.btn-green{background:var(--green);color:white;}
+.btn-blue{background:var(--blue);color:black;}
+.btn-red{background:var(--red);color:white;}
+.btn-gold{background:var(--gold);color:black;}
+.btn-purple{background:var(--purple);color:white;}
+
+/* ===============================
+   INPUT
+================================= */
 
 input{
 width:90%;
 padding:12px;
 margin:8px 0;
-border-radius:8px;
+border-radius:10px;
 border:none;
 text-align:center;
 font-size:1rem;
@@ -53,24 +106,9 @@ color:#000;
 font-weight:bold;
 }
 
-.btn{
-width:100%;
-padding:14px;
-margin:8px 0;
-border-radius:10px;
-border:none;
-font-weight:bold;
-cursor:pointer;
-text-transform:uppercase;
-font-size:0.9rem;
-color:white;
-transition:0.3s;
-}
-
-.btn-green{background:var(--verde);}
-.btn-blue{background:var(--azul);color:#000;}
-.btn-red{background:var(--rojo);}
-.btn-gold{background:var(--oro);color:#000;}
+/* ===============================
+   ROSCO
+================================= */
 
 #juego-cont{
 display:none;
@@ -82,20 +120,19 @@ height:100vh;
 position:fixed;
 top:0;
 left:0;
-background:var(--fondo);
 }
 
 .rosco-main{
 position:relative;
-width:400px;
-height:400px;
+width:450px;
+height:450px;
 margin-bottom:20px;
 }
 
 .letra{
 position:absolute;
-width:35px;
-height:35px;
+width:40px;
+height:40px;
 background:#0044ff;
 border-radius:50%;
 display:flex;
@@ -103,235 +140,46 @@ align-items:center;
 justify-content:center;
 font-weight:bold;
 border:2px solid white;
-font-size:0.9rem;
 transition:0.3s;
 }
 
 .activa{
-background:var(--oro);
-color:#000;
+background:var(--gold);
+color:black;
 transform:scale(1.2);
+box-shadow:0 0 15px var(--gold);
 }
 
-.correcta{background:var(--verde)!important;}
-.fallada{background:var(--rojo)!important;}
+.correcta{background:var(--green)!important;}
+.fallada{background:var(--red)!important;}
 
-#panel-staff{
+/* ===============================
+   HUD SUPERIOR
+================================= */
+
+#hud{
 position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:#000c;
+top:10px;
+left:50%;
+transform:translateX(-50%);
+background:rgba(0,0,0,0.6);
+padding:10px 20px;
+border-radius:15px;
 display:flex;
-align-items:center;
-justify-content:center;
-z-index:2000;
-}
-</style>
-</head>
-
-<body>
-
-<!-- LOGIN -->
-<div id="p-login" class="pantalla">
-<h1 style="color:var(--oro)">PASAPALABRA</h1>
-<input type="text" id="user-name" placeholder="Usuario">
-<input type="password" id="user-pass" placeholder="Contraseña (si eres staff)">
-<button class="btn btn-green" onclick="login()">ENTRAR</button>
-</div>
-
-<!-- MENÚ -->
-<div id="p-menu" class="pantalla oculto">
-<h2 id="saludo">HOLA</h2>
-<button class="btn btn-blue" onclick="irJuego()">JUGAR</button>
-<button class="btn btn-red" onclick="logout()">CERRAR SESIÓN</button>
-</div>
-
-<!-- JUEGO -->
-<div id="juego-cont">
-<div class="rosco-main" id="rosco-box"></div>
-
-<div class="pantalla">
-<h3 id="h-letra" style="color:var(--oro)">CON LA A</h3>
-<p id="p-def">Definición...</p>
-<input type="text" id="r-text" placeholder="Respuesta">
-<button class="btn btn-green" onclick="validar()">ENVIAR</button>
-<button class="btn btn-gold" onclick="pasapalabra()">PASAR</button>
-</div>
-</div>
-
-<script>
-
-/* =======================
-   CONFIGURACIÓN STAFF
-======================= */
-
-const STAFF = {
-  "pablo": { pass:"Pablo23sek", rol:"superadmin" },
-  "juliopuli": { pass:"juli26", rol:"admin" },
-  "alvarito": { pass:"poki", rol:"visualizador" }
-};
-
-let usuarioActual = null;
-let rolActual = "jugador";
-
-/* =======================
-   LOGIN
-======================= */
-
-function login(){
-  const user = document.getElementById("user-name").value.trim().toLowerCase();
-  const pass = document.getElementById("user-pass").value.trim();
-
-  if(STAFF[user]){
-    if(pass === STAFF[user].pass){
-      usuarioActual = user;
-      rolActual = STAFF[user].rol;
-      mostrarPanelStaff();
-      return;
-    } else {
-      alert("Contraseña incorrecta");
-      return;
-    }
-  }
-
-  if(user){
-    usuarioActual = user;
-    rolActual = "jugador";
-    guardarUsuarioConectado(user);
-    irMenu();
-  }
+gap:30px;
+font-weight:bold;
 }
 
-function logout(){
-  location.reload();
-}
+/* ===============================
+   BARRA LATERAL
+================================= */
 
-/* =======================
-   PANEL STAFF
-======================= */
-
-function mostrarPanelStaff(){
-  document.getElementById("p-login").classList.add("oculto");
-
-  const panel = document.createElement("div");
-  panel.id = "panel-staff";
-
-  let botones = `
-  <div class="pantalla">
-  <h2>PANEL ${rolActual.toUpperCase()}</h2>
-  <p>Usuario: ${usuarioActual}</p>
-  <button class="btn btn-blue" onclick="verUsuarios()">VER USUARIOS CONECTADOS</button>
-  `;
-
-  if(rolActual === "superadmin"){
-    botones += `<button class="btn btn-red" onclick="apagarJuego()">APAGAR JUEGO</button>`;
-  }
-
-  botones += `<button class="btn btn-green" onclick="logout()">CERRAR SESIÓN</button>
-  </div>`;
-
-  panel.innerHTML = botones;
-  document.body.appendChild(panel);
-}
-
-function verUsuarios(){
-  const lista = JSON.parse(localStorage.getItem("usuariosConectados") || "[]");
-  alert("Usuarios conectados:\n\n" + (lista.join("\n") || "Nadie conectado"));
-}
-
-function apagarJuego(){
-  document.body.innerHTML = `
-  <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:black;color:red;font-size:2rem;">
-  EL JUEGO HA SIDO APAGADO POR EL SUPERADMIN
-  </div>`;
-}
-
-/* =======================
-   CONTROL USUARIOS
-======================= */
-
-function guardarUsuarioConectado(nombre){
-  let lista = JSON.parse(localStorage.getItem("usuariosConectados") || "[]");
-  if(!lista.includes(nombre)){
-    lista.push(nombre);
-    localStorage.setItem("usuariosConectados", JSON.stringify(lista));
-  }
-}
-
-/* =======================
-   JUEGO
-======================= */
-
-const preguntas = [
-{ l:"A", d:"Empieza por A: Persona que viaja al espacio.", r:"astronauta" },
-{ l:"B", d:"Empieza por B: Deporte con canasta.", r:"baloncesto" },
-{ l:"C", d:"Empieza por C: Vehículo de cuatro ruedas.", r:"coche" }
-];
-
-let i = 0;
-
-function irMenu(){
-  document.getElementById("p-login").classList.add("oculto");
-  document.getElementById("p-menu").classList.remove("oculto");
-  document.getElementById("saludo").innerText = "HOLA, " + usuarioActual.toUpperCase();
-}
-
-function irJuego(){
-  document.getElementById("p-menu").classList.add("oculto");
-  document.getElementById("juego-cont").style.display="flex";
-  pintarRosco();
-  cargarPregunta();
-}
-
-function pintarRosco(){
-  const box=document.getElementById("rosco-box");
-  box.innerHTML="";
-  const abc="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
-  abc.forEach((l,idx)=>{
-    const d=document.createElement("div");
-    d.className="letra";
-    d.id="L-"+l;
-    d.innerText=l;
-    const r=(idx*(360/27)-90)*(Math.PI/180);
-    d.style.left=`calc(50% + ${Math.cos(r)*175}px - 17px)`;
-    d.style.top=`calc(50% + ${Math.sin(r)*175}px - 17px)`;
-    box.appendChild(d);
-  });
-}
-
-function cargarPregunta(){
-  if(i>=preguntas.length){
-    alert("Has terminado el juego");
-    return;
-  }
-  const p=preguntas[i];
-  document.getElementById("h-letra").innerText="CON LA "+p.l;
-  document.getElementById("p-def").innerText=p.d;
-}
-
-function validar(){
-  const res=document.getElementById("r-text").value.toLowerCase().trim();
-  const correcta=preguntas[i].r;
-  const div=document.getElementById("L-"+preguntas[i].l);
-
-  if(res===correcta){
-    div.classList.add("correcta");
-  } else {
-    div.classList.add("fallada");
-  }
-
-  i++;
-  document.getElementById("r-text").value="";
-  cargarPregunta();
-}
-
-function pasapalabra(){
-  i++;
-  cargarPregunta();
-}
-
+#sidebar{
+position:fixed;
+right:0;
+top:0;
+height:100%;
+   
 </script>
 </body>
 </html>
