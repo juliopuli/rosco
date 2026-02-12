@@ -17,7 +17,7 @@ def limpiar(t):
 
 def generar_rosco_ia():
     model = genai.GenerativeModel('gemini-1.5-flash')
-    letras = "ABCDEFGHIJLMNOPQRSTUVXYZ"
+    letras = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"  # ✅ TODAS LAS LETRAS (27)
     rosco_final = []
 
     # BANCO DE RESPALDO REAL (Si la IA falla, usará estas preguntas de verdad)
@@ -32,9 +32,11 @@ def generar_rosco_ia():
         "H": {"letra":"H", "pregunta":"Agua congelada.", "respuesta":"hielo", "tipo":"CON LA"},
         "I": {"letra":"I", "pregunta":"Tierra rodeada de agua.", "respuesta":"isla", "tipo":"CON LA"},
         "J": {"letra":"J", "pregunta":"Animal con el cuello muy largo.", "respuesta":"jirafa", "tipo":"CON LA"},
+        "K": {"letra":"K", "pregunta":"Arte marcial japonés con kimono.", "respuesta":"karate", "tipo":"CON LA"},
         "L": {"letra":"L", "pregunta":"Satélite de la Tierra que brilla de noche.", "respuesta":"luna", "tipo":"CON LA"},
         "M": {"letra":"M", "pregunta":"Fruto del manzano.", "respuesta":"manzana", "tipo":"CON LA"},
         "N": {"letra":"N", "pregunta":"Fruta con mucha vitamina C.", "respuesta":"naranja", "tipo":"CON LA"},
+        "Ñ": {"letra":"Ñ", "pregunta":"Mamífero de Sudamérica parecido a la llama.", "respuesta":"ñandu", "tipo":"CON LA"},
         "O": {"letra":"O", "pregunta":"Órgano para escuchar.", "respuesta":"oreja", "tipo":"CON LA"},
         "P": {"letra":"P", "pregunta":"Animal amigo del hombre que ladra.", "respuesta":"perro", "tipo":"CON LA"},
         "Q": {"letra":"Q", "pregunta":"Alimento hecho de leche.", "respuesta":"queso", "tipo":"CON LA"},
@@ -43,6 +45,7 @@ def generar_rosco_ia():
         "T": {"letra":"T", "pregunta":"Vehículo sobre raíles.", "respuesta":"tren", "tipo":"CON LA"},
         "U": {"letra":"U", "pregunta":"Fruta que crece en racimos.", "respuesta":"uva", "tipo":"CON LA"},
         "V": {"letra":"V", "pregunta":"Estación de más calor.", "respuesta":"verano", "tipo":"CON LA"},
+        "W": {"letra":"W", "pregunta":"Red mundial de información e internet.", "respuesta":"web", "tipo":"CONTIENE LA"},
         "X": {"letra":"X", "pregunta":"Prueba escolar para evaluar.", "respuesta":"examen", "tipo":"CONTIENE LA"},
         "Y": {"letra":"Y", "pregunta":"Barco de recreo grande.", "respuesta":"yate", "tipo":"CON LA"},
         "Z": {"letra":"Z", "pregunta":"Calzado para el pie.", "respuesta":"zapato", "tipo":"CON LA"}
