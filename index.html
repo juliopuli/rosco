@@ -8,7 +8,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Roboto:wght@400;700&display=swap');
 
         :root {
-            --bg-dark: #070f1a; /* Color de fondo oscuro estilo Virus */
+            --bg-dark: #070f1a;
             --orange-glow: #ff7b00;
             --blue-glow: #00aeff;
             --btn-dark: #0f1d2e;
@@ -30,7 +30,6 @@
             background-image: radial-gradient(circle at 50% 50%, #112240 0%, #050a12 100%);
         }
 
-        /* TÍTULO ESTILO "JUEGO VIRUS" PERO PASAPALABRA */
         .main-title {
             font-family: 'Fredoka', sans-serif;
             font-size: 4rem;
@@ -42,7 +41,6 @@
         .title-top { color: white; display: block; }
         .title-bottom { color: var(--orange-glow); display: block; text-shadow: 0 0 20px var(--orange-glow); }
 
-        /* CONTENEDOR PRINCIPAL CON BORDE NARANJA */
         .menu-container {
             width: 90%;
             max-width: 400px;
@@ -60,11 +58,10 @@
             z-index: 10;
         }
 
-        /* BOTONES ESTILO IMAGEN */
         .btn {
             width: 100%;
             padding: 18px;
-            border-radius: 50px; /* Bordes muy redondos */
+            border-radius: 50px;
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
@@ -79,123 +76,123 @@
 
         .btn:active { transform: scale(0.98); }
 
-        /* Botón Superadmin (Dark Outline) */
         .btn-outline {
             background: transparent;
-            border: 2px solid #2c3e50;
-            color: #ecf0f1;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid var(--text-white);
+            color: var(--text-white);
         }
-        .btn-outline:hover { border-color: var(--blue-glow); color: var(--blue-glow); }
+        .btn-outline:hover { box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
 
-        /* Botón Jugar (Naranja Sólido) */
         .btn-orange {
-            background: linear-gradient(180deg, #ff9500 0%, #d35400 100%);
+            background: linear-gradient(135deg, #ff7b00, #ff9d3d);
             color: white;
-            box-shadow: 0 5px 20px rgba(211, 84, 0, 0.4);
-            border: 1px solid #e67e22;
+            box-shadow: 0 4px 15px rgba(255, 123, 0, 0.4);
         }
-        .btn-orange:hover { filter: brightness(1.1); }
+        .btn-orange:hover { box-shadow: 0 6px 20px rgba(255, 123, 0, 0.6); }
 
-        /* Botón Cómo Jugar (Azul Sólido) */
         .btn-blue {
-            background: linear-gradient(180deg, #3498db 0%, #2980b9 100%);
+            background: linear-gradient(135deg, #00aeff, #0088cc);
             color: white;
-            box-shadow: 0 5px 20px rgba(41, 128, 185, 0.4);
-            border: 1px solid #3498db;
+            box-shadow: 0 4px 15px rgba(0, 174, 255, 0.4);
         }
+        .btn-blue:hover { box-shadow: 0 6px 20px rgba(0, 174, 255, 0.6); }
 
-        /* INPUT OCULTO ELEGANTE PARA EL NOMBRE */
-        #user-input {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #444;
-            padding: 10px;
-            border-radius: 10px;
-            color: white;
-            text-align: center;
-            width: 80%;
-            margin: 0 auto;
-            font-size: 1rem;
-            display: none; /* Se muestra al darle a jugar */
-        }
-
-        /* FOOTER PILL */
         .footer-pill {
-            margin-top: 40px;
-            border: 1px solid var(--blue-glow);
-            padding: 10px 30px;
-            border-radius: 50px;
-            background: rgba(5, 10, 18, 0.8);
-            color: white;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 0 15px rgba(0, 174, 255, 0.2);
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #aaa;
         }
 
-        /* PANTALLAS OCULTAS (Juego, Staff) */
         .hidden { display: none !important; }
 
-        /* ESTILOS DEL JUEGO (ROSCO) */
-        #game-screen {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: var(--bg-dark);
-            z-index: 100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .rosco-box { position: relative; width: 400px; height: 400px; margin-bottom: 20px; }
-        .letra { 
-            position: absolute; width: 35px; height: 35px; 
-            background: radial-gradient(circle, #0055ff 0%, #002266 100%); 
-            border: 2px solid white; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 0.9rem; 
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        .activa { background: var(--orange-glow); color: black; transform: scale(1.3); box-shadow: 0 0 20px var(--orange-glow); z-index: 10; border-color: black; }
-        .correcta { background: #2ecc71 !important; }
-        .fallada { background: #e74c3c !important; }
-
-        /* HUD STAFF */
         #staff-overlay {
-            position: fixed; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.9);
-            border: 1px solid var(--orange-glow);
+            position: fixed;
+            top: 10px;
+            right: 10px;
             padding: 10px 20px;
-            border-radius: 10px;
-            z-index: 2000;
-            display: none;
-            color: var(--orange-glow);
+            background: linear-gradient(135deg, #ff0055, #ff4477);
+            border-radius: 20px;
             font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
+            display: none;
+            z-index: 999;
         }
-        
-        #mic-status { color: var(--orange-glow); font-size: 0.8rem; height: 20px; margin-top: 5px; }
 
+        #user-input {
+            padding: 15px;
+            border-radius: 50px;
+            border: 2px solid var(--blue-glow);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            text-align: center;
+            font-size: 1rem;
+            outline: none;
+            display: none;
+        }
+
+        /* ROSCO */
+        .rosco-box {
+            position: relative;
+            width: 440px;
+            height: 440px;
+            margin: 0 auto 20px;
+        }
+
+        .letra {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #0f1d2e;
+            border: 2px solid #00aeff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .letra.activa {
+            background: #ff7b00;
+            border-color: #ff7b00;
+            box-shadow: 0 0 20px #ff7b00;
+            transform: scale(1.3);
+        }
+
+        .letra.correcta {
+            background: #00ff00;
+            border-color: #00ff00;
+        }
+
+        .letra.fallada {
+            background: #ff0000;
+            border-color: #ff0000;
+        }
     </style>
 </head>
 <body>
-
-    <div id="staff-overlay">
-        👑 SUPERADMIN: PABLO<br>
-        <button onclick="location.reload()" style="background:red; color:white; border:none; padding:5px; margin-top:5px; cursor:pointer;">SALIR</button>
-    </div>
+    <div id="staff-overlay">👑 STAFF MODE</div>
 
     <div id="menu-screen">
         <div class="main-title">
-            <span class="title-top">PASA</span>
-            <span class="title-bottom">PALABRA</span>
+            <span class="title-top">PASAPALABRA</span>
+            <span class="title-bottom">PRO</span>
         </div>
 
         <div class="menu-container">
             <button class="btn btn-outline" onclick="loginStaff()">
-                SUPERADMIN
+                🔐 SUPERADMIN
             </button>
 
-            <input type="text" id="user-input" placeholder="Tu Nombre...">
+            <input type="text" id="user-input" placeholder="Tu nombre..." maxlength="20">
 
-            <button class="btn btn-orange" id="btn-play" onclick="prepararJuego()">
-                👤 JUGAR (LOCAL)
+            <button id="btn-play" class="btn btn-orange" onclick="prepararJuego()">
+                ▶ JUGAR
             </button>
 
             <button class="btn btn-blue" onclick="alert('Reglas: Responde a las definiciones de la A a la Z.\n\nPuedes usar el micrófono para responder.')">
@@ -229,15 +226,35 @@
     </div>
 
     <script>
-        // --- CONFIGURACIÓN & DATOS ---
+        // --- CONFIGURACIÓN & DATOS (27 LETRAS COMPLETAS) ---
         const DB = [
-            {l:"A", q:"Empieza por A: Persona que viaja al espacio.", r:"astronauta"},
-            {l:"B", q:"Empieza por B: Recipiente para beber líquidos.", r:"botella"},
-            {l:"C", q:"Empieza por C: Mamífero que relincha.", r:"caballo"},
-            {l:"D", q:"Empieza por D: Número de dedos en una mano.", r:"cinco"}, // Trampa mental, empieza por C en realidad (Cinco). Cambiemos:
-            {l:"D", q:"Empieza por D: Reptil extinguido.", r:"dinosaurio"},
-            {l:"E", q:"Empieza por E: Animal gris con trompa.", r:"elefante"}
-            // ... Se puede expandir
+            {l:"A", q:"Vehículo con alas que vuela por el aire.", r:"avion"},
+            {l:"B", q:"Mamífero marino de gran tamaño.", r:"ballena"},
+            {l:"C", q:"Edificio donde vive una familia.", r:"casa"},
+            {l:"D", q:"Pieza cúbica con puntos para jugar.", r:"dado"},
+            {l:"E", q:"Animal con trompa y orejas grandes.", r:"elefante"},
+            {l:"F", q:"Torre con luz para guiar barcos.", r:"faro"},
+            {l:"G", q:"Animal que maúlla y caza ratones.", r:"gato"},
+            {l:"H", q:"Agua congelada.", r:"hielo"},
+            {l:"I", q:"Tierra rodeada de agua.", r:"isla"},
+            {l:"J", q:"Animal con el cuello muy largo.", r:"jirafa"},
+            {l:"K", q:"Arte marcial japonés con kimono.", r:"karate"},
+            {l:"L", q:"Satélite de la Tierra que brilla de noche.", r:"luna"},
+            {l:"M", q:"Fruto del manzano.", r:"manzana"},
+            {l:"N", q:"Fruta con mucha vitamina C.", r:"naranja"},
+            {l:"Ñ", q:"Mamífero de Sudamérica parecido a la llama.", r:"ñandu"},
+            {l:"O", q:"Órgano para escuchar.", r:"oreja"},
+            {l:"P", q:"Animal amigo del hombre que ladra.", r:"perro"},
+            {l:"Q", q:"Alimento hecho de leche.", r:"queso"},
+            {l:"R", q:"Aparato para ver la hora.", r:"reloj"},
+            {l:"S", q:"Estrella que nos da luz y calor.", r:"sol"},
+            {l:"T", q:"Vehículo sobre raíles.", r:"tren"},
+            {l:"U", q:"Fruta que crece en racimos.", r:"uva"},
+            {l:"V", q:"Estación de más calor.", r:"verano"},
+            {l:"W", q:"Red mundial de información e internet.", r:"web"},
+            {l:"X", q:"Prueba escolar para evaluar.", r:"examen"},
+            {l:"Y", q:"Barco de recreo grande.", r:"yate"},
+            {l:"Z", q:"Calzado para el pie.", r:"zapato"}
         ];
         
         let index = 0;
@@ -251,13 +268,11 @@
         // --- LÓGICA DEL MENÚ ---
 
         function loginStaff() {
-            // El comportamiento CLÁSICO que pediste
             const pass = prompt("INTRODUCE CÓDIGO STAFF:");
             if(pass === "Pablo23sek") {
                 isStaff = true;
                 document.getElementById('staff-overlay').style.display = "block";
                 alert("ACCESO CONCEDIDO: MODO SUPERADMIN");
-                // Pre-rellenamos nombre
                 document.getElementById('user-input').value = "PABLO";
                 document.getElementById('user-input').style.display = "block";
                 document.getElementById('btn-play').innerText = "👑 ENTRAR COMO STAFF";
@@ -268,14 +283,12 @@
 
         function prepararJuego() {
             const input = document.getElementById('user-input');
-            // Si el input está oculto, lo mostramos primero
             if(input.style.display !== "block") {
                 input.style.display = "block";
                 document.getElementById('btn-play').innerText = "ACCEDER";
                 return;
             }
             
-            // Si ya está visible, validamos
             if(input.value.trim() === "") {
                 alert("Por favor, pon tu nombre.");
                 return;
@@ -297,9 +310,7 @@
             const box = document.getElementById('rosco');
             box.innerHTML = "";
             const radius = 180;
-            const total = DB.length; // Usamos la longitud real de la DB para el cálculo
-            // Para dibujar el rosco completo visualmente (A-Z) aunque solo tengamos pocas preguntas,
-            // normalmente necesitaríamos 27 divs. Aquí dibujaremos solo las que hay en DB para la demo.
+            const total = DB.length;
             
             DB.forEach((item, i) => {
                 const el = document.createElement('div');
@@ -307,9 +318,8 @@
                 el.id = "L-" + i;
                 el.innerText = item.l;
                 
-                // Matemáticas del círculo
                 const angle = (i * (360 / total) - 90) * (Math.PI / 180);
-                const x = Math.cos(angle) * radius + 200 - 17; // 200 centro, 17 mitad tamaño
+                const x = Math.cos(angle) * radius + 200 - 17;
                 const y = Math.sin(angle) * radius + 200 - 17;
                 
                 el.style.left = x + "px";
@@ -338,7 +348,6 @@
             document.getElementById('question-text').innerText = data.q;
             document.getElementById('game-answer').value = "";
             
-            // Resaltar letra
             document.querySelectorAll('.letra').forEach(l => l.classList.remove('activa'));
             const currentLetra = document.getElementById("L-" + index);
             if(currentLetra) currentLetra.classList.add('activa');
@@ -360,13 +369,11 @@
                 speak("Incorrecto, era " + correctAns);
             }
             index++;
-            setTimeout(loadQuestion, 1500); // Pausa para oír la respuesta
+            setTimeout(loadQuestion, 1500);
         }
 
         function pasapalabra() {
             speak("Pasapalabra");
-            // En modo simple, pasapalabra salta la pregunta y la deja pendiente (aquí simplificado la marcamos como fallo visual momentáneo o simplemente avanzamos)
-            // Para mantenerlo simple, avanzamos.
             index++;
             loadQuestion();
         }
@@ -381,8 +388,6 @@
             const voz = event.results[0][0].transcript;
             document.getElementById('game-answer').value = voz;
             document.getElementById('mic-status').innerText = "";
-            // Opcional: Auto-enviar
-            // checkAnswer(); 
         };
         
         rec.onerror = () => {
